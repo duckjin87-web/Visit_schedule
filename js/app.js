@@ -19,7 +19,7 @@ function wireRowSelect(container,rowSel){
 document.getElementById("scrim").addEventListener("click",function(e){if(e.target===this)closeSheet()});
 
 /* ===== 공통: 재렌더 · 확인모달 · 실행취소(undo) ===== */
-function redraw(){drawT3();drawC3();drawMini3();drawCards3();saveVisits();
+function redraw(){drawT3();drawC3();drawMini3();saveVisits();
   const sp=document.getElementById("stat3"); if(sp&&!sp.hidden)drawStats();}
 function confirmDialog(opts){
   openSheet(
@@ -451,10 +451,10 @@ function drawMini3(){
     const isoD=isoLocal(d), list=byDay[isoD]||[], wk=(d.getDay()+6)%7, today=isoD===isoLocal(TODAY);
     let names="";
     if(list.length){
-      const show=list.slice(0,3).map(function(v){
+      const show=list.slice(0,2).map(function(v){
         return "<span class='mc-nm' style='border-color:"+VST[v.st].bar+"' title='"+esc((v.time?v.time+" ":"")+v.co)+"'>"+
           (v.time?"<b>"+esc(v.time.slice(0,5))+"</b> ":"")+esc(v.co)+"</span>";}).join("");
-      names="<div class='mc-names'>"+show+(list.length>3?"<span class='mc-more'>+"+(list.length-3)+" 더보기</span>":"")+"</div>";
+      names="<div class='mc-names'>"+show+(list.length>2?"<span class='mc-more'>+"+(list.length-2)+"</span>":"")+"</div>";
     }
     h+="<div class='mc-d"+(wk>=5?" we":"")+(list.length?" has":"")+(today?" td":"")+"' title='"+
       (list.length?esc(list.map(function(v){return (v.time?v.time+" ":"")+v.co}).join(" · ")):"")+"'>"+
@@ -516,55 +516,6 @@ function deleteAt(i){
       pushUndo(esc(v.co||"업체")+" 삭제됨", snap); toast(esc(v.co||"업체")+" 삭제됨");
     }});
 }
-
-/* ===== 카드 보기 (모바일 친화) ===== */
-let viewMode="table";
-try{const sv=localStorage.getItem("cosmedb_view"); if(sv==="card"||sv==="table")viewMode=sv;
-  else if(window.innerWidth<=640)viewMode="card";}catch(e){}
-function drawCards3(){
-  const c=document.getElementById("cards3"); if(!c)return;
-  const rows=VISITS.map(function(v,idx){return {v:v,idx:idx};}).filter(function(x){return vf==="all"||x.v.st===vf});
-  if(!rows.length){c.innerHTML="<div class='empty-s'>해당 상태의 방문 건이 없습니다.</div>";return;}
-  let h="";
-  rows.forEach(function(row){
-    const v=row.v, i=row.idx, muted=["reg","cxl","ng"].indexOf(v.st)>=0;
-    const dd=ddayOf(v);
-    let o=""; Object.keys(VST).forEach(function(k){o+="<option value='"+k+"'"+(k===v.st?" selected":"")+">"+VST[k].label+"</option>"});
-    const fs=finalDates(v);
-    const sched=v.fix?("확정 "+v.fix.slice(5)+(dd.t!=="—"?" · <b class='"+dd.c+"'>"+dd.t+"</b>":""))
-      :(fs.length?"공통 가능 "+compressK(fs):"<span class='dim'>일정 협의중</span>");
-    h+="<div class='card s-"+v.st+(muted?" muted":"")+"' data-i='"+i+"'>"+
-      "<div class='cd-h'><span class='cd-bar' style='background:"+VST[v.st].bar+"'></span>"+
-        "<span class='cd-co'>"+esc(v.co||"(무명)")+"</span>"+
-        "<span class='sel'><select class='cardst' data-i='"+i+"' style='background:"+VST[v.st].bg+";color:"+VST[v.st].fg+"'>"+o+"</select></span></div>"+
-      "<div class='cd-sched'>"+sched+"</div>"+
-      "<div class='cd-meta'>"+
-        (v.addr?"<span>📍 "+esc(v.addr)+"</span>":"")+
-        ((v.mgr||v.tel)?"<span>👤 "+esc(v.mgr||"")+(v.tel?" · "+esc(v.tel):"")+"</span>":"")+
-        (v.res?"<span>📝 "+esc(v.res)+"</span>":"")+
-      "</div>"+
-      "<div class='cd-f'><input class='vkin cd-memo' data-cf='memo' data-i='"+i+"' value=\""+esc(v.memo||"")+"\" placeholder='비고 입력'>"+
-        "<button class='btn sm cd-del' data-i='"+i+"'>🗑</button></div>"+
-      "</div>";
-  });
-  c.innerHTML=h;
-  c.querySelectorAll(".cardst").forEach(function(s){s.onchange=function(){setStatus(+s.dataset.i,s.value);};});
-  c.querySelectorAll(".cd-memo").forEach(function(el){el.addEventListener("input",function(){VISITS[+el.dataset.i].memo=el.value;saveVisits();});});
-  c.querySelectorAll(".cd-del").forEach(function(b){b.onclick=function(){deleteAt(+b.dataset.i);};});
-}
-function applyView(){
-  const card=viewMode==="card";
-  const wrap=document.getElementById("wrap3"), cards=document.getElementById("cards3"), btn=document.getElementById("viewBtn");
-  if(wrap)wrap.hidden=card; if(cards)cards.hidden=!card;
-  if(btn)btn.textContent=card?"▦ 표보기":"🗂 카드보기";
-  if(card)drawCards3();
-  else requestAnimationFrame(autoFitT3);
-}
-document.getElementById("viewBtn").onclick=function(){
-  viewMode=viewMode==="card"?"table":"card";
-  try{localStorage.setItem("cosmedb_view",viewMode);}catch(e){}
-  applyView();
-};
 
 /* ===== 신규 등록 ===== */
 document.getElementById("addBtn").onclick=function(){
@@ -873,6 +824,6 @@ document.getElementById("xlsBtn").onclick=function(){
 
 /* ===== 초기화 ===== */
 loadVisits();
-drawC3(); drawT3(); drawCards3(); applyView();
+drawC3(); drawT3();
 wireRowSelect(document.getElementById("t3"),"tbody tr");
-if(viewMode==="table")requestAnimationFrame(autoFitT3);
+requestAnimationFrame(autoFitT3);
