@@ -175,21 +175,23 @@ function saveVisits(){
   try{localStorage.setItem("cosmedb_visits_v1",JSON.stringify(VISITS));}catch(e){}
 }
 function seedVisits(){
-  const map={"방문완료":"done","재방문예정":"plan","확정":"plan","일정협의":"nego","보류":"etc","요청접수":"nego"};
+  const map={"방문완료":"done","재방문예정":"plan","확정":"plan","일정협의":"nego","보류":"etc","요청접수":"nego",
+    "Capa회신대기중":"wait","등록완료":"reg","등록불가":"ng","방문취소":"cxl","기타":"etc"};
+  const visited={done:1,reg:1,ng:1,wait:1};  // 방문을 이미 한 상태 → 방문완료일 기록
   VISITS=RAWVISIT.map(function(r){
     const tm=String(r["시간(출발포함)"]||"").match(/(\d{1,2})시(반)?/);
     const time=tm?String(tm[1]).padStart(2,"0")+":"+(tm[2]?"30":"00"):"";
     const who=String(r["업체 담당자"]||"").trim().split(/\s+/);
     const st=map[r["상태"]]||"nego";
     return {mid:r["업체ID"],co:r["상호명"],st:st,
-      kind:"OEM/ODM",
+      kind:r["구분"]||"OEM/ODM",
       addr:r["소재지"]||"",site:"",link:r["소개자료 링크"],
       mgr:who[0]||"",pos:who.slice(1).join(" "),tel:r["연락처"],mail:r["E-MAIL"],
       vend:r["업체 요청일"],coop:r["협/생팀 가능일"],qa:r["품질보증팀 가능일"],
       fix:(r["확정 방문일"]||"").slice(0,10),time:time,
       picker:r["수배주체"]?r["수배주체"]+"팀":"",reason:r["수배사유"],
-      vdone:st==="done"?(r["확정 방문일"]||"").slice(0,10):"",
-      att:r["방문자"],res:r["방문결과/후속조치"],cq:"",
+      vdone:visited[st]?(r["확정 방문일"]||"").slice(0,10):"",
+      att:r["방문자"],res:r["방문결과/후속조치"],cq:(r["Capa요청일"]||"").slice(0,10),
       memo:(r["의뢰예상제품"]||"")+(r["방문결과/후속조치"]?" · "+String(r["방문결과/후속조치"]).slice(0,26):""),
       ch:"",by:"협/생팀",note:"기존 방문일정관리 이관"};
   });
@@ -292,7 +294,7 @@ function drawT3(){
     cols.forEach(function(c,ci){const sk=(c.g==="fix"&&ci<2);
       const cls=[(c.a||""),(sk?"sk":""),(sk&&ci===1?"edge":""),(gstart[ci]?"gsep":"")].filter(Boolean).join(" ");
       h+="<td"+(cls?" class='"+cls+"'":"")+" data-r='"+i+"' data-k='"+c.k+"'"+
-        (sk?" style='left:"+x+"px;background:"+VST[v.st].tint+"'":"")+">"+vcell(v,c,i)+"</td>";
+        (sk?" style='left:"+x+"px;background:linear-gradient("+VST[v.st].tint+","+VST[v.st].tint+"),var(--surface)'":"")+">"+vcell(v,c,i)+"</td>";
       if(sk)x+=c.w;});
     h+="</tr>";
   });
@@ -415,10 +417,17 @@ function drawMini3(){
     "<button class='btn sm' data-mc='0'>이번주</button><button class='btn sm' data-mc='1'>▶</button></div><div class='mc-grid'>";
   days.forEach(function(d){
     const isoD=isoLocal(d), list=byDay[isoD]||[], wk=(d.getDay()+6)%7, today=isoD===isoLocal(TODAY);
+    let names="";
+    if(list.length){
+      const show=list.slice(0,3).map(function(v){
+        return "<span class='mc-nm' style='border-color:"+VST[v.st].bar+"' title='"+esc((v.time?v.time+" ":"")+v.co)+"'>"+
+          (v.time?"<b>"+esc(v.time.slice(0,5))+"</b> ":"")+esc(v.co)+"</span>";}).join("");
+      names="<div class='mc-names'>"+show+(list.length>3?"<span class='mc-more'>+"+(list.length-3)+" 더보기</span>":"")+"</div>";
+    }
     h+="<div class='mc-d"+(wk>=5?" we":"")+(list.length?" has":"")+(today?" td":"")+"' title='"+
       (list.length?esc(list.map(function(v){return (v.time?v.time+" ":"")+v.co}).join(" · ")):"")+"'>"+
-      "<span class='mc-wd'>"+wd[wk]+"</span><span class='mc-n'>"+d.getDate()+"</span>"+
-      (list.length?"<span class='mc-dot'>"+(list.length>1?list.length:"")+"</span>":"")+"</div>";
+      "<div class='mc-top'><span class='mc-wd'>"+wd[wk]+"</span><span class='mc-n'>"+d.getDate()+"</span></div>"+
+      names+"</div>";
   });
   h+="</div>";
   c.innerHTML=h;
@@ -494,6 +503,163 @@ document.getElementById("statBtn").onclick=function(){
   const sp=document.getElementById("stat3"), on=sp.hidden;
   sp.hidden=!on; this.setAttribute("aria-pressed",on?"true":"false");
   if(on)drawStats();
+};
+
+/* ===== 다크 / 라이트 테마 전환 ===== */
+(function initTheme(){
+  const KEY="cosmedb_theme", btn=document.getElementById("themeBtn"); if(!btn)return;
+  const modes=[["auto","🌓","시스템"],["light","☀️","라이트"],["dark","🌙","다크"]];
+  let cur=0; try{const s=localStorage.getItem(KEY), idx=modes.map(function(m){return m[0]}).indexOf(s); if(idx>=0)cur=idx;}catch(e){}
+  function apply(){
+    const m=modes[cur];
+    if(m[0]==="auto")document.documentElement.removeAttribute("data-theme");
+    else document.documentElement.setAttribute("data-theme",m[0]);
+    btn.textContent=m[1]; btn.title="테마: "+m[2]+" (클릭 시 전환)";
+    try{localStorage.setItem(KEY,m[0]);}catch(e){}
+  }
+  btn.onclick=function(){cur=(cur+1)%modes.length; apply(); toast("테마: "+modes[cur][2]);};
+  apply();
+})();
+
+/* ===== 업체 삭제 (행 선택 후) ===== */
+document.getElementById("delBtn").onclick=function(){
+  const tr=document.querySelector("#t3 tbody tr.rowsel");
+  if(!tr){toast("삭제할 행을 먼저 클릭해 선택하세요");return;}
+  const td=tr.querySelector("td[data-r]"), i=td?+td.dataset.r:-1;
+  if(i<0||!VISITS[i]){toast("선택한 행을 찾지 못했습니다");return;}
+  const v=VISITS[i];
+  openSheet(
+    "<div class='sh-h'><div class='k'>업체 삭제</div><h3>"+esc(v.co||"(무명)")+"</h3></div>"+
+    "<div class='sh-b'><p style='font-size:13px;color:var(--ink-2);padding:8px 0 4px'>이 업체를 목록에서 삭제합니다.<br>이 작업은 되돌릴 수 없습니다.</p></div>"+
+    "<div class='sh-f'><button class='btn' id='dvCancel'>취소</button><button class='btn pri' id='dvGo' style='background:#D64B3F;border-color:transparent'>삭제</button></div>");
+  document.getElementById("dvCancel").onclick=closeSheet;
+  document.getElementById("dvGo").onclick=function(){
+    VISITS.splice(i,1); closeSheet(); drawT3(); drawC3(); drawMini3(); saveVisits();
+    toast(esc(v.co||"업체")+" 삭제됨");
+  };
+};
+
+/* ===== Excel 불러오기 (수동 양식 → 카테고리 자동 매칭) ===== */
+/* 헤더명(열)을 내부 필드로 매칭하는 동의어 사전 — 실제 양식의 컬럼명 변형을 최대한 흡수 */
+const IMPORT_MAP=[
+ [["업체id","거래처id","코드"],"mid"],
+ [["업체명","상호명","상호","회사명","거래처명","업체/거래처"],"co"],
+ [["진행상태","상태","단계","진행"],"st"],
+ [["구분","유형","분류","업체유형","제조유형"],"kind"],
+ [["소재지","주소지","주소","위치","소재"],"addr"],
+ [["업체담당자","담당자","담당","성명","이름","연락담당"],"mgr"],
+ [["직위","직책","포지션"],"pos"],
+ [["연락처","전화번호","전화","휴대폰","핸드폰","mobile","tel","hp"],"tel"],
+ [["이메일","메일","email","e-mail"],"mail"],
+ [["소개자료","회사소개서","소개자료링크","자료링크"],"link"],
+ [["업체방문가능일","업체요청일","업체가능일","요청일","희망일","방문요청일"],"vend"],
+ [["협생가능일","협생팀가능일","협력생산가능일","협생","협력생산팀가능일"],"coop"],
+ [["품보가능일","품질보증팀가능일","품질보증가능일","품보"],"qa"],
+ [["확정방문일","방문확정일","확정일","방문일"],"fix"],
+ [["방문예정시간","방문시간","예정시간","시간출발포함","시간"],"time"],
+ [["선정주체","수배주체","주관팀","주관"],"picker"],
+ [["선정사유","수배사유","사유","선정근거"],"reason"],
+ [["방문완료일"],"vdone"],
+ [["참석자","방문자","동행자"],"att"],
+ [["방문결과","방문결과후속조치","결과","후속조치","방문결과/후속조치"],"res"],
+ [["capa요청일","캐파요청일","capa"],"cq"],
+ [["의뢰예상제품","예상제품","품목","아이템"],"memo"],
+ [["최근비고","비고","메모","특이사항","note"],"memo"]
+];
+function normHdr(s){return String(s==null?"":s).replace(/[\s_\-.\/()·:]/g,"").toLowerCase();}
+function fieldFor(hdr){
+  const h=normHdr(hdr); if(!h)return null;
+  for(let pass=0;pass<2;pass++){
+    for(let a=0;a<IMPORT_MAP.length;a++){
+      const syns=IMPORT_MAP[a][0], key=IMPORT_MAP[a][1];
+      for(let b=0;b<syns.length;b++){
+        const ns=normHdr(syns[b]);
+        if(pass===0){ if(h===ns)return key; }
+        else{ if(h.indexOf(ns)>=0||(ns.length>=3&&ns.indexOf(h)>=0))return key; }
+      }
+    }
+  }
+  return null;
+}
+const ST_ALIAS={"방문완료":"done","확정":"plan","방문예정":"plan","재방문예정":"plan","일정협의":"nego","일정협의중":"nego",
+ "요청접수":"nego","접수":"nego","보류":"etc","기타":"etc","capa회신대기중":"wait","capa대기":"wait","회신대기":"wait",
+ "등록완료":"reg","등록":"reg","등록불가":"ng","불가":"ng","방문취소":"cxl","취소":"cxl"};
+function toStKey(val){
+  if(VST[val])return val;
+  const s=normHdr(val); if(!s)return "nego";
+  for(const k in ST_ALIAS){if(normHdr(k)===s)return ST_ALIAS[k];}
+  for(const k in VST){if(normHdr(VST[k].label)===s)return k;}
+  for(const k in ST_ALIAS){if(s.indexOf(normHdr(k))>=0)return ST_ALIAS[k];}
+  return "nego";
+}
+function toIsoDate(s){const m=String(s==null?"":s).match(/(\d{4})\D+(\d{1,2})\D+(\d{1,2})/);
+  return m?m[1]+"-"+String(m[2]).padStart(2,"0")+"-"+String(m[3]).padStart(2,"0"):"";}
+function toTimeStr(s){s=String(s==null?"":s).trim();
+  let m=s.match(/(\d{1,2}):(\d{2})/); if(m)return String(+m[1]).padStart(2,"0")+":"+m[2];
+  m=s.match(/(\d{1,2})시(\s*30|반)?/); if(m)return String(+m[1]).padStart(2,"0")+":"+(m[2]?"30":"00");
+  return "";}
+function blankVisit(co){return {mid:"",co:co||"",st:"nego",kind:"OEM/ODM",addr:"",site:"",link:"",
+  mgr:"",pos:"",tel:"",mail:"",vend:"",coop:"",qa:"",fix:"",time:"",picker:"",reason:"",
+  vdone:"",att:"",res:"",cq:"",memo:"",ch:iso(TODAY),by:"엑셀 업로드",note:"엑셀 업로드"};}
+function applyImportRow(target,rowObj){
+  Object.keys(rowObj).forEach(function(f){
+    let val=rowObj[f]; if(val==null)return; val=String(val).trim(); if(!val)return;
+    if(f==="st")val=toStKey(val);
+    else if(f==="fix"||f==="vdone"||f==="cq"){val=toIsoDate(val)||("cq"===f?"":"");if(!val)return;}
+    else if(f==="time")val=toTimeStr(val);
+    else if(f==="picker"&&["협력생산","품질보증"].indexOf(val)>=0)val=val+"팀";
+    // 병합: 기존 값이 있으면 덮어쓰지 않음(빈 칸만 채움)
+    if(f==="st"){ if(!target._stSet){target.st=val;target._stSet=true;} return; }
+    if(target[f]===undefined||target[f]===null||target[f]===""){target[f]=val;}
+  });
+}
+function importRows(aoa){
+  // 헤더 행 탐지: 인식 가능한 필드가 가장 많은 행(최소 2개)
+  let hi=-1, best=-1, colMap=null;
+  const scan=Math.min(aoa.length,12);
+  for(let r=0;r<scan;r++){
+    const row=aoa[r]||[]; const map={}; let n=0;
+    row.forEach(function(cell,ci){const f=fieldFor(cell); if(f){map[ci]=f;n++;}});
+    if(n>best){best=n;hi=r;colMap=map;}
+  }
+  if(hi<0||best<2){toast("열 제목을 인식하지 못했습니다. 업체명·상태 등 헤더 행을 확인하세요.");return;}
+  const coCol=Object.keys(colMap).filter(function(ci){return colMap[ci]==="co";})[0];
+  let added=0, merged=0, skipped=0;
+  for(let r=hi+1;r<aoa.length;r++){
+    const row=aoa[r]||[]; if(!row.length)continue;
+    const rowObj={};
+    Object.keys(colMap).forEach(function(ci){rowObj[colMap[ci]]=row[ci];});
+    const coName=coCol!=null?String(row[coCol]==null?"":row[coCol]).trim():"";
+    const midVal=rowObj.mid?String(rowObj.mid).trim():"";
+    if(!coName&&!midVal){skipped++;continue;}
+    // 기존 업체 매칭: 업체ID 우선, 없으면 업체명
+    let ex=null;
+    if(midVal)ex=VISITS.filter(function(v){return v.mid&&v.mid===midVal;})[0];
+    if(!ex&&coName)ex=VISITS.filter(function(v){return v.co&&v.co.trim()===coName;})[0];
+    if(ex){applyImportRow(ex,rowObj);delete ex._stSet;merged++;}
+    else{const nv=blankVisit(coName);applyImportRow(nv,rowObj);delete nv._stSet;VISITS.unshift(nv);added++;}
+  }
+  drawT3(); drawC3(); drawMini3(); saveVisits();
+  toast("엑셀 반영 완료 · 신규 "+added+"건, 갱신 "+merged+"건"+(skipped?", 건너뜀 "+skipped:""));
+}
+document.getElementById("impBtn").onclick=function(){
+  if(typeof XLSX==="undefined"){toast("엑셀 모듈을 불러오지 못했습니다. 네트워크 연결을 확인하세요.");return;}
+  document.getElementById("impFile").click();
+};
+document.getElementById("impFile").onchange=function(e){
+  const file=e.target.files&&e.target.files[0]; if(!file)return;
+  const rd=new FileReader();
+  rd.onload=function(ev){
+    try{
+      const wb=XLSX.read(ev.target.result,{type:"array"});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      if(!ws){toast("시트를 찾지 못했습니다.");return;}
+      const aoa=XLSX.utils.sheet_to_json(ws,{header:1,raw:false,defval:""});
+      importRows(aoa);
+    }catch(err){toast("엑셀 파일을 읽지 못했습니다.");}
+    e.target.value="";
+  };
+  rd.readAsArrayBuffer(file);
 };
 
 /* ===== Excel 저장 ===== */

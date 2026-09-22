@@ -8,11 +8,14 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Noto+Sans+KR:wght@400;500;700;800;900&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <link rel="stylesheet" href="css/style.css">
+<script>try{var _t=localStorage.getItem('cosmedb_theme');if(_t&&_t!=='auto')document.documentElement.setAttribute('data-theme',_t);}catch(e){}</script>
 </head>
 <body>
 
 <div class="appbar">
-  <div class="brand"><span class="logo"></span><h1>방문예정처</h1><span class="sub" id="cnt3">0건</span></div>
+  <div class="brand"><span class="logo"></span><h1>방문예정처</h1><span class="sub" id="cnt3">0건</span>
+    <button class="tbtn" id="themeBtn" type="button" aria-label="테마 전환" title="테마 전환">🌓</button>
+  </div>
 </div>
 
 <div class="tool">
@@ -20,8 +23,11 @@
     <span class="note">출발 기준 · 세종 전의면 산단길 22-17</span>
     <span class="spacer"></span>
     <button class="btn" id="addBtn">＋ 신규 등록</button>
+    <button class="btn" id="delBtn">🗑 선택 삭제</button>
+    <button class="btn" id="impBtn">⇪ Excel 불러오기</button>
     <button class="btn" id="statBtn" aria-pressed="false">📊 방문통계</button>
     <button class="btn pri" id="xlsBtn">Excel 저장</button>
+    <input type="file" id="impFile" accept=".xlsx,.xls,.csv" hidden>
   </div>
   <div class="chips" id="c3"></div>
   <div id="stat3" class="statpanel" hidden></div>
