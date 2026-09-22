@@ -18,6 +18,36 @@ function wireRowSelect(container,rowSel){
 }
 document.getElementById("scrim").addEventListener("click",function(e){if(e.target===this)closeSheet()});
 
+/* ===== 공통: 재렌더 · 확인모달 · 실행취소(undo) ===== */
+function redraw(){drawT3();drawC3();drawMini3();drawCards3();saveVisits();
+  const sp=document.getElementById("stat3"); if(sp&&!sp.hidden)drawStats();}
+function confirmDialog(opts){
+  openSheet(
+    "<div class='sh-h'><div class='k'>"+esc(opts.kicker||"확인")+"</div><h3>"+esc(opts.title||"")+"</h3></div>"+
+    "<div class='sh-b'>"+(opts.body||"")+"</div>"+
+    "<div class='sh-f'><button class='btn' id='cfCancel'>"+esc(opts.cancel||"취소")+"</button>"+
+    "<button class='btn pri' id='cfOk'"+(opts.danger?" style='background:#D64B3F;border-color:transparent'":"")+">"+esc(opts.ok||"확인")+"</button></div>");
+  document.getElementById("cfCancel").onclick=closeSheet;
+  document.getElementById("cfOk").onclick=function(){closeSheet(); if(opts.onOk)opts.onOk();};
+}
+let _undoSnap=null, _undoTimer=0;
+function snapshotVisits(){return JSON.parse(JSON.stringify(VISITS));}
+function pushUndo(msg,snap){
+  _undoSnap=snap;
+  const bar=document.getElementById("undobar"), m=document.getElementById("undomsg");
+  if(!bar)return; m.textContent=msg; bar.classList.add("on");
+  clearTimeout(_undoTimer); _undoTimer=setTimeout(function(){bar.classList.remove("on");_undoSnap=null;},7000);
+}
+(function initUndo(){
+  const btn=document.getElementById("undoBtn"); if(!btn)return;
+  btn.onclick=function(){
+    if(!_undoSnap)return;
+    VISITS=_undoSnap; _undoSnap=null;
+    document.getElementById("undobar").classList.remove("on");
+    redraw(); toast("실행취소됨");
+  };
+})();
+
 /* ===== 오늘 날짜 (기기 시간 기준) ===== */
 const TODAY = new Date(); TODAY.setHours(0,0,0,0);
 const YR = TODAY.getFullYear();
@@ -230,7 +260,9 @@ function vcell(v,c,i){
       const settled=["done","reg","ng","cxl","wait"].indexOf(v.st)>=0;
       return "<span class='res"+(settled?"":" hit")+"'>"+compressK(f)+"<small>"+(settled?"":f.length+"일 가능")+"</small></span>";}
     case "mail":return vin(v,i,"mail","메일");
-    case "link":return v.link?"<a href='#'>"+esc(v.link)+"</a>":dim("미수령");
+    case "link":{const isUrl=/^https?:\/\//i.test(String(v.link||"").trim());
+      return "<div class='lk'><input class='vkin' data-vf='link' data-i='"+i+"' value=\""+esc(v.link||"")+"\" placeholder='링크·파일명'>"+
+        (isUrl?"<a class='lkopen' href='"+esc(v.link)+"' target='_blank' rel='noopener' title='새 탭에서 열기'>↗</a>":"")+"</div>";}
     case "fix":{
       const fs=finalDates(v), opts=[""].concat(fs.map(keyToIso));
       if(v.fix&&opts.indexOf(v.fix)<0)opts.splice(1,0,v.fix);
@@ -465,6 +497,75 @@ function drawStats(){
   c.innerHTML=h;
 }
 
+/* ===== 상태 변경 · 삭제 공통 헬퍼 ===== */
+function setStatus(i,val){
+  const v=VISITS[i], was=v.st; v.st=val;
+  v.ch=iso(TODAY); v.note=VST[was].label+" → "+VST[v.st].label;
+  if(val==="done"&&v.fix){ v.vdone=v.fix; toast(esc(v.co)+" · 방문완료 · 방문완료일 "+v.fix+" 등록"); }
+  else if(val==="plan"&&!v.fix){ v.fix=iso(TODAY); toast(esc(v.co)+" · 방문예정으로 변경 (방문일 임시 지정, 직접 수정하세요)"); }
+  else toast(esc(v.co)+" · "+VST[v.st].label+"으로 변경");
+  redraw();
+}
+function deleteAt(i){
+  const v=VISITS[i]; if(!v){toast("선택한 행을 찾지 못했습니다");return;}
+  confirmDialog({kicker:"업체 삭제",title:v.co||"(무명)",danger:true,ok:"삭제",
+    body:"<p style='font-size:13px;color:var(--ink-2);padding:8px 0 4px'>이 업체를 목록에서 삭제합니다.<br>삭제 후 하단 <b>실행취소</b>로 되돌릴 수 있습니다.</p>",
+    onOk:function(){
+      const snap=snapshotVisits();
+      VISITS.splice(i,1); redraw();
+      pushUndo(esc(v.co||"업체")+" 삭제됨", snap); toast(esc(v.co||"업체")+" 삭제됨");
+    }});
+}
+
+/* ===== 카드 보기 (모바일 친화) ===== */
+let viewMode="table";
+try{const sv=localStorage.getItem("cosmedb_view"); if(sv==="card"||sv==="table")viewMode=sv;
+  else if(window.innerWidth<=640)viewMode="card";}catch(e){}
+function drawCards3(){
+  const c=document.getElementById("cards3"); if(!c)return;
+  const rows=VISITS.map(function(v,idx){return {v:v,idx:idx};}).filter(function(x){return vf==="all"||x.v.st===vf});
+  if(!rows.length){c.innerHTML="<div class='empty-s'>해당 상태의 방문 건이 없습니다.</div>";return;}
+  let h="";
+  rows.forEach(function(row){
+    const v=row.v, i=row.idx, muted=["reg","cxl","ng"].indexOf(v.st)>=0;
+    const dd=ddayOf(v);
+    let o=""; Object.keys(VST).forEach(function(k){o+="<option value='"+k+"'"+(k===v.st?" selected":"")+">"+VST[k].label+"</option>"});
+    const fs=finalDates(v);
+    const sched=v.fix?("확정 "+v.fix.slice(5)+(dd.t!=="—"?" · <b class='"+dd.c+"'>"+dd.t+"</b>":""))
+      :(fs.length?"공통 가능 "+compressK(fs):"<span class='dim'>일정 협의중</span>");
+    h+="<div class='card s-"+v.st+(muted?" muted":"")+"' data-i='"+i+"'>"+
+      "<div class='cd-h'><span class='cd-bar' style='background:"+VST[v.st].bar+"'></span>"+
+        "<span class='cd-co'>"+esc(v.co||"(무명)")+"</span>"+
+        "<span class='sel'><select class='cardst' data-i='"+i+"' style='background:"+VST[v.st].bg+";color:"+VST[v.st].fg+"'>"+o+"</select></span></div>"+
+      "<div class='cd-sched'>"+sched+"</div>"+
+      "<div class='cd-meta'>"+
+        (v.addr?"<span>📍 "+esc(v.addr)+"</span>":"")+
+        ((v.mgr||v.tel)?"<span>👤 "+esc(v.mgr||"")+(v.tel?" · "+esc(v.tel):"")+"</span>":"")+
+        (v.res?"<span>📝 "+esc(v.res)+"</span>":"")+
+      "</div>"+
+      "<div class='cd-f'><input class='vkin cd-memo' data-cf='memo' data-i='"+i+"' value=\""+esc(v.memo||"")+"\" placeholder='비고 입력'>"+
+        "<button class='btn sm cd-del' data-i='"+i+"'>🗑</button></div>"+
+      "</div>";
+  });
+  c.innerHTML=h;
+  c.querySelectorAll(".cardst").forEach(function(s){s.onchange=function(){setStatus(+s.dataset.i,s.value);};});
+  c.querySelectorAll(".cd-memo").forEach(function(el){el.addEventListener("input",function(){VISITS[+el.dataset.i].memo=el.value;saveVisits();});});
+  c.querySelectorAll(".cd-del").forEach(function(b){b.onclick=function(){deleteAt(+b.dataset.i);};});
+}
+function applyView(){
+  const card=viewMode==="card";
+  const wrap=document.getElementById("wrap3"), cards=document.getElementById("cards3"), btn=document.getElementById("viewBtn");
+  if(wrap)wrap.hidden=card; if(cards)cards.hidden=!card;
+  if(btn)btn.textContent=card?"▦ 표보기":"🗂 카드보기";
+  if(card)drawCards3();
+  else requestAnimationFrame(autoFitT3);
+}
+document.getElementById("viewBtn").onclick=function(){
+  viewMode=viewMode==="card"?"table":"card";
+  try{localStorage.setItem("cosmedb_view",viewMode);}catch(e){}
+  applyView();
+};
+
 /* ===== 신규 등록 ===== */
 document.getElementById("addBtn").onclick=function(){
   openSheet(
@@ -476,25 +577,34 @@ document.getElementById("addBtn").onclick=function(){
     "<label>담당자</label><input type='text' id='nvMgr' placeholder='담당자명'>"+
     "<label>연락처</label><input type='text' id='nvTel' placeholder='010-0000-0000'>"+
     "<label>메일</label><input type='text' id='nvMail' placeholder='sales@example.co.kr'>"+
+    "<label>소개자료 링크</label><input type='text' id='nvLink' placeholder='https://... 또는 파일명'>"+
     "<label>선정 사유</label><input type='text' id='nvReason' placeholder='예: 2차 벤더 확보'>"+
     "</div>"+
     "<div class='sh-f'><button class='btn' id='nvCancel'>취소</button><button class='btn pri' id='nvGo'>등록</button></div>"
   );
   document.getElementById("nvCancel").onclick=closeSheet;
+  function doAdd(f){
+    const snap=snapshotVisits();
+    const nv=blankVisit(f.co);
+    nv.kind=f.kind||"OEM/ODM"; nv.addr=f.addr; nv.link=f.link; nv.mgr=f.mgr;
+    nv.tel=f.tel; nv.mail=f.mail; nv.reason=f.reason;
+    nv.memo="신규 등록"; nv.by="도토리"; nv.note="신규 등록";
+    VISITS.unshift(nv); closeSheet(); redraw();
+    pushUndo(esc(f.co)+" 등록됨", snap); toast(esc(f.co)+" 등록 완료");
+  }
   document.getElementById("nvGo").onclick=function(){
-    const co=document.getElementById("nvCo").value.trim();
-    if(!co){toast("업체명을 입력하세요");return;}
-    VISITS.unshift({mid:"",co:co,st:"nego",
-      kind:document.getElementById("nvKind").value.trim()||"OEM/ODM",
-      addr:document.getElementById("nvAddr").value.trim(),site:"",link:"",
-      mgr:document.getElementById("nvMgr").value.trim(),pos:"",
-      tel:document.getElementById("nvTel").value.trim(),mail:document.getElementById("nvMail").value.trim(),
-      vend:"",coop:"",qa:"",fix:"",time:"",
-      picker:"",reason:document.getElementById("nvReason").value.trim(),
-      vdone:"",att:"",res:"",cq:"",memo:"신규 등록",
-      ch:iso(TODAY),by:"도토리",note:"신규 등록"});
-    closeSheet(); drawT3(); drawC3(); drawMini3(); saveVisits();
-    toast(esc(co)+" 등록 완료");
+    const g=function(id){return document.getElementById(id).value.trim();};
+    const f={co:g("nvCo"),kind:g("nvKind"),addr:g("nvAddr"),link:g("nvLink"),
+      mgr:g("nvMgr"),tel:g("nvTel"),mail:g("nvMail"),reason:g("nvReason")};
+    if(!f.co){toast("업체명을 입력하세요");return;}
+    const dup=VISITS.filter(function(v){return v.co&&v.co.trim()===f.co;}).length;
+    if(dup){
+      confirmDialog({kicker:"중복 확인",title:"이미 같은 업체명이 있습니다",
+        body:"<p style='font-size:13px;color:var(--ink-2);padding:8px 0 4px'>'"+esc(f.co)+"' 업체가 이미 "+dup+"건 등록되어 있습니다. 그래도 새로 등록할까요?</p>",
+        ok:"그래도 등록",onOk:function(){doAdd(f);}});
+      return;
+    }
+    doAdd(f);
   };
 };
 
@@ -527,16 +637,7 @@ document.getElementById("delBtn").onclick=function(){
   if(!tr){toast("삭제할 행을 먼저 클릭해 선택하세요");return;}
   const td=tr.querySelector("td[data-r]"), i=td?+td.dataset.r:-1;
   if(i<0||!VISITS[i]){toast("선택한 행을 찾지 못했습니다");return;}
-  const v=VISITS[i];
-  openSheet(
-    "<div class='sh-h'><div class='k'>업체 삭제</div><h3>"+esc(v.co||"(무명)")+"</h3></div>"+
-    "<div class='sh-b'><p style='font-size:13px;color:var(--ink-2);padding:8px 0 4px'>이 업체를 목록에서 삭제합니다.<br>이 작업은 되돌릴 수 없습니다.</p></div>"+
-    "<div class='sh-f'><button class='btn' id='dvCancel'>취소</button><button class='btn pri' id='dvGo' style='background:#D64B3F;border-color:transparent'>삭제</button></div>");
-  document.getElementById("dvCancel").onclick=closeSheet;
-  document.getElementById("dvGo").onclick=function(){
-    VISITS.splice(i,1); closeSheet(); drawT3(); drawC3(); drawMini3(); saveVisits();
-    toast(esc(v.co||"업체")+" 삭제됨");
-  };
+  deleteAt(i);
 };
 
 /* ===== Excel 불러오기 (수동 양식 → 카테고리 자동 매칭) ===== */
@@ -613,7 +714,11 @@ function applyImportRow(target,rowObj){
     if(target[f]===undefined||target[f]===null||target[f]===""){target[f]=val;}
   });
 }
-function importRows(aoa){
+const FIELD_LABEL={mid:"업체ID",co:"업체명",st:"상태",kind:"구분",addr:"소재지",mgr:"담당자",pos:"직위",
+ tel:"연락처",mail:"메일",link:"소개자료",vend:"업체 가능일",coop:"협생 가능일",qa:"품보 가능일",
+ fix:"확정 방문일",time:"방문시간",picker:"선정주체",reason:"선정사유",vdone:"방문완료일",att:"참석자",
+ res:"방문결과",cq:"Capa요청일",memo:"비고/제품"};
+function analyzeImport(aoa){
   // 헤더 행 탐지: 인식 가능한 필드가 가장 많은 행(최소 2개)
   let hi=-1, best=-1, colMap=null;
   const scan=Math.min(aoa.length,12);
@@ -622,9 +727,11 @@ function importRows(aoa){
     row.forEach(function(cell,ci){const f=fieldFor(cell); if(f){map[ci]=f;n++;}});
     if(n>best){best=n;hi=r;colMap=map;}
   }
-  if(hi<0||best<2){toast("열 제목을 인식하지 못했습니다. 업체명·상태 등 헤더 행을 확인하세요.");return;}
+  if(hi<0||best<2)return {ok:false};
+  const headRow=aoa[hi]||[];
+  const mapping=Object.keys(colMap).map(function(ci){return {src:String(headRow[ci]||"").trim()||("열"+(+ci+1)),field:colMap[ci],label:FIELD_LABEL[colMap[ci]]||colMap[ci]};});
   const coCol=Object.keys(colMap).filter(function(ci){return colMap[ci]==="co";})[0];
-  let added=0, merged=0, skipped=0;
+  let added=0, merged=0, skipped=0; const plan=[];
   for(let r=hi+1;r<aoa.length;r++){
     const row=aoa[r]||[]; if(!row.length)continue;
     const rowObj={};
@@ -632,15 +739,33 @@ function importRows(aoa){
     const coName=coCol!=null?String(row[coCol]==null?"":row[coCol]).trim():"";
     const midVal=rowObj.mid?String(rowObj.mid).trim():"";
     if(!coName&&!midVal){skipped++;continue;}
-    // 기존 업체 매칭: 업체ID 우선, 없으면 업체명
     let ex=null;
     if(midVal)ex=VISITS.filter(function(v){return v.mid&&v.mid===midVal;})[0];
     if(!ex&&coName)ex=VISITS.filter(function(v){return v.co&&v.co.trim()===coName;})[0];
-    if(ex){applyImportRow(ex,rowObj);delete ex._stSet;merged++;}
-    else{const nv=blankVisit(coName);applyImportRow(nv,rowObj);delete nv._stSet;VISITS.unshift(nv);added++;}
+    plan.push({rowObj:rowObj,coName:coName,mergeTo:ex||null});
+    if(ex)merged++; else added++;
   }
-  drawT3(); drawC3(); drawMini3(); saveVisits();
-  toast("엑셀 반영 완료 · 신규 "+added+"건, 갱신 "+merged+"건"+(skipped?", 건너뜀 "+skipped:""));
+  return {ok:true,mapping:mapping,plan:plan,added:added,merged:merged,skipped:skipped};
+}
+function commitImport(an){
+  const snap=snapshotVisits();
+  an.plan.forEach(function(p){
+    if(p.mergeTo){applyImportRow(p.mergeTo,p.rowObj);delete p.mergeTo._stSet;}
+    else{const nv=blankVisit(p.coName);applyImportRow(nv,p.rowObj);delete nv._stSet;VISITS.unshift(nv);}
+  });
+  redraw(); pushUndo("엑셀 반영됨(신규 "+an.added+"·갱신 "+an.merged+")", snap);
+  toast("엑셀 반영 완료 · 신규 "+an.added+"건, 갱신 "+an.merged+"건"+(an.skipped?", 건너뜀 "+an.skipped:""));
+}
+function previewImport(an){
+  const chips=an.mapping.map(function(m){return "<span class='mp'><b>"+esc(m.src)+"</b> → "+esc(m.label)+"</span>";}).join("");
+  const body=
+    "<p style='font-size:12.5px;color:var(--ink-2);margin-bottom:8px'>아래 <b>열 매핑</b>과 <b>반영 건수</b>를 확인 후 적용하세요.</p>"+
+    "<div class='mp-wrap'>"+chips+"</div>"+
+    "<div class='mp-sum'><span class='mp-a'>신규 "+an.added+"</span><span class='mp-m'>갱신 "+an.merged+"</span>"+
+    (an.skipped?"<span class='mp-s'>건너뜀 "+an.skipped+"</span>":"")+"</div>"+
+    "<p style='font-size:11px;color:var(--ink-3);margin-top:8px'>· 기존 업체(업체ID·업체명 일치)는 <b>빈 칸만</b> 채우고 기존 값은 보존합니다.<br>· 적용 후 하단 <b>실행취소</b>로 되돌릴 수 있습니다.</p>";
+  confirmDialog({kicker:"Excel 불러오기 미리보기",title:"매핑 확인",ok:"적용",
+    body:body,onOk:function(){commitImport(an);}});
 }
 document.getElementById("impBtn").onclick=function(){
   if(typeof XLSX==="undefined"){toast("엑셀 모듈을 불러오지 못했습니다. 네트워크 연결을 확인하세요.");return;}
@@ -655,11 +780,65 @@ document.getElementById("impFile").onchange=function(e){
       const ws=wb.Sheets[wb.SheetNames[0]];
       if(!ws){toast("시트를 찾지 못했습니다.");return;}
       const aoa=XLSX.utils.sheet_to_json(ws,{header:1,raw:false,defval:""});
-      importRows(aoa);
+      const an=analyzeImport(aoa);
+      if(!an.ok){toast("열 제목을 인식하지 못했습니다. 업체명·상태 등 헤더 행을 확인하세요.");return;}
+      if(!an.plan.length){toast("반영할 데이터 행이 없습니다.");return;}
+      previewImport(an);
     }catch(err){toast("엑셀 파일을 읽지 못했습니다.");}
     e.target.value="";
   };
   rd.readAsArrayBuffer(file);
+};
+
+/* ===== 데이터 관리 (JSON 백업·복원·초기화) ===== */
+document.getElementById("dataBtn").onclick=function(){
+  openSheet(
+    "<div class='sh-h'><div class='k'>데이터 관리</div><h3>백업 · 복원 · 초기화</h3></div>"+
+    "<div class='sh-b'>"+
+    "<p style='font-size:12px;color:var(--ink-3);margin-bottom:4px'>이 앱은 브라우저(localStorage)에만 저장되어 <b>팀원과 자동 공유되지 않습니다</b>. 아래 <b>JSON 백업</b> 파일로 백업·이관·공유하세요.</p>"+
+    "<div class='dm-grid'>"+
+    "<button class='btn' id='dmBackup'>⬇ JSON 백업 저장</button>"+
+    "<button class='btn' id='dmRestore'>⬆ JSON 복원(불러오기)</button>"+
+    "<button class='btn' id='dmSeed'>↺ 데모 다시 불러오기</button>"+
+    "<button class='btn' id='dmClear' style='color:#C0392B;border-color:#E3B4AE'>🗑 전체 비우기</button>"+
+    "</div></div>"+
+    "<div class='sh-f'><button class='btn' id='dmClose'>닫기</button></div>");
+  document.getElementById("dmClose").onclick=closeSheet;
+  document.getElementById("dmBackup").onclick=function(){
+    try{
+      const blob=new Blob([JSON.stringify(VISITS,null,2)],{type:"application/json"});
+      const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+      a.download="방문예정처_백업_"+isoLocal(TODAY)+".json"; a.click();
+      setTimeout(function(){URL.revokeObjectURL(a.href);},1000);
+      toast("JSON 백업 저장됨 ("+VISITS.length+"건)");
+    }catch(e){toast("백업 저장 중 문제가 발생했습니다.");}
+  };
+  document.getElementById("dmRestore").onclick=function(){document.getElementById("jsonFile").click();};
+  document.getElementById("dmSeed").onclick=function(){
+    confirmDialog({kicker:"데모 불러오기",title:"데모 데이터로 되돌리기",
+      body:"<p style='font-size:13px;color:var(--ink-2);padding:8px 0 4px'>현재 데이터를 데모 데이터로 교체합니다. 하단 <b>실행취소</b>로 되돌릴 수 있습니다.</p>",
+      ok:"불러오기",onOk:function(){const snap=snapshotVisits();seedVisits();redraw();pushUndo("데모 데이터 불러옴",snap);toast("데모 데이터를 불러왔습니다");}});
+  };
+  document.getElementById("dmClear").onclick=function(){
+    confirmDialog({kicker:"전체 비우기",title:"모든 데이터 삭제",danger:true,ok:"전체 삭제",
+      body:"<p style='font-size:13px;color:var(--ink-2);padding:8px 0 4px'>모든 업체를 삭제하고 빈 목록으로 시작합니다.<br>하단 <b>실행취소</b>로 되돌릴 수 있습니다.</p>",
+      onOk:function(){const snap=snapshotVisits();VISITS=[];redraw();pushUndo("전체 비움("+snap.length+"건)",snap);toast("전체 데이터를 비웠습니다");}});
+  };
+};
+document.getElementById("jsonFile").onchange=function(e){
+  const file=e.target.files&&e.target.files[0]; if(!file)return;
+  const rd=new FileReader();
+  rd.onload=function(ev){
+    try{
+      const data=JSON.parse(ev.target.result);
+      if(!Array.isArray(data)){toast("올바른 백업(JSON 배열) 파일이 아닙니다.");return;}
+      confirmDialog({kicker:"JSON 복원",title:"데이터 교체",danger:true,ok:"복원",
+        body:"<p style='font-size:13px;color:var(--ink-2);padding:8px 0 4px'>현재 목록을 백업 파일의 <b>"+data.length+"건</b>으로 교체합니다.<br>하단 <b>실행취소</b>로 되돌릴 수 있습니다.</p>",
+        onOk:function(){const snap=snapshotVisits();VISITS=data;redraw();pushUndo("JSON 복원됨("+data.length+"건)",snap);toast("복원 완료 · "+data.length+"건");}});
+    }catch(err){toast("JSON 파일을 읽지 못했습니다.");}
+    e.target.value="";
+  };
+  rd.readAsText(file);
 };
 
 /* ===== Excel 저장 ===== */
@@ -694,6 +873,6 @@ document.getElementById("xlsBtn").onclick=function(){
 
 /* ===== 초기화 ===== */
 loadVisits();
-drawC3(); drawT3();
+drawC3(); drawT3(); drawCards3(); applyView();
 wireRowSelect(document.getElementById("t3"),"tbody tr");
-requestAnimationFrame(autoFitT3);
+if(viewMode==="table")requestAnimationFrame(autoFitT3);
