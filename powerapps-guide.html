@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:,">
+<title>방문예정처 Power Apps 만들기 — 따라하기 안내서</title>
+<style>
+:root{
+  --bg:#F5F6F8; --surface:#FFFFFF; --sunk:#F3F4F6; --ink:#1B1D22; --ink2:#4B5160; --ink3:#868C99;
+  --line:#E2E4E9; --line2:#CDD1D9; --brand:#0F6CBD; --brand-weak:#EAF2FB; --brand-ink:#0B5AA0;
+  --ok:#0E7A3A; --ok-weak:#E8F6EE; --warn:#9A5B00; --warn-weak:#FDF4E3; --bad:#B42318; --bad-weak:#FDECEA;
+  --code:#F4F6FA; --code-ink:#1F2A44; --hl:#FFF3B0;
+  --font:"Segoe UI","Malgun Gothic","Apple SD Gothic Neo",-apple-system,system-ui,sans-serif;
+  --mono:Consolas,"D2Coding","Menlo","Malgun Gothic",monospace;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#111317; --surface:#1A1D23; --sunk:#20242B; --ink:#E9EBEF; --ink2:#B3B8C3; --ink3:#7F8592;
+  --line:#2B3038; --line2:#3A404A; --brand:#5AA2EA; --brand-weak:#162A40; --brand-ink:#8EC2F5;
+  --ok:#4CC28A; --ok-weak:#14291E; --warn:#E3A64B; --warn-weak:#2B2313; --bad:#EF7B70; --bad-weak:#2E1A18;
+  --code:#161A21; --code-ink:#D7DEEC; --hl:#4A4210;
+}}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-padding-top:70px}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.65;-webkit-font-smoothing:antialiased}
+button{font:inherit;cursor:pointer}
+a{color:var(--brand-ink)}
+b,strong{font-weight:700}
+small{font-size:12px;color:var(--ink3)}
+.en{font-size:12px;color:var(--ink3);font-weight:400}
+
+/* 상단 */
+.top{position:sticky;top:0;z-index:30;background:var(--surface);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;padding:10px 20px}
+.top h1{font-size:16px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prog{margin-left:auto;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;color:var(--ink2);white-space:nowrap}
+.bar{width:160px;height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ok);width:0;transition:width .25s}
+.reset{border:1px solid var(--line2);background:var(--surface);color:var(--ink2);border-radius:6px;padding:3px 9px;font-size:12px}
+
+/* 배치 */
+.layout{display:grid;grid-template-columns:250px 1fr;gap:28px;max-width:1240px;margin:0 auto;padding:24px 20px 80px}
+.toc{position:sticky;top:70px;align-self:start;max-height:calc(100vh - 90px);overflow:auto;font-size:13.5px}
+.toc a{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:6px;color:var(--ink2);text-decoration:none;border-left:3px solid transparent}
+.toc a:hover{background:var(--sunk)}
+.toc a.on{background:var(--brand-weak);color:var(--brand-ink);border-left-color:var(--brand);font-weight:600}
+.toc .n{font-size:11px;font-weight:700;min-width:22px;color:var(--ink3)}
+.toc .c{margin-left:auto;font-size:11px;color:var(--ink3)}
+.toc .c.done{color:var(--ok);font-weight:700}
+main{min-width:0}
+
+/* 섹션 */
+.hero{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:22px 24px;margin-bottom:22px}
+.hero h2{font-size:24px;font-weight:800;letter-spacing:-.02em;margin-bottom:6px}
+.hero p{color:var(--ink2)}
+.flow{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px}
+.flow div{background:var(--sunk);border:1px solid var(--line);border-radius:10px;padding:12px;font-size:13px;color:var(--ink2);position:relative}
+.flow div b{display:block;font-size:14px;color:var(--ink);margin-bottom:2px}
+.flow div:not(:last-child)::after{content:"→";position:absolute;right:-11px;top:50%;transform:translateY(-50%);color:var(--ink3);font-weight:700}
+section.part{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:22px 24px;margin-bottom:22px}
+section.part>h2{font-size:21px;font-weight:800;letter-spacing:-.015em;display:flex;align-items:center;gap:10px}
+section.part>h2 .no{font-size:13px;font-weight:800;background:var(--brand);color:#fff;border-radius:6px;padding:2px 8px}
+.goal{margin:10px 0 16px;padding:10px 14px;background:var(--sunk);border-radius:8px;font-size:14px;color:var(--ink2)}
+.goal b{color:var(--ink)}
+h3{font-size:17px;font-weight:700;margin:24px 0 10px;padding-top:12px;border-top:1px dashed var(--line)}
+h3:first-of-type{border-top:0;padding-top:0}
+p+p{margin-top:8px}
+
+/* 단계 */
+ol.steps{list-style:none;counter-reset:s;display:grid;gap:8px}
+ol.steps>li{counter-increment:s;position:relative;padding:10px 12px 10px 76px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+ol.steps>li::before{content:counter(s);position:absolute;left:44px;top:10px;font-size:13px;font-weight:800;color:var(--ink3);width:22px;text-align:center}
+ol.steps>li.done{background:var(--ok-weak);border-color:transparent}
+ol.steps>li.done::before{color:var(--ok)}
+.ck{position:absolute;left:12px;top:11px;width:22px;height:22px;accent-color:var(--ok);cursor:pointer}
+ol.steps ul{margin:6px 0 0 18px;font-size:14px;color:var(--ink2);display:grid;gap:3px}
+.path{display:inline;background:var(--brand-weak);color:var(--brand-ink);border-radius:5px;padding:1px 6px;font-weight:600;font-size:14px}
+
+/* 상자 */
+.tip,.warn,.err{border-radius:8px;padding:10px 14px;font-size:14px;margin:12px 0;border-left:4px solid}
+.tip{background:var(--brand-weak);border-color:var(--brand);color:var(--ink)}
+.warn{background:var(--warn-weak);border-color:var(--warn);color:var(--ink)}
+.err{background:var(--bad-weak);border-color:var(--bad);color:var(--ink)}
+.tip b:first-child,.warn b:first-child,.err b:first-child{margin-right:4px}
+
+/* 코드 · 복사 */
+.code{position:relative;background:var(--code);color:var(--code-ink);border:1px solid var(--line);border-radius:8px;padding:10px 64px 10px 12px;font-family:var(--mono);font-size:13.5px;line-height:1.55;white-space:pre-wrap;word-break:break-all;margin:6px 0}
+.cp{white-space:nowrap;position:absolute;top:6px;right:6px;border:1px solid var(--line2);background:var(--surface);color:var(--ink2);border-radius:6px;padding:2px 9px;font-size:12px;font-weight:600;font-family:var(--font)}
+.cp:hover{border-color:var(--brand);color:var(--brand-ink)}
+.cp.ok{background:var(--ok);border-color:var(--ok);color:#fff}
+.v{font-family:var(--mono);font-size:13px;background:var(--code);border:1px solid var(--line);border-radius:5px;padding:1px 6px;cursor:pointer;white-space:pre-wrap;word-break:keep-all;display:inline-block}
+.v:hover{border-color:var(--brand)}
+.v.ok{background:var(--ok);color:#fff;border-color:var(--ok)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+
+/* 표 */
+.tw{overflow-x:auto;margin:10px 0}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{border-bottom:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+th{background:var(--sunk);font-size:12.5px;font-weight:700;color:var(--ink2);white-space:nowrap}
+td.num{text-align:center;color:var(--ink3);font-weight:700;width:36px}
+
+/* 스튜디오 지도 */
+.studio{border:1px solid var(--line2);border-radius:10px;overflow:hidden;font-size:12px;margin:12px 0;background:var(--surface)}
+.s-cmd{display:flex;gap:6px;align-items:center;padding:6px 8px;background:var(--sunk);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.s-cmd span{border:1px solid var(--line2);border-radius:4px;padding:2px 6px;background:var(--surface)}
+.s-cmd .r{margin-left:auto}
+.s-fx{display:flex;gap:6px;padding:6px 8px;border-bottom:1px solid var(--line)}
+.s-fx .p{border:1px solid var(--line2);border-radius:4px;padding:2px 8px;min-width:90px;background:var(--surface)}
+.s-fx .f{flex:1;border:1px solid var(--line2);border-radius:4px;padding:2px 8px;font-family:var(--mono);background:var(--surface)}
+.s-main{display:grid;grid-template-columns:34px 150px 1fr 170px;min-height:200px}
+.s-rail{border-right:1px solid var(--line);background:var(--sunk);display:flex;flex-direction:column;align-items:center;gap:8px;padding:8px 0;font-size:14px}
+.s-tree{border-right:1px solid var(--line);padding:6px 8px;line-height:1.8}
+.s-canvas{background:repeating-linear-gradient(45deg,var(--sunk),var(--sunk) 6px,var(--surface) 6px,var(--surface) 12px);display:flex;align-items:center;justify-content:center;color:var(--ink3);font-weight:600}
+.s-prop{border-left:1px solid var(--line);padding:6px 8px;line-height:1.9}
+.mk{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:var(--bad);color:#fff;font-size:11px;font-weight:800;margin-right:3px;vertical-align:middle}
+
+/* 화면 배치도 */
+.wire{position:relative;width:100%;aspect-ratio:1366/768;background:#F5F5F5;border:1px solid var(--line2);border-radius:8px;overflow:hidden;margin:12px 0}
+@media (prefers-color-scheme:dark){.wire{background:#202329}}
+.wire .w{position:absolute;border:1px solid #9AA3B2;background:rgba(255,255,255,.85);font-size:clamp(7px,1vw,11px);color:#3A4150;overflow:hidden;padding:1px 3px;line-height:1.25;border-radius:2px}
+@media (prefers-color-scheme:dark){.wire .w{background:rgba(40,44,52,.9);color:#C9CFDA;border-color:#566070}}
+.wire .w b{display:inline-block;background:var(--bad);color:#fff;border-radius:3px;padding:0 3px;margin-right:2px;font-size:.95em}
+.wire .w.rect.hdr{background:#0F6CBD;border-color:#0F6CBD;color:#fff}
+.wire .w.btn{border-color:#0F6CBD;color:#0F6CBD}
+.wire .w.gal{border-style:dashed;background:rgba(234,242,251,.85)}
+.wire .w.form{border-color:#0E7A3A;background:rgba(232,246,238,.85)}
+.wire .w.inp{border-color:#6B7280}
+.wire-cap{font-size:12px;color:var(--ink3);margin-top:-6px}
+
+/* 컨트롤 카드 */
+.ctl{border:1px solid var(--line);border-radius:10px;margin:10px 0;overflow:hidden}
+.ctl.done{border-color:var(--ok)}
+.ctl-h{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--sunk)}
+.ctl.done .ctl-h{background:var(--ok-weak)}
+.ctl-h .ck{position:static;flex:none}
+.ctl-h .nb{background:var(--bad);color:#fff;font-weight:800;font-size:12px;border-radius:4px;padding:1px 6px}
+.ctl-h .nm{font-family:var(--mono);font-weight:700;font-size:14px}
+.ctl-h .ds{font-size:13px;color:var(--ink2)}
+.ctl-b{padding:10px 12px}
+.ctl-b .how{font-size:14px;margin-bottom:8px;color:var(--ink2)}
+.ctl-b table td:first-child{font-family:var(--mono);font-weight:700;white-space:nowrap;width:150px;color:var(--brand-ink)}
+.ctl-b table td:last-child{width:1%;white-space:nowrap;text-align:right}
+.ctl-b .cp{position:static}
+.ctl-b .note{font-size:13.5px;color:var(--ink2);margin-top:8px}
+.sub-ctl{margin-left:18px;border-left:3px solid var(--brand)}
+
+@media (max-width:980px){.layout{grid-template-columns:1fr}.toc{position:static;max-height:none;display:none}.flow{grid-template-columns:1fr 1fr}.flow div::after{display:none}}
+@media (max-width:640px){.top h1{font-size:14px}.bar{width:80px}section.part,.hero{padding:16px}ol.steps>li{padding-left:66px}ol.steps>li::before{left:38px}.s-main{grid-template-columns:30px 1fr}.s-tree,.s-prop{display:none}}
+@media print{.top,.toc,.cp,.reset{display:none}.layout{display:block}section.part{break-inside:avoid-page}}
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>방문예정처 Power Apps 만들기 — 따라하기 안내서</h1>
+  <div class="prog"><span id="pt">0 / 0</span><div class="bar"><i id="pb"></i></div><button class="reset" id="reset" type="button">체크 초기화</button></div>
+</header>
+
+<div class="layout">
+  <nav class="toc" id="toc" aria-label="목차"></nav>
+  <main id="main">
+
+    <div class="hero">
+      <h2>순서대로 따라 하면 앱이 완성됩니다</h2>
+      <p>이 안내서는 <b>SharePoint 목록</b>에 데이터를 두고, <b>Power Apps</b>로 화면을 만들고, <b>Power Automate</b>로 알림을 보내는 방문 업무 앱을 처음부터 만드는 방법입니다. 완성 모습은 <a href="powerapps-mockup.html" target="_blank" rel="noopener">Power Apps 예상 목업</a>과 같은 구조입니다.</p>
+      <div class="flow">
+        <div><b>① 저장 공간</b>Teams 팀 = SharePoint 사이트</div>
+        <div><b>② 데이터 표</b>SharePoint 목록 3개</div>
+        <div><b>③ 앱 화면</b>Power Apps 화면 4개</div>
+        <div><b>④ 자동 알림</b>Power Automate 흐름 3개</div>
+      </div>
+      <div class="tip"><b>읽는 법</b> 단계마다 왼쪽 <b>체크박스</b>를 누르면 진행률이 저장됩니다(이 브라우저에만). <span class="path">파란 글씨</span>는 누를 메뉴, 괄호 안 <span class="en">(영어)</span>는 화면이 영어로 보일 때의 이름입니다. 회색 상자의 <b>복사</b>를 누르면 값이 복사되니 붙여 넣기(Ctrl+V)만 하세요.</div>
+      <div class="warn"><b>메뉴 이름</b> Microsoft 화면은 업데이트로 이름이나 위치가 조금씩 바뀝니다. 한국어 이름이 안 보이면 괄호 안 영어 이름이나 비슷한 단어를 찾으세요. Power Apps는 왼쪽 <b>삽입(+)</b> 창의 <b>검색칸</b>에 이름을 치면 거의 다 찾을 수 있습니다.</div>
+    </div>
+
+    <!-- ===================================================== 0 -->
+    <section class="part" id="s0" data-title="시작 전 준비">
+      <h2><span class="no">0</span>시작 전 준비</h2>
+      <div class="goal">이 단계가 끝나면: 만들 때 필요한 것이 모두 손에 있습니다.</div>
+      <ol class="steps">
+        <li data-k="s0-1"><b>PC</b>와 <b>Microsoft Edge</b> 또는 <b>Chrome</b> 브라우저를 준비합니다. (휴대폰으로는 만들 수 없어요. 만든 앱을 쓰는 것만 휴대폰으로 가능합니다.)</li>
+        <li data-k="s0-2"><b>회사 계정</b>(회사 메일 주소)으로 <a href="https://www.office.com" target="_blank" rel="noopener">office.com</a>에 로그인되는지 확인합니다.</li>
+        <li data-k="s0-3"><b>기존 정리 파일</b>(엑셀)을 PC에 받아 둡니다. 지금 웹앱을 쓰고 있다면 웹앱의 <b>Excel 저장</b>으로 받은 파일도 됩니다.</li>
+        <li data-k="s0-4">같이 쓸 <b>파트원 10명의 이름(또는 메일)</b> 목록을 메모장에 적어 둡니다.</li>
+        <li data-k="s0-5">이 안내서를 <b>한쪽 화면</b>에, 작업 화면을 <b>다른 쪽</b>에 띄우면 편합니다. (모니터가 하나면 창 두 개를 좌우로 나누기: 창을 클릭하고 <b>Windows 키 + ←</b>, 다른 창은 <b>Windows 키 + →</b>)</li>
+      </ol>
+    </section>
+
+    <!-- ===================================================== 1 -->
+    <section class="part" id="s1" data-title="1. 팀과 SharePoint 사이트 만들기">
+      <h2><span class="no">1</span>Teams 팀 만들기 (= SharePoint 사이트)</h2>
+      <div class="goal">이 단계가 끝나면: 파트원이 모두 들어와 있는 <b>Teams 팀</b>이 생기고, 같이 만들어진 <b>SharePoint 사이트</b> 주소를 알게 됩니다. 팀 구성원은 자동으로 사이트의 데이터를 보고 고칠 수 있습니다.</div>
+      <div class="tip"><b>이미 쓰는 팀이 있다면</b> 그 팀을 그대로 써도 됩니다. 그 경우 4번 단계(사이트 열기)부터 하세요.</div>
+      <ol class="steps">
+        <li data-k="s1-1"><b>Teams</b> 앱(또는 <a href="https://teams.microsoft.com" target="_blank" rel="noopener">teams.microsoft.com</a>)을 엽니다. 왼쪽 세로 메뉴에서 <span class="path">팀 <span class="en">(Teams)</span></span>을 누릅니다.</li>
+        <li data-k="s1-2">팀 목록 위쪽의 <span class="path">+</span> (또는 <span class="path">팀 참가 또는 만들기 <span class="en">(Join or create a team)</span></span>) → <span class="path">팀 만들기 <span class="en">(Create team)</span></span>를 누릅니다.
+          <ul><li>팀 이름: <span class="v" data-c="방문업무">방문업무</span></li><li>공개 범위: <b>비공개</b> <span class="en">(Private)</span> → <span class="path">만들기</span></li></ul></li>
+        <li data-k="s1-3">구성원 추가 창이 뜨면 0단계에서 적어 둔 <b>파트원 이름을 하나씩 입력</b>하고 고른 뒤 <span class="path">추가 <span class="en">(Add)</span></span>를 누릅니다. (나중에 팀 이름 옆 <span class="path">⋯</span> → <span class="path">구성원 추가</span>로도 할 수 있어요.)</li>
+        <li data-k="s1-4">만든 팀의 <b>일반 <span class="en">(General)</span></b> 채널을 엽니다. 채널 위쪽 탭 중 <span class="path">파일 <span class="en">(Files)</span></span>(또는 <span class="path">공유됨 <span class="en">(Shared)</span></span>)을 누르고 → <span class="path">SharePoint에서 열기 <span class="en">(Open in SharePoint)</span></span>를 누릅니다. 안 보이면 채널 이름 옆 <span class="path">⋯</span> → <span class="path">SharePoint에서 열기</span>.</li>
+        <li data-k="s1-5">브라우저에 SharePoint 사이트가 열립니다. 주소창의 주소에서 <b>/sites/팀이름</b>까지를 복사해 메모장에 붙여 둡니다.
+          <div class="code">예) https://회사이름.sharepoint.com/sites/방문업무</div>
+          이 주소를 <b>사이트 주소</b>라고 부르겠습니다. 사이트 왼쪽 위 이름(방문업무)을 누르면 사이트 첫 화면(홈)으로 갑니다.</li>
+      </ol>
+    </section>
+
+    <!-- ===================================================== 2 -->
+    <section class="part" id="s2" data-title="2. SharePoint 목록 3개 만들기">
+      <h2><span class="no">2</span>SharePoint 목록 3개 만들기</h2>
+      <div class="goal">이 단계가 끝나면: 데이터를 담을 표(목록) 3개가 생깁니다 — <b>방문처</b>(업체 한 곳 = 한 줄), <b>방문후보일</b>(후보 날짜 하나 = 한 줄), <b>지역이동시간</b>(출발 시각 계산용).</div>
+      <div class="err"><b>꼭 지킬 것</b> 목록 이름과 열 이름은 <b>표에 적힌 글자 그대로</b>, <b>띄어쓰기 없이</b> 만드세요. 앱 수식이 이 이름을 그대로 씁니다. 선택 항목(예: 일정 조율 중)은 반대로 <b>띄어쓰기까지 똑같이</b> 입력해야 합니다. 헷갈리면 회색 글자를 눌러 복사해 붙여 넣으세요.</div>
+
+      <h3>2-1. 목록 만드는 방법 (세 목록 모두 같음)</h3>
+      <ol class="steps">
+        <li data-k="s2-a1">사이트 홈에서 위쪽 <span class="path">+ 새로 만들기 <span class="en">(+ New)</span></span> → <span class="path">목록 <span class="en">(List)</span></span>을 누릅니다.</li>
+        <li data-k="s2-a2"><span class="path">빈 목록 <span class="en">(Blank list)</span></span>을 누릅니다.</li>
+        <li data-k="s2-a3"><b>이름</b> 칸에 목록 이름(예: <span class="v" data-c="방문처">방문처</span>)을 넣고, <b>사이트 탐색에 표시</b>가 켜져 있는지 확인한 뒤 <span class="path">만들기 <span class="en">(Create)</span></span>를 누릅니다.</li>
+        <li data-k="s2-a4">빈 표가 열리고 <b>제목 <span class="en">(Title)</span></b>이라는 열 하나만 있습니다. 이 열의 이름을 바꿉니다: <b>제목</b> 글자를 누름 → <span class="path">열 설정 <span class="en">(Column settings)</span></span> → <span class="path">이름 바꾸기 <span class="en">(Rename)</span></span> → 새 이름 입력 → <span class="path">저장</span>.</li>
+      </ol>
+      <h3>2-2. 열(칸) 추가하는 방법</h3>
+      <ol class="steps">
+        <li data-k="s2-b1">표 맨 오른쪽 머리글의 <span class="path">+ 열 추가 <span class="en">(+ Add column)</span></span>를 누릅니다.</li>
+        <li data-k="s2-b2">종류를 고르고 <span class="path">다음 <span class="en">(Next)</span></span>을 누릅니다. 종류 이름: <b>한 줄 텍스트</b> <span class="en">(Single line of text)</span>, <b>여러 줄 텍스트</b> <span class="en">(Multiple lines of text)</span>, <b>선택</b> <span class="en">(Choice)</span>, <b>날짜 및 시간</b> <span class="en">(Date and time)</span>, <b>사용자</b> <span class="en">(Person)</span>, <b>숫자</b> <span class="en">(Number)</span>, <b>예/아니요</b> <span class="en">(Yes/No)</span></li>
+        <li data-k="s2-b3"><b>이름</b>을 넣고 아래 표의 <b>설정</b>대로 고친 뒤 <span class="path">저장</span>을 누릅니다.
+          <ul>
+            <li><b>선택</b> 종류: <b>선택 항목</b> 칸마다 하나씩 입력, 칸이 모자라면 <span class="path">+ 선택 항목 추가</span>. <b>기본값</b>을 표대로 고르고, <b>사용자 지정 값 입력 허용</b>은 끕니다.</li>
+            <li><b>날짜 및 시간</b> 종류: <b>시간 포함 <span class="en">(Include time)</span></b>을 <b>끕니다</b>.</li>
+            <li><b>여러 줄 텍스트</b> 종류: <span class="path">추가 옵션 <span class="en">(More options)</span></span>을 열어 <b>서식 있는 텍스트 사용 <span class="en">(Use enhanced rich text)</span></b>을 <b>끕니다</b>. (켜져 있으면 앱에 이상한 기호가 섞여요.)</li>
+            <li><b>사용자</b> 종류(참석자만): <span class="path">추가 옵션</span>에서 <b>여러 항목 선택 허용 <span class="en">(Allow multiple selections)</span></b>을 켭니다.</li>
+          </ul></li>
+        <li data-k="s2-b4"><b>표의 순서대로</b> 열을 만드세요. 3단계에서 엑셀을 붙여 넣을 때 이 순서가 맞아야 합니다.</li>
+      </ol>
+
+      <h3>2-3. 목록 ① 방문처</h3>
+      <p>목록 이름: <span class="v" data-c="방문처">방문처</span></p>
+      <div class="tw"><table>
+        <thead><tr><th>#</th><th>열 이름</th><th>종류</th><th>설정</th></tr></thead>
+        <tbody id="tblVisit"></tbody>
+      </table></div>
+      <label style="display:flex;gap:8px;align-items:center;font-size:14px;margin-top:6px"><input type="checkbox" class="ck" style="position:static" data-k="s2-visit"> 방문처 목록과 열 16개를 모두 만들었습니다</label>
+
+      <h3>2-4. 목록 ② 방문후보일</h3>
+      <p>목록 이름: <span class="v" data-c="방문후보일">방문후보일</span> — 업체마다 후보 날짜를 한 줄씩 담고, 세 부서가 각자 가능 여부를 고릅니다.</p>
+      <div class="tw"><table>
+        <thead><tr><th>#</th><th>열 이름</th><th>종류</th><th>설정</th></tr></thead>
+        <tbody id="tblCand"></tbody>
+      </table></div>
+      <label style="display:flex;gap:8px;align-items:center;font-size:14px;margin-top:6px"><input type="checkbox" class="ck" style="position:static" data-k="s2-cand"> 방문후보일 목록과 열 7개를 모두 만들었습니다</label>
+
+      <h3>2-5. 목록 ③ 지역이동시간</h3>
+      <p>목록 이름: <span class="v" data-c="지역이동시간">지역이동시간</span> — 세종 전의면에서 각 지역까지의 거리·시간(지금 웹앱과 같은 값)입니다.</p>
+      <div class="tw"><table>
+        <thead><tr><th>#</th><th>열 이름</th><th>종류</th><th>설정</th></tr></thead>
+        <tbody id="tblTrip"></tbody>
+      </table></div>
+      <label style="display:flex;gap:8px;align-items:center;font-size:14px;margin-top:6px"><input type="checkbox" class="ck" style="position:static" data-k="s2-trip"> 지역이동시간 목록과 열 3개를 모두 만들었습니다</label>
+    </section>
+
+    <!-- ===================================================== 3 -->
+    <section class="part" id="s3" data-title="3. 기존 데이터 옮기기">
+      <h2><span class="no">3</span>기존 데이터 옮기기</h2>
+      <div class="goal">이 단계가 끝나면: 지역 이동시간 54줄과 기존 정리 파일의 업체들이 SharePoint 목록에 들어갑니다. 방법은 <b>엑셀에서 복사 → 목록의 "그리드 보기"에 붙여 넣기</b>입니다.</div>
+
+      <h3>3-1. 지역이동시간 붙여 넣기 (먼저 연습)</h3>
+      <ol class="steps">
+        <li data-k="s3-1">아래 <b>지역 54줄 전체 복사</b> 단추를 누릅니다. (시·군을 먼저, 도를 나중에 넣어야 "화성"처럼 자세한 지역이 먼저 찾아집니다.)
+          <div style="margin:8px 0"><button class="cp" style="position:static;padding:6px 12px;font-size:13px" type="button" id="cpTrip">지역 54줄 전체 복사</button> <small>— 표 머리글 없이 데이터만 복사됩니다</small></div>
+          <details><summary style="cursor:pointer;font-size:13px;color:var(--ink2)">복사되는 내용 보기</summary><div class="tw"><table><thead><tr><th>지역</th><th>거리km</th><th>소요분</th></tr></thead><tbody id="tblTripData"></tbody></table></div></details></li>
+        <li data-k="s3-2">SharePoint의 <b>지역이동시간</b> 목록을 엽니다(사이트 왼쪽 메뉴에 이름이 보여요). 위쪽 <span class="path">그리드 보기에서 편집 <span class="en">(Edit in grid view)</span></span>을 누릅니다.</li>
+        <li data-k="s3-3">맨 아래 빈 줄(<b>새 항목 추가</b> 줄)의 <b>지역</b> 칸을 한 번 클릭하고 <b>Ctrl+V</b>를 누릅니다. 54줄이 한 번에 들어갑니다.</li>
+        <li data-k="s3-4">위쪽 <span class="path">그리드 보기 종료 <span class="en">(Exit grid view)</span></span>를 누릅니다. 54줄이 저장됐는지 확인합니다.</li>
+      </ol>
+
+      <h3>3-2. 기존 정리 파일 준비 (엑셀)</h3>
+      <ol class="steps">
+        <li data-k="s3-5">기존 정리 파일을 엑셀로 열고, <b>새 시트</b>를 하나 만듭니다(시트 탭 옆 <b>+</b>).</li>
+        <li data-k="s3-6">새 시트 <b>A1 칸</b>을 클릭하고, 아래 <b>머리글 복사</b>를 눌러 붙여 넣습니다. 13칸이 한 줄로 들어갑니다.
+          <div class="code" data-copy="업체명	상태	구분	소재지	업체담당자	연락처	의뢰제품	선정주체	선정사유	확정방문일	방문시간	방문결과	Capa요청일">업체명 | 상태 | 구분 | 소재지 | 업체담당자 | 연락처 | 의뢰제품 | 선정주체 | 선정사유 | 확정방문일 | 방문시간 | 방문결과 | Capa요청일</div></li>
+        <li data-k="s3-7">기존 시트에서 열마다 복사해 새 시트의 같은 이름 열 아래에 붙여 넣습니다. 없는 정보는 비워 둡니다.</li>
+        <li data-k="s3-8"><b>상태</b> 열의 값을 아래 표대로 바꿉니다. (엑셀 <b>Ctrl+H</b> = 바꾸기를 쓰면 빠릅니다. 띄어쓰기까지 정확히!)
+          <div class="tw"><table><thead><tr><th>기존 값</th><th>바꿀 값</th></tr></thead><tbody id="tblState"></tbody></table></div></li>
+        <li data-k="s3-9"><b>구분</b>은 <span class="v" data-c="OEM">OEM</span> / <span class="v" data-c="ODM">ODM</span> / <span class="v" data-c="OEM/ODM">OEM/ODM</span> 중 하나로, <b>선정주체</b>는 <span class="v" data-c="협력생산팀">협력생산팀</span> / <span class="v" data-c="품질보증팀">품질보증팀</span> 중 하나로 맞춥니다.</li>
+        <li data-k="s3-10"><b>날짜</b>(확정방문일, Capa요청일)는 <b>2026-11-05</b> 모양으로, <b>방문시간</b>은 <b>09:30</b>처럼 두 자리로 맞춥니다.</li>
+        <li data-k="s3-11"><b>소재지</b>에는 <b>시·군 이름</b>이 꼭 들어가게 합니다(예: 경기 화성시 향남읍). 출발 시각 계산에 씁니다.</li>
+      </ol>
+      <div class="tip"><b>가능일(자유 입력)은?</b> "11/12~14" 같은 기존 가능일은 옮길 칸이 없습니다. 아직 일정 조율 중인 업체만, 앱이 완성된 뒤 <b>일정 조율</b> 화면에서 후보일로 다시 넣으면 됩니다.</div>
+
+      <h3>3-3. 방문처에 붙여 넣기</h3>
+      <ol class="steps">
+        <li data-k="s3-12">엑셀 새 시트에서 <b>머리글을 뺀 데이터</b>만 선택합니다(A2부터 마지막 줄의 M열까지). 한 번에 <b>100줄 이하</b>씩 하는 게 안전합니다. <b>Ctrl+C</b>.</li>
+        <li data-k="s3-13">SharePoint <b>방문처</b> 목록 → <span class="path">그리드 보기에서 편집</span> → 맨 아래 빈 줄의 <b>업체명</b> 칸 클릭 → <b>Ctrl+V</b>.</li>
+        <li data-k="s3-14">빨간 표시가 있는 칸은 값이 선택 항목과 다른 것입니다. 칸을 눌러 목록에서 다시 고릅니다.</li>
+        <li data-k="s3-15"><span class="path">그리드 보기 종료</span>. <b>주담당</b>·<b>참석자</b>(사용자 열)는 붙여 넣기가 안 되니 나중에 앱이나 목록에서 한 명씩 고릅니다. 적어도 진행 중인 건은 <b>주담당</b>을 채워 두세요(앱의 "내가 처리할 업무"에 씁니다).</li>
+      </ol>
+      <div class="warn"><b>이관이 끝나면</b> 예전 웹앱이나 엑셀에는 더 이상 입력하지 마세요. 두 곳에 나눠 적으면 데이터가 어긋납니다.</div>
+    </section>
+
+    <!-- ===================================================== 4 -->
+    <section class="part" id="s4" data-title="4. 앱 만들고 데이터 연결">
+      <h2><span class="no">4</span>Power Apps 앱 만들고 데이터 연결하기</h2>
+      <div class="goal">이 단계가 끝나면: 빈 태블릿 앱이 열리고, 목록 3개가 연결되고, 화면 4개(이름만)가 준비됩니다.</div>
+
+      <h3>4-1. 빈 앱 만들기</h3>
+      <ol class="steps">
+        <li data-k="s4-1"><a href="https://make.powerapps.com" target="_blank" rel="noopener">make.powerapps.com</a>에 접속합니다(회사 계정 자동 로그인). 오른쪽 위 <b>환경 <span class="en">(Environment)</span></b>이 회사 기본 환경인지 봅니다. IT에서 정해 준 환경이 있으면 그걸 고르세요.</li>
+        <li data-k="s4-2">홈 화면의 <span class="path">빈 캔버스로 시작 <span class="en">(Start with a blank canvas)</span></span>을 누르고 <span class="path">태블릿 크기 <span class="en">(Tablet size)</span></span>를 고릅니다.
+          <ul><li>안 보이면: 왼쪽 메뉴 <span class="path">+ 만들기 <span class="en">(Create)</span></span> → <span class="path">빈 앱 <span class="en">(Blank app)</span></span> → <b>빈 캔버스 앱</b>의 <span class="path">만들기</span> → 형식 <b>태블릿</b>.</li></ul></li>
+        <li data-k="s4-3">앱 이름: <span class="v" data-c="방문예정처">방문예정처</span> → <span class="path">만들기</span>. 처음 열 때 환영 창이 뜨면 <span class="path">건너뛰기 <span class="en">(Skip)</span></span>를 누릅니다.</li>
+        <li data-k="s4-4">바로 <b>Ctrl+S</b>(저장)를 한 번 누릅니다. 앞으로 <b>10분마다 Ctrl+S</b>를 누르는 습관을 들이세요.</li>
+      </ol>
+
+      <h3>4-2. 편집 화면(Power Apps Studio) 둘러보기</h3>
+      <div class="studio" aria-label="Power Apps Studio 화면 구성 그림">
+        <div class="s-cmd"><span class="mk">1</span><span>+ 삽입</span><span>데이터 추가</span><span>새 화면 ▾</span><span>⚙ 설정</span><span class="r"><span class="mk">7</span>▶ 미리 보기 · 💾 저장 · ⬆ 게시</span></div>
+        <div class="s-fx"><span class="mk">2</span><span class="p">Text ▾</span><span class="f">fx&nbsp;&nbsp;"방문예정처"</span></div>
+        <div class="s-main">
+          <div class="s-rail"><span class="mk">3</span><span title="트리 뷰">≡</span><span title="삽입">+</span><span title="데이터">⛁</span></div>
+          <div class="s-tree"><span class="mk">4</span><b>트리 뷰</b><br>▾ App<br>&nbsp;▾ HomeScreen<br>&nbsp;&nbsp;&nbsp;lblAppTitle<br>&nbsp;&nbsp;ListScreen</div>
+          <div class="s-canvas"><span class="mk">5</span>&nbsp;캔버스 (화면을 그리는 곳)</div>
+          <div class="s-prop"><span class="mk">6</span><b>속성 창</b><br>위치 X [24] Y [12]<br>크기 W [400] H [40]<br>색 · 글꼴 …</div>
+        </div>
+      </div>
+      <div class="tw"><table>
+        <thead><tr><th>번호</th><th>이름</th><th>하는 일</th></tr></thead>
+        <tbody>
+          <tr><td class="num">1</td><td><b>명령 모음</b></td><td><b>+ 삽입</b>(컨트롤 넣기), <b>데이터 추가</b>, <b>새 화면</b>, <b>설정</b>이 있습니다.</td></tr>
+          <tr><td class="num">2</td><td><b>수식 입력줄</b></td><td>왼쪽 칸에서 <b>속성 이름</b>(Text, X, Items, OnSelect…)을 고르고, 오른쪽 <b>fx</b> 칸에 값을 넣습니다. <b>이 안내서의 표는 모두 여기에 넣는 값입니다.</b></td></tr>
+          <tr><td class="num">3</td><td><b>왼쪽 아이콘 줄</b></td><td>≡ <b>트리 뷰</b><span class="en">(Tree view)</span>, + <b>삽입</b><span class="en">(Insert)</span>, ⛁ <b>데이터</b><span class="en">(Data)</span> 창을 엽니다.</td></tr>
+          <tr><td class="num">4</td><td><b>트리 뷰</b></td><td>화면과 컨트롤 목록. <b>이름을 더블클릭</b>해서 바꿉니다.</td></tr>
+          <tr><td class="num">5</td><td><b>캔버스</b></td><td>화면 모양이 보이는 곳. 컨트롤을 클릭하면 선택됩니다.</td></tr>
+          <tr><td class="num">6</td><td><b>속성 창</b></td><td>선택한 컨트롤의 위치·크기·색을 숫자로 바꿀 수도 있습니다.</td></tr>
+          <tr><td class="num">7</td><td><b>미리 보기 · 저장 · 게시</b></td><td>▶(또는 <b>F5</b>)로 실제처럼 눌러 보기, 끝낼 땐 <b>Esc</b>. 게시는 10단계에서 합니다.</td></tr>
+        </tbody>
+      </table></div>
+      <div class="tip"><b>값 넣는 법 (가장 중요)</b> ① 캔버스나 트리 뷰에서 컨트롤을 클릭 → ② 수식 입력줄 왼쪽 칸을 눌러 속성(예: <b>Text</b>)을 고름 → ③ 오른쪽 fx 칸의 내용을 지우고, 안내서의 <b>복사</b>를 눌러 붙여 넣기(Ctrl+V) → ④ Enter.<br>
+        글자는 <b>"큰따옴표"</b> 안에 넣고, 숫자는 그냥 넣습니다. 복사 단추를 쓰면 따옴표까지 들어갑니다.</div>
+
+      <h3>4-3. 설정 바꾸기</h3>
+      <ol class="steps">
+        <li data-k="s4-5">명령 모음의 <span class="path">⚙ 설정 <span class="en">(Settings)</span></span>을 누릅니다. (안 보이면 <span class="path">⋯</span> 안에 있어요.)</li>
+        <li data-k="s4-6"><span class="path">일반 <span class="en">(General)</span></span> → <b>데이터 행 제한 <span class="en">(Data row limit)</span></b> 칸을 <span class="v" data-c="2000">2000</span>으로 바꾸고 창을 닫습니다. (업체가 2,000건이 넘기 전까지는 신경 쓰지 않아도 됩니다.)</li>
+      </ol>
+
+      <h3>4-4. 데이터 연결</h3>
+      <ol class="steps">
+        <li data-k="s4-7">왼쪽 아이콘 줄의 <span class="path">⛁ 데이터 <span class="en">(Data)</span></span> → <span class="path">+ 데이터 추가 <span class="en">(Add data)</span></span>를 누릅니다.</li>
+        <li data-k="s4-8">검색칸에 <span class="v" data-c="SharePoint">SharePoint</span>를 치고 <b>SharePoint</b>를 누릅니다. 연결이 없으면 <span class="path">연결 추가</span> → <span class="path">직접 연결 <span class="en">(Connect directly)</span></span> → <span class="path">연결</span>.</li>
+        <li data-k="s4-9">사이트 목록에서 <b>방문업무</b>를 고릅니다. 없으면 위쪽 칸에 1단계의 <b>사이트 주소</b>를 붙여 넣고 <span class="path">연결</span>.</li>
+        <li data-k="s4-10"><b>방문처</b>, <b>방문후보일</b>, <b>지역이동시간</b> 세 개에 체크 → <span class="path">연결 <span class="en">(Connect)</span></span>. 데이터 창에 세 이름이 보이면 성공입니다.</li>
+      </ol>
+      <div class="tip"><b>나중에 목록에 열을 추가했다면</b> 데이터 창에서 목록 이름 옆 <span class="path">⋯</span> → <span class="path">새로 고침 <span class="en">(Refresh)</span></span>을 눌러야 앱에 보입니다.</div>
+
+      <h3>4-5. 화면 4개 준비</h3>
+      <ol class="steps">
+        <li data-k="s4-11">트리 뷰(≡)를 엽니다. <b>Screen1</b>을 더블클릭해서 이름을 <span class="v" data-c="HomeScreen">HomeScreen</span>으로 바꿉니다.</li>
+        <li data-k="s4-12">명령 모음 <span class="path">새 화면 <span class="en">(New screen)</span></span> → <span class="path">빈 화면 <span class="en">(Blank)</span></span>을 <b>3번</b> 눌러 화면 3개를 더 만들고, 이름을 차례로 바꿉니다:
+          <div class="chips"><span class="v" data-c="ListScreen">ListScreen</span><span class="v" data-c="CoordScreen">CoordScreen</span><span class="v" data-c="ResultScreen">ResultScreen</span></div></li>
+        <li data-k="s4-13">네 화면 각각을 클릭하고 <b>Fill</b>(배경색) 속성에 <span class="v" data-c="RGBA(245, 245, 245, 1)">RGBA(245, 245, 245, 1)</span>을 넣습니다.</li>
+        <li data-k="s4-14">트리 뷰에서 <b>HomeScreen</b>을 다시 클릭해 둡니다. Ctrl+S.</li>
+      </ol>
+    </section>
+
+    <!-- ===================================================== 5 -->
+    <section class="part" id="s5" data-title="5. 공통 머리글 · 메뉴">
+      <h2><span class="no">5</span>공통 머리글과 왼쪽 메뉴 (HomeScreen)</h2>
+      <div class="goal">이 단계가 끝나면: 위에 파란 머리글, 왼쪽에 메뉴 단추 4개가 생기고, 나머지 3개 화면에도 똑같이 복사됩니다.</div>
+      <div class="tip"><b>컨트롤 넣는 공통 방법</b> 왼쪽 아이콘 줄 <b>+ 삽입</b> → 위쪽 <b>검색칸</b>에 이름 입력 → 목록에서 누르기. 같은 이름이 두 개 보이면 <b>"클래식(Classic)"</b> 쪽을 고르세요(이 안내서의 수식이 클래식 기준입니다). 넣은 뒤에는 <b>트리 뷰에서 이름을 바꾸세요</b>(카드의 굵은 영어 이름).</div>
+      <div data-wire="hdr"></div>
+      <div data-ctls="hdr"></div>
+      <h3>5-1. 다른 화면에 복사</h3>
+      <ol class="steps">
+        <li data-k="s5-c1">트리 뷰에서 <b>recHeader</b>를 클릭하고, <b>Ctrl 키를 누른 채</b> lblAppTitle, lblUser, recNav, btnNavHome, btnNavList, btnNavCoord, btnNavResult를 차례로 클릭합니다(8개 선택). <b>Ctrl+C</b>.</li>
+        <li data-k="s5-c2">트리 뷰에서 <b>ListScreen</b> 클릭 → <b>Ctrl+V</b>. 같은 자리에 붙습니다(이름 끝에 _1이 붙어도 괜찮아요).</li>
+        <li data-k="s5-c3"><b>CoordScreen</b>, <b>ResultScreen</b>에도 똑같이 <b>Ctrl+V</b>.</li>
+        <li data-k="s5-c4"><b>F5</b>(미리 보기)를 누르고 왼쪽 메뉴를 눌러 화면이 바뀌는지, 지금 화면 단추가 파랗게 표시되는지 확인합니다. <b>Esc</b>로 나와서 Ctrl+S.</li>
+      </ol>
+    </section>
+
+    <!-- ===================================================== 6 -->
+    <section class="part" id="s6" data-title="6. 홈 화면">
+      <h2><span class="no">6</span>홈 화면 (HomeScreen)</h2>
+      <div class="goal">이 단계가 끝나면: 요약 숫자 4개, <b>내가 처리할 업무</b>, <b>다가오는 방문</b>, <b>2주 달력</b>이 보입니다.</div>
+      <div data-wire="home"></div>
+      <div data-ctls="home"></div>
+      <div class="tip"><b>파란 밑줄 경고</b> 일부 수식 아래에 파란 물결 밑줄(위임 경고)이 생길 수 있습니다. 데이터가 2,000건 이하면 그대로 두어도 정상 동작합니다. <b>빨간</b> 밑줄만 고치면 됩니다(15단계 참고).</div>
+    </section>
+
+    <!-- ===================================================== 7 -->
+    <section class="part" id="s7" data-title="7. 방문 목록 화면">
+      <h2><span class="no">7</span>방문 목록 화면 (ListScreen)</h2>
+      <div class="goal">이 단계가 끝나면: 왼쪽에서 업체를 고르면 오른쪽에 상세가 나오고, 편집·저장·새로 만들기·삭제가 됩니다.</div>
+      <div class="tip">트리 뷰에서 <b>ListScreen</b>을 먼저 클릭하고 시작하세요. 머리글과 메뉴는 5단계에서 이미 복사돼 있습니다.</div>
+      <div data-wire="list"></div>
+      <div data-ctls="list"></div>
+      <h3>7-1. 양식에 보일 칸 고르기 (frmVisit)</h3>
+      <ol class="steps">
+        <li data-k="s7-f1"><b>frmVisit</b>을 클릭하고 오른쪽 속성 창에서 <span class="path">필드 편집 <span class="en">(Edit fields)</span></span>을 누릅니다.</li>
+        <li data-k="s7-f2"><span class="path">+ 필드 추가 <span class="en">(Add field)</span></span> → 다음을 체크하고 <span class="path">추가</span>: 업체명, 상태, 구분, 소재지, 업체담당자, 연락처, 의뢰제품, 주담당, 선정주체, 선정사유, 확정방문일, 방문시간, 참석자, 방문결과, Capa요청일</li>
+        <li data-k="s7-f3">목록에 <b>일정발송</b>, 첨부 파일 같은 칸이 있으면 그 칸 옆 <span class="path">⋯</span> → <span class="path">제거</span>. 칸은 끌어서 순서를 바꿀 수 있습니다.</li>
+        <li data-k="s7-f4">속성 창의 <b>열 <span class="en">(Columns)</span></b>을 <b>2</b>로 바꿉니다. F5로 업체를 눌러 보고, <b>편집 → 저장</b>이 되는지 확인합니다.</li>
+      </ol>
+    </section>
+
+    <!-- ===================================================== 8 -->
+    <section class="part" id="s8" data-title="8. 일정 조율 화면">
+      <h2><span class="no">8</span>일정 조율 화면 (CoordScreen)</h2>
+      <div class="goal">이 단계가 끝나면: 업체를 고르고 → 후보일을 추가하고 → 세 부서가 각자 칸에서 <b>가능/조건부/불가</b>를 고르면 → <b>공통</b> 날짜가 초록색으로 표시되고 → <b>방문 확정</b>을 누를 수 있습니다.</div>
+      <div class="tip">트리 뷰에서 <b>CoordScreen</b>을 먼저 클릭하세요. 이 화면은 <b>갤러리 안에 컨트롤 넣기</b>가 나옵니다: 갤러리를 클릭하면 첫 칸 왼쪽 위에 <b>연필(✏) 아이콘</b>이 생기는데, 그걸 누른 상태에서 삽입하면 갤러리 안(모든 줄에 반복)으로 들어갑니다.</div>
+      <div data-wire="coord"></div>
+      <div data-ctls="coord"></div>
+    </section>
+
+    <!-- ===================================================== 9 -->
+    <section class="part" id="s9" data-title="9. 방문 결과 화면">
+      <h2><span class="no">9</span>방문 결과 화면 (ResultScreen)</h2>
+      <div class="goal">이 단계가 끝나면: 방문일이 지났거나 판정이 남은 업체가 왼쪽에 모이고, 오른쪽에서 결과와 판정(상태)을 저장합니다.</div>
+      <div data-wire="result"></div>
+      <div data-ctls="result"></div>
+      <h3>9-1. 양식 칸 고르기 (frmResult)</h3>
+      <ol class="steps">
+        <li data-k="s9-f1"><b>frmResult</b> 클릭 → <span class="path">필드 편집</span> → 기본으로 들어온 칸을 모두 <span class="path">⋯ → 제거</span>.</li>
+        <li data-k="s9-f2"><span class="path">+ 필드 추가</span> → 업체명, 상태, 확정방문일, 참석자, 방문결과, Capa요청일 체크 → <span class="path">추가</span>. 열 <b>2</b>.</li>
+        <li data-k="s9-f3">F5로 업체를 고르고 방문결과를 쓰고 상태를 <b>Capa 회신 대기</b>로 바꿔 저장해 봅니다. 목록에서 사라지지 않고(아직 판정 전) 상태만 바뀌면 정상입니다.</li>
+      </ol>
+    </section>
+
+    <!-- ===================================================== 10 -->
+    <section class="part" id="s10" data-title="10. 게시 · 공유 · Teams">
+      <h2><span class="no">10</span>게시하고 파트원과 공유하기</h2>
+      <div class="goal">이 단계가 끝나면: 파트원이 Teams 탭과 휴대폰에서 앱을 엽니다.</div>
+      <ol class="steps">
+        <li data-k="s10-1"><b>Ctrl+S</b>로 저장 → 오른쪽 위 <span class="path">⬆ 게시 <span class="en">(Publish)</span></span> → <span class="path">이 버전 게시 <span class="en">(Publish this version)</span></span>. <b>앱을 고칠 때마다 게시해야</b> 파트원 화면에 반영됩니다.</li>
+        <li data-k="s10-2"><a href="https://make.powerapps.com" target="_blank" rel="noopener">make.powerapps.com</a> → 왼쪽 <span class="path">앱 <span class="en">(Apps)</span></span> → <b>방문예정처</b> 줄의 <span class="path">⋯</span> → <span class="path">공유 <span class="en">(Share)</span></span>.</li>
+        <li data-k="s10-3">이름 칸에 <b>방문업무</b>(팀 이름)를 쳐서 팀 전체를 고르거나, 파트원을 한 명씩 넣습니다. 나 말고 관리할 사람 1명은 <b>공동 소유자 <span class="en">(Co-owner)</span></b>에 체크하세요. <span class="path">공유</span>.</li>
+        <li data-k="s10-4">Teams의 <b>방문업무 → 일반</b> 채널 위쪽 탭 줄 끝의 <span class="path">+</span> (탭 추가) → 검색 <span class="v" data-c="Power Apps">Power Apps</span> → <b>Power Apps</b> → 앱 목록에서 <b>방문예정처</b> → <span class="path">저장</span>. 이제 채널 탭에서 바로 열립니다.</li>
+        <li data-k="s10-5">휴대폰: 앱스토어/플레이스토어에서 <b>Power Apps</b> 설치 → 회사 계정 로그인 → <b>방문예정처</b>. (태블릿 화면이 휴대폰에 맞게 작게 보입니다.)</li>
+      </ol>
+      <div class="warn"><b>파트원이 "데이터에 접근할 수 없음"을 본다면</b> 그 사람이 <b>방문업무 팀 구성원</b>인지 확인하세요. 팀 구성원이어야 SharePoint 목록을 고칠 수 있습니다.</div>
+    </section>
+
+    <!-- ===================================================== 11 -->
+    <section class="part" id="s11" data-title="11. 알림 흐름 ① 방문 확정">
+      <h2><span class="no">11</span>Power Automate 흐름 ① 방문 확정 → Outlook 일정 + Teams 알림</h2>
+      <div class="goal">이 단계가 끝나면: 앱에서 <b>방문 확정</b>을 누르면 참석자 일정표에 방문이 자동으로 잡히고, 팀 채널에 알림이 올라갑니다.</div>
+      <div class="tip"><b>Power Automate 화면에서 값 넣는 두 가지 방법</b> 칸을 클릭하면 옆에 아이콘이 나옵니다. <b>⚡ 번개</b> = <b>동적 콘텐츠</b>(목록의 칸 값, 예: 업체명)를 고르는 것, <b>fx</b> = <b>식</b>을 쓰는 것입니다.</div>
+      <ol class="steps">
+        <li data-k="s11-1"><a href="https://make.powerautomate.com" target="_blank" rel="noopener">make.powerautomate.com</a> → 왼쪽 <span class="path">+ 만들기 <span class="en">(Create)</span></span> → <span class="path">자동화된 클라우드 흐름 <span class="en">(Automated cloud flow)</span></span>.</li>
+        <li data-k="s11-2">흐름 이름: <span class="v" data-c="방문 확정 알림">방문 확정 알림</span>. 트리거 검색칸에 <span class="v" data-c="항목을 만들거나 수정한 경우">항목을 만들거나 수정한 경우</span> → <b>SharePoint</b>의 그 항목 선택 <span class="en">(When an item is created or modified)</span> → <span class="path">만들기</span>.</li>
+        <li data-k="s11-3">트리거 카드: <b>사이트 주소</b> = 방문업무, <b>목록 이름</b> = 방문처.</li>
+        <li data-k="s11-4">트리거 아래 <span class="path">+</span> → <span class="path">작업 추가</span> → 검색 <span class="v" data-c="조건">조건</span> → <b>조건 <span class="en">(Condition, 컨트롤)</span></b>.
+          <ul>
+            <li>첫 줄: 왼쪽 칸 ⚡ → <b>상태 Value</b> / 가운데 <b>같음 <span class="en">(is equal to)</span></b> / 오른쪽 <span class="v" data-c="방문 확정">방문 확정</span></li>
+            <li><span class="path">+ 새 항목 → 행 추가</span>로 둘째 줄: 왼쪽 ⚡ → <b>일정발송</b> / <b>같음</b> / 오른쪽 칸 클릭 → <b>fx</b> → <span class="v" data-c="false">false</span> 입력 → <span class="path">추가</span></li>
+            <li>두 줄을 묶는 글자가 <b>And</b>인지 확인합니다.</li>
+          </ul></li>
+        <li data-k="s11-5"><b>True</b> 칸 <span class="en">(If yes)</span>에서 <span class="path">+ 작업 추가</span> → 검색 <span class="v" data-c="선택">선택</span> → <b>선택 <span class="en">(Select, 데이터 작업)</span></b>.
+          <ul>
+            <li><b>시작 <span class="en">(From)</span></b>: ⚡ → <b>참석자</b> (목록 전체를 뜻하는 것)</li>
+            <li><b>맵 <span class="en">(Map)</span></b>: 오른쪽의 <span class="path">텍스트 모드로 전환</span> 단추를 누른 뒤 ⚡ → <b>참석자 Email</b></li>
+          </ul></li>
+        <li data-k="s11-6">그 아래 <span class="path">+ 작업 추가</span> → 검색 <span class="v" data-c="조인">조인</span> → <b>조인 <span class="en">(Join)</span></b>. <b>시작</b>: ⚡ → (선택의) <b>출력 <span class="en">(Output)</span></b>, <b>조인 문자</b>: <span class="v" data-c=";">;</span></li>
+        <li data-k="s11-7">그 아래 <span class="path">+ 작업 추가</span> → 검색 <span class="v" data-c="이벤트 만들기">이벤트 만들기</span> → <b>Office 365 Outlook</b>의 <b>이벤트 만들기 (V4) <span class="en">(Create event (V4))</span></b>.
+          <ul>
+            <li><b>일정표 ID</b>: <b>일정표 <span class="en">(Calendar)</span></b></li>
+            <li><b>제목</b>: <span class="v" data-c="[방문] ">[방문] </span> 입력 후 ⚡ → <b>업체명</b></li>
+            <li><b>시작 시간</b>: 칸 클릭 → <b>fx</b> → 아래 순서대로 넣고 <span class="path">추가</span>
+              <div class="code" data-copy="concat(formatDateTime(">① 입력: concat(formatDateTime(</div>
+              ② 같은 창의 <b>동적 콘텐츠</b> 탭 → <b>확정방문일</b> 클릭
+              <div class="code" data-copy=", 'yyyy-MM-dd'), 'T', ">③ 이어서 입력: , 'yyyy-MM-dd'), 'T', </div>
+              ④ 동적 콘텐츠 → <b>방문시간</b> 클릭
+              <div class="code" data-copy=", ':00')">⑤ 이어서 입력: , ':00')</div></li>
+            <li><b>종료 시간</b>: 같은 방법, 다만 맨 앞과 맨 끝이 다릅니다 (방문 2시간으로 잡기)
+              <div class="code" data-copy="addHours(concat(formatDateTime(">① 입력: addHours(concat(formatDateTime(</div>
+              ② 확정방문일 → ③ <span class="v" data-c=", 'yyyy-MM-dd'), 'T', ">, 'yyyy-MM-dd'), 'T', </span> → ④ 방문시간 →
+              <div class="code" data-copy=", ':00'), 2)">⑤ 이어서 입력: , ':00'), 2)</div></li>
+            <li><b>표준 시간대</b>: <b>(UTC+09:00) 서울</b></li>
+            <li><span class="path">고급 매개 변수 표시</span>를 열고 <b>필수 참석자 <span class="en">(Required attendees)</span></b>: ⚡ → (조인의) <b>출력</b>, <b>위치</b>: ⚡ → <b>소재지</b></li>
+          </ul></li>
+        <li data-k="s11-8">그 아래 <span class="path">+ 작업 추가</span> → 검색 <span class="v" data-c="채팅 또는 채널에서 메시지 게시">채팅 또는 채널에서 메시지 게시</span> → <b>Microsoft Teams</b>의 그 항목 <span class="en">(Post message in a chat or channel)</span>.
+          <ul><li><b>게시자</b>: 흐름 봇 <span class="en">(Flow bot)</span> / <b>게시 위치</b>: 채널 <span class="en">(Channel)</span> / <b>팀</b>: 방문업무 / <b>채널</b>: 일반</li>
+          <li><b>메시지</b>: <span class="v" data-c="[방문 확정] ">[방문 확정] </span> → ⚡ 업체명 → 띄어쓰기 → ⚡ 확정방문일 → 띄어쓰기 → ⚡ 방문시간 → <span class="v" data-c=" · ">&nbsp;·&nbsp;</span> → ⚡ 소재지</li></ul></li>
+        <li data-k="s11-9">그 아래 <span class="path">+ 작업 추가</span> → 검색 <span class="v" data-c="항목 업데이트">항목 업데이트</span> → <b>SharePoint 항목 업데이트 <span class="en">(Update item)</span></b>.
+          <ul><li><b>사이트 주소</b>: 방문업무 / <b>목록 이름</b>: 방문처 / <b>ID</b>: ⚡ → <b>ID</b> / <b>업체명</b>: ⚡ → <b>업체명</b> / <b>일정발송</b>: <b>예 <span class="en">(Yes)</span></b></li></ul>
+          <small>이 단계 덕분에 같은 방문에 일정이 두 번 생기지 않습니다.</small></li>
+        <li data-k="s11-10">오른쪽 위 <span class="path">저장 <span class="en">(Save)</span></span>. 그다음 <span class="path">테스트 <span class="en">(Test)</span></span> → <b>수동으로</b> → <span class="path">테스트</span>를 누르고, 앱에서 아무 업체나 <b>방문 확정</b>을 해 봅니다. 몇 분 안에 내 Outlook 일정과 Teams 채널에 생기면 성공입니다.</li>
+      </ol>
+    </section>
+
+    <!-- ===================================================== 12 -->
+    <section class="part" id="s12" data-title="12. 알림 흐름 ② Capa 7일">
+      <h2><span class="no">12</span>Power Automate 흐름 ② Capa 요청 7일 경과 → 주담당에게 알림</h2>
+      <div class="goal">이 단계가 끝나면: 매일 아침 8시, Capa 회신을 기다린 지 7일이 지난 업체를 주담당에게 Teams로 알려 줍니다.</div>
+      <ol class="steps">
+        <li data-k="s12-1"><span class="path">+ 만들기</span> → <span class="path">예약된 클라우드 흐름 <span class="en">(Scheduled cloud flow)</span></span>. 이름 <span class="v" data-c="Capa 회신 독촉">Capa 회신 독촉</span>, 시작: 내일 날짜 <b>오전 8:00</b>, 반복 간격: <b>1 일</b> → <span class="path">만들기</span>.</li>
+        <li data-k="s12-2"><b>되풀이 <span class="en">(Recurrence)</span></b> 카드를 눌러 <b>표준 시간대</b>를 <b>(UTC+09:00) 서울</b>로 바꿉니다. (고급 매개 변수 안에 있어요.)</li>
+        <li data-k="s12-3"><span class="path">+ 작업 추가</span> → 검색 <span class="v" data-c="항목 가져오기">항목 가져오기</span> → <b>SharePoint 항목 가져오기 <span class="en">(Get items)</span></b> → 사이트 방문업무, 목록 방문처. <span class="path">고급 매개 변수 표시</span>를 열고 <b>상위 개수 <span class="en">(Top Count)</span></b>에 <span class="v" data-c="1000">1000</span>을 넣습니다. (기본값은 100건까지만 가져와서, 업체가 많아지면 빠지는 건이 생겨요.)</li>
+        <li data-k="s12-4"><span class="path">+ 작업 추가</span> → <b>조건</b>.
+          <ul>
+            <li>첫 줄: ⚡ → <b>상태 Value</b> / 같음 / <span class="v" data-c="Capa 회신 대기">Capa 회신 대기</span> <small>(이때 자동으로 <b>각각에 적용 <span class="en">(For each)</span></b> 상자가 생기고 조건이 그 안으로 들어갑니다. 정상입니다.)</small></li>
+            <li>둘째 줄: ⚡ → <b>Capa요청일</b> / <b>작거나 같음 <span class="en">(is less than or equal to)</span></b> / 오른쪽 칸 <b>fx</b> → 아래 식 → <span class="path">추가</span>
+              <div class="code">formatDateTime(addDays(utcNow(), -7), 'yyyy-MM-dd')</div></li>
+          </ul></li>
+        <li data-k="s12-5"><b>True</b> 칸 → <span class="path">+ 작업 추가</span> → <b>채팅 또는 채널에서 메시지 게시</b>.
+          <ul><li><b>게시자</b>: 흐름 봇 / <b>게시 위치</b>: <b>흐름 봇과 채팅 <span class="en">(Chat with Flow bot)</span></b> / <b>받는 사람</b>: ⚡ → <b>주담당 Email</b></li>
+          <li><b>메시지</b>: <span class="v" data-c="[Capa 회신 확인] ">[Capa 회신 확인] </span> → ⚡ 업체명 → <span class="v" data-c=" — Capa 요청일 "> — Capa 요청일 </span> → ⚡ Capa요청일 → <span class="v" data-c=" 이후 7일이 지났습니다."> 이후 7일이 지났습니다.</span></li></ul></li>
+        <li data-k="s12-6"><span class="path">저장</span> → <span class="path">테스트</span> → <b>수동으로</b> → <span class="path">흐름 실행</span>. Capa요청일이 7일 넘은 업체가 있으면 주담당에게 메시지가 갑니다.</li>
+      </ol>
+    </section>
+
+    <!-- ===================================================== 13 -->
+    <section class="part" id="s13" data-title="13. 알림 흐름 ③ 후보일 응답 요청">
+      <h2><span class="no">13</span>Power Automate 흐름 ③ 후보일 추가 → 응답 요청 알림</h2>
+      <div class="goal">이 단계가 끝나면: 앱에서 후보일을 추가하면 팀 채널에 "가능 여부를 골라 주세요" 메시지가 올라갑니다.</div>
+      <ol class="steps">
+        <li data-k="s13-1"><span class="path">+ 만들기</span> → <b>자동화된 클라우드 흐름</b>. 이름 <span class="v" data-c="후보일 응답 요청">후보일 응답 요청</span>, 트리거 <b>SharePoint – 항목을 만든 경우 <span class="en">(When an item is created)</span></b> → <span class="path">만들기</span>.</li>
+        <li data-k="s13-2">사이트 방문업무, 목록 <b>방문후보일</b>.</li>
+        <li data-k="s13-3"><span class="path">+ 작업 추가</span> → <b>채팅 또는 채널에서 메시지 게시</b> → 흐름 봇 / 채널 / 방문업무 / 일반.
+          <ul><li><b>메시지</b>: <span class="v" data-c="[응답 요청] ">[응답 요청] </span> → ⚡ 업체명 → 띄어쓰기 → ⚡ 후보일 → 띄어쓰기 → ⚡ 시간대 → <span class="v" data-c=" — 앱의 '일정 조율'에서 가능 여부를 골라 주세요."> — 앱의 '일정 조율'에서 가능 여부를 골라 주세요.</span></li></ul></li>
+        <li data-k="s13-4"><span class="path">저장</span>. 앱에서 후보일을 하나 추가해 채널에 메시지가 오는지 확인합니다.</li>
+      </ol>
+      <div class="tip"><b>흐름 관리자 추가</b> 흐름마다 오른쪽 위 <span class="path">⋯</span> 또는 흐름 세부 정보의 <b>소유자 <span class="en">(Owners)</span></b> → <span class="path">편집</span>에서 한 명을 더 넣어 두세요. 만든 사람이 자리를 비워도 흐름을 고칠 수 있습니다.</div>
+    </section>
+
+    <!-- ===================================================== 14 -->
+    <section class="part" id="s14" data-title="14. 파트원 사용법">
+      <h2><span class="no">14</span>파트원에게 이렇게 알려 주세요</h2>
+      <div class="tw"><table>
+        <thead><tr><th>누가</th><th>언제</th><th>어디서 무엇을</th></tr></thead>
+        <tbody>
+          <tr><td>주담당</td><td>새 업체가 생기면</td><td><b>방문 목록 → + 새 방문처</b>로 등록하고 <b>주담당</b>에 자기 이름을 고릅니다.</td></tr>
+          <tr><td>주담당</td><td>업체와 날짜를 협의하면</td><td><b>일정 조율</b>에서 업체를 고르고 후보일을 추가, <b>업체</b> 칸에 업체 답을 고릅니다.</td></tr>
+          <tr><td>협력생산 · 품질보증</td><td>Teams에 "응답 요청"이 오면</td><td><b>일정 조율</b>에서 자기 부서 칸만 <b>가능/조건부/불가</b>로 고릅니다.</td></tr>
+          <tr><td>주담당</td><td>초록색 "✓ 공통"이 생기면</td><td>아래 공통 날짜를 누르고 시간을 넣고 <b>방문 확정</b>. 일정표와 채널 알림은 자동입니다.</td></tr>
+          <tr><td>방문자</td><td>방문 다녀온 뒤</td><td><b>방문 결과</b>에서 결과를 쓰고 <b>상태</b>를 방문 완료 / Capa 회신 대기 / 등록 완료 / 등록 불가 중 하나로 저장합니다.</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <!-- ===================================================== 15 -->
+    <section class="part" id="s15" data-title="15. 막혔을 때">
+      <h2><span class="no">15</span>막혔을 때 (자주 생기는 문제)</h2>
+      <div class="tw"><table>
+        <thead><tr><th>증상</th><th>이유와 해결</th></tr></thead>
+        <tbody>
+          <tr><td>수식에 <b>빨간 물결 밑줄</b></td><td>① 이름 오타: 컨트롤 이름(트리 뷰)과 열 이름이 안내서와 똑같은지 확인. ② 아직 안 만든 컨트롤을 가리키는 경우: 그 컨트롤을 만들면 사라집니다. ③ 목록에 열을 나중에 추가했다면 데이터 창에서 목록 <b>⋯ → 새로 고침</b>.</td></tr>
+          <tr><td><b>업체명</b>이 없다고 나옴</td><td>"제목" 열 이름을 바꾸면 앱에서 <b>Title</b>로 보일 때가 있습니다. 수식의 <b>업체명</b>을 <b>Title</b>로 바꿔 보세요.</td></tr>
+          <tr><td><b>파란 물결 밑줄</b></td><td>위임 경고입니다. 데이터 2,000건 이하면 무시해도 됩니다(4-3에서 2000으로 바꿨는지 확인).</td></tr>
+          <tr><td>이름에 오류(한글 이름 인식 안 됨)</td><td>이름을 작은따옴표로 감싸 보세요: <span class="v" data-c="'방문처'">'방문처'</span>, <span class="v" data-c="'확정방문일'">'확정방문일'</span></td></tr>
+          <tr><td>갤러리에 아무것도 안 보임</td><td>Items 수식의 조건에 맞는 데이터가 없는 경우입니다. 예: 내가 처리할 업무는 <b>주담당</b>이 나로 지정된 업체만 나옵니다.</td></tr>
+          <tr><td>미리 보기에서 단추가 안 눌림</td><td>편집 상태에서는 <b>Alt 키를 누른 채</b> 클릭하거나 <b>F5</b>로 미리 보기에서 누르세요.</td></tr>
+          <tr><td>파트원 화면에 고친 내용이 안 보임</td><td><b>게시</b>를 안 한 경우입니다(10-1). 파트원은 앱을 닫았다 다시 엽니다.</td></tr>
+          <tr><td>파트원이 데이터를 못 봄</td><td>방문업무 <b>팀 구성원</b>인지 확인합니다.</td></tr>
+          <tr><td>흐름 실패: 시간 형식 오류</td><td>방문시간이 <b>09:30</b>처럼 두 자리여야 합니다. 앱의 방문 확정 단추는 자동으로 맞춰 줍니다. 목록에 직접 쓴 값을 확인하세요.</td></tr>
+          <tr><td>같은 방문에 일정이 계속 생김</td><td>흐름 ①의 조건 둘째 줄(일정발송 = false)과 마지막 <b>항목 업데이트(일정발송 = 예)</b>를 확인합니다.</td></tr>
+          <tr><td>실수로 업체를 지움</td><td>SharePoint 사이트 오른쪽 위 ⚙ → <b>사이트 콘텐츠</b> → <b>휴지통</b>에서 <b>복원</b>합니다.</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <p style="font-size:12px;color:var(--ink3);margin-top:8px">이 안내서는 Power Apps 캔버스 앱(태블릿, 클래식 컨트롤), SharePoint 목록, Power Automate 기준입니다. Microsoft 화면 이름은 업데이트로 바뀔 수 있습니다.</p>
+  </main>
+</div>
+
+<script>
+/* ================= 데이터: 목록 열 ================= */
+const STATES=["일정 조율 중","방문 확정","방문 완료","Capa 회신 대기","등록 완료","등록 불가","방문 취소","보류"];
+const RESP=["미응답","가능","조건부","불가"];
+const LIST_VISIT=[
+  ["업체명","(제목 열 이름 바꾸기)","2-1의 4번처럼 <b>제목</b> → 이름 바꾸기"],
+  ["상태","선택","선택 항목: "+STATES.map(s=>`<span class="v" data-c="${s}">${s}</span>`).join(" ")+"<br>기본값: <b>일정 조율 중</b>"],
+  ["구분","선택",`선택 항목: <span class="v" data-c="OEM">OEM</span> <span class="v" data-c="ODM">ODM</span> <span class="v" data-c="OEM/ODM">OEM/ODM</span>`],
+  ["소재지","한 줄 텍스트","—"],
+  ["업체담당자","한 줄 텍스트","—"],
+  ["연락처","한 줄 텍스트","—"],
+  ["의뢰제품","한 줄 텍스트","—"],
+  ["선정주체","선택",`선택 항목: <span class="v" data-c="협력생산팀">협력생산팀</span> <span class="v" data-c="품질보증팀">품질보증팀</span>`],
+  ["선정사유","한 줄 텍스트","—"],
+  ["확정방문일","날짜 및 시간","<b>시간 포함 끄기</b>"],
+  ["방문시간","한 줄 텍스트","09:30 처럼 씁니다"],
+  ["방문결과","여러 줄 텍스트","<b>서식 있는 텍스트 끄기</b>"],
+  ["Capa요청일","날짜 및 시간","<b>시간 포함 끄기</b>"],
+  ["주담당","사용자","한 명만"],
+  ["참석자","사용자","<b>여러 항목 선택 허용 켜기</b>"],
+  ["일정발송","예/아니요","기본값 <b>아니요</b> (알림 흐름용)"]
+];
+const LIST_CAND=[
+  ["업체명","(제목 열 이름 바꾸기)","—"],
+  ["방문처ID","숫자","소수 자릿수 <b>0</b> (추가 옵션 안에 있어요)"],
+  ["후보일","날짜 및 시간","<b>시간 포함 끄기</b>"],
+  ["시간대","한 줄 텍스트","예: 10:00–12:00"],
+  ["업체응답","선택","선택 항목: "+RESP.map(s=>`<span class="v" data-c="${s}">${s}</span>`).join(" ")+" / 기본값 <b>미응답</b>"],
+  ["협생응답","선택","업체응답과 같게"],
+  ["품보응답","선택","업체응답과 같게"]
+];
+const LIST_TRIP=[["지역","(제목 열 이름 바꾸기)","—"],["거리km","숫자","소수 자릿수 0"],["소요분","숫자","소수 자릿수 0"]];
+const TRIP=[["안산",145,105],["부천",130,100],["수원",105,80],["화성",110,85],["평택",75,62],["남원",190,135],
+ ["김포",165,120],["인천",150,110],["청주",30,32],["음성",55,48],["천안",30,32],["아산",35,35],["대전",45,40],
+ ["구미",145,112],["김해",260,185],["파주",180,135],["시흥",140,103],["군포",125,93],["용인",100,78],
+ ["성남",115,88],["오산",85,68],["안성",60,52],["이천",110,85],["진천",45,40],["증평",45,42],["제천",110,90],
+ ["원주",130,100],["대구",180,135],["부산",280,195],["양산",265,188],["전주",110,85],["익산",95,78],
+ ["논산",45,42],["공주",25,28],["세종",12,18],["당진",70,60],["홍성",70,62],["예산",55,50],["서산",85,70],
+ ["보령",90,75],["광주",180,135],["서울",130,100],["고양",165,120],["의정부",165,122],["춘천",160,120],
+ ["경기",120,90],["충북",50,45],["충남",45,42],["경북",160,120],["경남",250,180],["전북",110,85],["전남",200,150],["강원",150,115],["울산",270,190]];
+const STATE_MAP=[["일정협의중 · 일정협의 · 요청접수","일정 조율 중"],["방문예정 · 확정 · 재방문예정","방문 확정"],["방문완료","방문 완료"],
+ ["Capa회신대기중","Capa 회신 대기"],["등록완료","등록 완료"],["등록불가","등록 불가"],["방문취소","방문 취소"],["기타 · 보류","보류"]];
+
+/* ================= 데이터: 화면별 컨트롤 =================
+   t: 종류, wf: 배치도 [x,y,w,h] (1366×768 기준), p: [속성, 값], in: 갤러리 안에 넣는 경우 부모 이름 */
+const BLUE="RGBA(15, 108, 189, 1)", GRAY="RGBA(97, 97, 97, 1)", WHITE="Color.White", LINE="RGBA(224, 224, 224, 1)";
+const COND=`ThisItem.업체응답.Value in ["가능", "조건부"] && ThisItem.협생응답.Value in ["가능", "조건부"] && ThisItem.품보응답.Value in ["가능", "조건부"]`;
+const nav=(n,txt,y,scr)=>({n,t:"button",d:`메뉴 단추 · ${txt}`,wf:[8,y,184,44],
+  copy:n==="btnNavHome"?null:"btnNavHome",
+  p:(n==="btnNavHome"?[["Text",`"${txt}"`],["X","8"],["Y",String(y)],["Width","184"],["Height","44"],["Align","Align.Left"],["PaddingLeft","16"],["BorderThickness","0"],["HoverFill","RGBA(245, 245, 245, 1)"],["HoverColor","RGBA(36, 36, 36, 1)"]]:[["Text",`"${txt}"`],["Y",String(y)]])
+   .concat([["Fill",`If(App.ActiveScreen = ${scr}, RGBA(235, 243, 252, 1), Color.White)`],["Color",`If(App.ActiveScreen = ${scr}, ${BLUE}, RGBA(66, 66, 66, 1))`],["OnSelect",`Navigate(${scr}, ScreenTransition.None)`]]),
+  note:n==="btnNavHome"?"Fill과 Color 수식은 \"지금 보고 있는 화면이면 파란색\"이라는 뜻입니다.":null});
+const SCREENS={
+ hdr:[
+  {n:"recHeader",t:"rect",d:"파란 머리글 띠",wf:[0,0,1366,64],cls:"hdr",p:[["X","0"],["Y","0"],["Width","Parent.Width"],["Height","64"],["Fill",BLUE]]},
+  {n:"lblAppTitle",t:"label",d:"앱 제목",wf:[24,12,400,40],p:[["Text",`"방문예정처"`],["X","24"],["Y","12"],["Width","400"],["Height","40"],["Size","20"],["FontWeight","FontWeight.Semibold"],["Color",WHITE]]},
+  {n:"lblUser",t:"label",d:"로그인한 사람 이름",wf:[942,12,400,40],p:[["Text","User().FullName"],["X","Parent.Width - 424"],["Y","12"],["Width","400"],["Height","40"],["Align","Align.Right"],["Color",WHITE]]},
+  {n:"recNav",t:"rect",d:"왼쪽 메뉴 배경",wf:[0,64,200,704],p:[["X","0"],["Y","64"],["Width","200"],["Height","Parent.Height - 64"],["Fill",WHITE],["BorderColor",LINE],["BorderThickness","1"]]},
+  nav("btnNavHome","홈",80,"HomeScreen"),
+  nav("btnNavList","방문 목록",128,"ListScreen"),
+  nav("btnNavCoord","일정 조율",176,"CoordScreen"),
+  nav("btnNavResult","방문 결과",224,"ResultScreen")
+ ],
+ home:[
+  {n:"recTile1",t:"rect",d:"요약 칸 1 배경",wf:[220,84,268,100],p:[["X","220"],["Y","84"],["Width","268"],["Height","100"],["Fill",WHITE],["BorderColor",LINE],["BorderThickness","1"]]},
+  {n:"lblTile1Title",t:"label",d:"요약 칸 1 제목",wf:[236,92,236,24],p:[["Text",`"일정 조율 중"`],["X","236"],["Y","92"],["Width","236"],["Height","24"],["Size","12"],["Color",GRAY]]},
+  {n:"lblTile1Num",t:"label",d:"요약 칸 1 숫자",wf:[236,118,236,52],p:[["Text",`CountRows(Filter(방문처, 상태.Value = "일정 조율 중")) & " 건"`],["X","236"],["Y","118"],["Width","236"],["Height","52"],["Size","26"],["FontWeight","FontWeight.Bold"]]},
+  {n:"요약 칸 2·3·4",t:"copy3",d:"요약 칸 1을 복사해서 만들기",wf:null,custom:true},
+  {n:"lblTodoTitle",t:"label",d:"제목 글자",wf:[220,200,600,32],p:[["Text",`"내가 처리할 업무"`],["X","220"],["Y","200"],["Width","600"],["Height","32"],["Size","15"],["FontWeight","FontWeight.Semibold"]]},
+  {n:"galMyTasks",t:"galV",d:"내가 처리할 업무 목록",wf:[220,236,660,304],p:[
+    ["Items",`Sort(Filter(방문처, 주담당.Email = User().Email, Not(상태.Value in ["등록 완료", "등록 불가", "방문 취소", "보류"])), 확정방문일, SortOrder.Ascending)`],
+    ["X","220"],["Y","236"],["Width","660"],["Height","304"],["TemplateSize","64"],["Fill",WHITE],
+    ["OnSelect",`Set(varVisit, ThisItem); Navigate(Switch(ThisItem.상태.Value, "일정 조율 중", CoordScreen, "방문 확정", If(ThisItem.확정방문일 < Today(), ResultScreen, ListScreen), ResultScreen), ScreenTransition.None)`]],
+    note:"누르면 그 업체의 할 일에 맞는 화면으로 이동합니다."},
+  {n:"제목 글자",t:"galTitle",in:"galMyTasks",d:"갤러리 첫 줄의 큰 글자",p:[["Text","ThisItem.업체명"]]},
+  {n:"부제목 글자",t:"galSub",in:"galMyTasks",d:"갤러리 첫 줄의 작은 글자",p:[["Text",`Switch(ThisItem.상태.Value, "일정 조율 중", "후보일 조율 · 방문일 확정", "방문 확정", If(ThisItem.확정방문일 < Today(), "방문 결과 입력", "방문 준비 (D-" & DateDiff(Today(), ThisItem.확정방문일) & ")"), "방문 완료", If(IsBlank(ThisItem.방문결과), "방문 결과 입력", "등록 여부 판정"), "Capa 회신 대기", "Capa 회신 확인 (" & DateDiff(ThisItem.Capa요청일, Today()) & "일 경과)", "")`]]},
+  {n:"lblUpTitle",t:"label",d:"제목 글자",wf:[900,200,446,32],p:[["Text",`"다가오는 방문"`],["X","900"],["Y","200"],["Width","446"],["Height","32"],["Size","15"],["FontWeight","FontWeight.Semibold"]]},
+  {n:"galUpcoming",t:"galV",d:"확정된 방문 목록",wf:[900,236,446,304],p:[
+    ["Items",`Sort(Filter(방문처, 상태.Value = "방문 확정", 확정방문일 >= Today()), 확정방문일, SortOrder.Ascending)`],
+    ["X","900"],["Y","236"],["Width","446"],["Height","304"],["TemplateSize","64"],["Fill",WHITE],
+    ["OnSelect",`Set(varVisit, ThisItem); Navigate(ListScreen, ScreenTransition.None)`]]},
+  {n:"제목 글자",t:"galTitle",in:"galUpcoming",d:"큰 글자",p:[["Text","ThisItem.업체명"]]},
+  {n:"부제목 글자",t:"galSub",in:"galUpcoming",d:"작은 글자",p:[["Text",`Text(ThisItem.확정방문일, "[$-ko-KR]m/d (ddd)") & " " & ThisItem.방문시간 & " · D-" & DateDiff(Today(), ThisItem.확정방문일)`]]},
+  {n:"lblCalTitle",t:"label",d:"제목 글자",wf:[220,556,600,30],p:[["Text",`"방문 확정 일정 (이번 주부터 2주)"`],["X","220"],["Y","556"],["Width","600"],["Height","30"],["Size","15"],["FontWeight","FontWeight.Semibold"]]},
+  {n:"galCal",t:"galBH",d:"2주 달력 (14칸)",wf:[220,590,1126,150],p:[
+    ["Items",`With({mon: DateAdd(Today(), -(Weekday(Today(), StartOfWeek.Monday) - 1), TimeUnit.Days)}, ForAll(Sequence(14, 0), DateAdd(mon, Value, TimeUnit.Days)))`],
+    ["X","220"],["Y","590"],["Width","1126"],["Height","150"],["TemplateSize","80"],["TemplatePadding","2"],
+    ["TemplateFill",`If(ThisItem.Value = Today(), RGBA(235, 243, 252, 1), Color.White)`]],
+    note:"이번 주 월요일부터 14일을 만드는 수식입니다. 오늘 칸은 연한 파란색이 됩니다."},
+  {n:"lblCalDay",t:"label",in:"galCal",d:"요일·날짜",p:[["Text",`Text(ThisItem.Value, "[$-ko-KR]ddd d")`],["X","4"],["Y","4"],["Width","72"],["Height","22"],["Size","11"],["FontWeight","FontWeight.Semibold"]]},
+  {n:"lblCalNames",t:"label",in:"galCal",d:"그날 방문 업체 이름",p:[["Text",`Concat(Filter(방문처, 확정방문일 = ThisItem.Value, 상태.Value <> "방문 취소"), 업체명, Char(10))`],["X","4"],["Y","28"],["Width","72"],["Height","116"],["Size","10"],["VerticalAlign","VerticalAlign.Top"]]}
+ ],
+ list:[
+  {n:"txtSearch",t:"text",d:"검색칸",wf:[220,84,400,40],p:[["Default",`""`],["HintText",`"업체명 · 지역 검색"`],["X","220"],["Y","84"],["Width","400"],["Height","40"]]},
+  {n:"ddStatus",t:"dd",d:"상태 고르기",wf:[220,134,260,40],p:[["Items",`["전체", "일정 조율 중", "방문 확정", "방문 완료", "Capa 회신 대기", "등록 완료", "등록 불가", "방문 취소", "보류"]`],["Default",`"전체"`],["X","220"],["Y","134"],["Width","260"],["Height","40"]]},
+  {n:"galVisits",t:"galV",d:"업체 목록",wf:[220,184,400,564],p:[
+    ["Items",`Filter(방문처, ddStatus.Selected.Value = "전체" || 상태.Value = ddStatus.Selected.Value, IsBlank(txtSearch.Text) || txtSearch.Text in 업체명 || txtSearch.Text in 소재지)`],
+    ["X","220"],["Y","184"],["Width","400"],["Height","564"],["TemplateSize","64"],["Fill",WHITE],["Default","varVisit"],["OnSelect","Set(varVisit, ThisItem)"]]},
+  {n:"제목 글자",t:"galTitle",in:"galVisits",d:"큰 글자",p:[["Text","ThisItem.업체명"]]},
+  {n:"부제목 글자",t:"galSub",in:"galVisits",d:"작은 글자",p:[["Text",`ThisItem.상태.Value & " · " & If(IsBlank(ThisItem.확정방문일), "방문일 미정", Text(ThisItem.확정방문일, "[$-ko-KR]m/d (ddd)"))`]]},
+  {n:"frmVisit",t:"form",d:"업체 상세 · 편집 양식",wf:[640,84,706,600],p:[["DataSource","방문처"],["Item","galVisits.Selected"],["DefaultMode","FormMode.View"],["X","640"],["Y","84"],["Width","706"],["Height","600"],
+    ["OnSuccess",`Notify("저장했습니다", NotificationType.Success); ViewForm(frmVisit)`]],note:"보일 칸은 아래 7-1에서 고릅니다."},
+  {n:"btnNew",t:"button",d:"새 업체 등록",wf:[490,134,130,40],p:[["Text",`"+ 새 방문처"`],["X","490"],["Y","134"],["Width","130"],["Height","40"],["OnSelect","NewForm(frmVisit)"]]},
+  {n:"btnEdit",t:"button",d:"편집 시작",wf:[640,700,100,40],p:[["Text",`"편집"`],["X","640"],["Y","700"],["Width","100"],["Height","40"],["OnSelect","EditForm(frmVisit)"],["Visible","frmVisit.Mode = FormMode.View"]]},
+  {n:"btnSave",t:"button",d:"저장",wf:[750,700,100,40],p:[["Text",`"저장"`],["X","750"],["Y","700"],["Width","100"],["Height","40"],["OnSelect","SubmitForm(frmVisit)"],["Visible","frmVisit.Mode <> FormMode.View"]]},
+  {n:"btnCancel",t:"button",d:"취소",wf:[860,700,100,40],p:[["Text",`"취소"`],["X","860"],["Y","700"],["Width","100"],["Height","40"],["OnSelect","ResetForm(frmVisit); ViewForm(frmVisit)"],["Visible","frmVisit.Mode <> FormMode.View"]]},
+  {n:"btnDelete",t:"button",d:"삭제",wf:[1246,700,100,40],p:[["Text",`"삭제"`],["X","1246"],["Y","700"],["Width","100"],["Height","40"],["Fill","RGBA(197, 15, 31, 1)"],
+    ["OnSelect",`Remove(방문처, galVisits.Selected); Notify("삭제했습니다. SharePoint 휴지통에서 되살릴 수 있어요.", NotificationType.Warning)`],["Visible","frmVisit.Mode = FormMode.View"]]}
+ ],
+ coord:[
+  {n:"galCoordVisits",t:"galV",d:"조율 중인 업체 목록",wf:[220,84,300,664],p:[["Items",`Filter(방문처, 상태.Value = "일정 조율 중")`],["X","220"],["Y","84"],["Width","300"],["Height","664"],["TemplateSize","64"],["Fill",WHITE],["Default","varVisit"],["OnSelect","Set(varVisit, ThisItem)"]]},
+  {n:"제목 글자",t:"galTitle",in:"galCoordVisits",d:"큰 글자",p:[["Text","ThisItem.업체명"]]},
+  {n:"부제목 글자",t:"galSub",in:"galCoordVisits",d:"작은 글자",p:[["Text","ThisItem.소재지"]]},
+  {n:"lblCoordTitle",t:"label",d:"고른 업체 이름",wf:[540,84,806,36],p:[["Text",`galCoordVisits.Selected.업체명 & " · 후보일 응답"`],["X","540"],["Y","84"],["Width","806"],["Height","36"],["Size","17"],["FontWeight","FontWeight.Semibold"]]},
+  {n:"lblHead1~5",t:"heads",d:"표 머리글 5개",wf:null,custom:true},
+  {n:"galCands",t:"galBV",d:"후보일 표",wf:[540,156,806,300],p:[["Items",`Sort(Filter(방문후보일, 방문처ID = galCoordVisits.Selected.ID), 후보일, SortOrder.Ascending)`],["X","540"],["Y","156"],["Width","806"],["Height","300"],["TemplateSize","56"],
+    ["TemplateFill",`If(${COND}, RGBA(241, 250, 241, 1), Color.White)`]],note:"세 칸 모두 가능(또는 조건부)인 줄은 연한 초록색이 됩니다."},
+  {n:"lblCandDate",t:"label",in:"galCands",d:"후보 날짜·시간대",p:[["Text",`Text(ThisItem.후보일, "[$-ko-KR]m/d (ddd)") & "  " & ThisItem.시간대`],["X","0"],["Y","8"],["Width","220"],["Height","40"]]},
+  {n:"ddV",t:"dd",in:"galCands",d:"업체 응답",p:[["Items",`["미응답", "가능", "조건부", "불가"]`],["Default","ThisItem.업체응답.Value"],["X","230"],["Y","8"],["Width","130"],["Height","40"],
+    ["OnChange","Patch(방문후보일, ThisItem, {업체응답: {Value: Self.Selected.Value}})"]],note:"고르는 즉시 SharePoint에 저장됩니다."},
+  {n:"ddC",t:"dd",in:"galCands",copy:"ddV",d:"협력생산 응답",p:[["Default","ThisItem.협생응답.Value"],["X","380"],["OnChange","Patch(방문후보일, ThisItem, {협생응답: {Value: Self.Selected.Value}})"]]},
+  {n:"ddQ",t:"dd",in:"galCands",copy:"ddV",d:"품질보증 응답",p:[["Default","ThisItem.품보응답.Value"],["X","530"],["OnChange","Patch(방문후보일, ThisItem, {품보응답: {Value: Self.Selected.Value}})"]]},
+  {n:"lblCommon",t:"label",in:"galCands",d:"공통 표시",p:[["Text",`If(${COND}, "✓ 공통", "—")`],["X","680"],["Y","8"],["Width","120"],["Height","40"],["FontWeight","FontWeight.Semibold"],["Color",`If(${COND}, RGBA(14, 112, 14, 1), RGBA(112, 112, 112, 1))`]]},
+  {n:"lblAddTitle",t:"label",d:"제목 글자",wf:[540,466,300,28],p:[["Text",`"후보일 추가"`],["X","540"],["Y","466"],["Width","300"],["Height","28"],["Size","14"],["FontWeight","FontWeight.Semibold"]]},
+  {n:"dpNewDate",t:"date",d:"후보 날짜 고르기",wf:[540,498,220,40],p:[["DefaultDate","Today()"],["X","540"],["Y","498"],["Width","220"],["Height","40"]]},
+  {n:"txtNewSlot",t:"text",d:"시간대 입력",wf:[770,498,200,40],p:[["Default",`"10:00–12:00"`],["X","770"],["Y","498"],["Width","200"],["Height","40"]]},
+  {n:"btnAddCand",t:"button",d:"후보일 추가",wf:[980,498,160,40],p:[["Text",`"+ 후보일 추가"`],["X","980"],["Y","498"],["Width","160"],["Height","40"],
+    ["OnSelect",`Patch(방문후보일, Defaults(방문후보일), {업체명: galCoordVisits.Selected.업체명, 방문처ID: galCoordVisits.Selected.ID, 후보일: dpNewDate.SelectedDate, 시간대: txtNewSlot.Text, 업체응답: {Value: "미응답"}, 협생응답: {Value: "미응답"}, 품보응답: {Value: "미응답"}}); Notify("후보일을 추가했습니다", NotificationType.Success)`]]},
+  {n:"lblConfirmTitle",t:"label",d:"제목 글자",wf:[540,556,300,32],p:[["Text",`"방문 확정 (공통 가능일)"`],["X","540"],["Y","556"],["Width","300"],["Height","32"],["Size","15"],["FontWeight","FontWeight.Semibold"]]},
+  {n:"galCommon",t:"galBV",d:"공통 가능일만 모은 목록",wf:[540,592,300,156],p:[["Items",`Filter(galCands.AllItems, 업체응답.Value in ["가능", "조건부"] && 협생응답.Value in ["가능", "조건부"] && 품보응답.Value in ["가능", "조건부"])`],["X","540"],["Y","592"],["Width","300"],["Height","156"],["TemplateSize","38"],
+    ["TemplateFill","If(ThisItem.IsSelected, RGBA(207, 228, 250, 1), Color.White)"]],note:"확정할 날짜를 여기서 한 번 누릅니다(누른 줄이 파래집니다)."},
+  {n:"lblCommonDate",t:"label",in:"galCommon",d:"공통 날짜",p:[["Text",`Text(ThisItem.후보일, "[$-ko-KR]m/d (ddd)") & "  " & ThisItem.시간대`],["X","8"],["Y","4"],["Width","284"],["Height","30"]]},
+  {n:"lblNoCommon",t:"label",d:"공통일이 없을 때 안내",wf:null,p:[["Text",`"공통 가능일이 아직 없어요"`],["X","552"],["Y","600"],["Width","280"],["Height","30"],["Color",GRAY],["Visible","IsEmpty(galCommon.AllItems)"]]},
+  {n:"txtTime",t:"text",d:"방문 시간",wf:[860,592,120,40],p:[["Default",`"10:00"`],["HintText",`"09:30"`],["X","860"],["Y","592"],["Width","120"],["Height","40"]]},
+  {n:"lblTrip",t:"label",d:"예상 출발 시각",wf:[990,592,356,40],p:[["Text",`IfError(With({r: LookUp(지역이동시간, 지역 in galCoordVisits.Selected.소재지), t: TimeValue(txtTime.Text)}, If(IsBlank(r), "이동시간 정보 없음 (소재지 확인)", "예상 출발 " & Text(DateAdd(t, -(r.소요분 + 20), TimeUnit.Minutes), "hh:mm") & "  (약 " & r.거리km & "km · " & r.소요분 & "분)")), "시간은 09:30처럼 입력하세요")`],["X","990"],["Y","592"],["Width","356"],["Height","40"],["Size","12"]],note:"세종 전의면 출발 기준, 여유 20분을 더해 계산합니다."},
+  {n:"btnConfirm",t:"button",d:"방문 확정",wf:[860,648,200,44],p:[["Text",`"방문 확정"`],["X","860"],["Y","648"],["Width","200"],["Height","44"],
+    ["DisplayMode","If(IsEmpty(galCommon.AllItems), DisplayMode.Disabled, DisplayMode.Edit)"],
+    ["OnSelect",`With({n: galCoordVisits.Selected.업체명, d: galCommon.Selected.후보일, tm: Text(TimeValue(txtTime.Text), "hh:mm")}, Patch(방문처, galCoordVisits.Selected, {상태: {Value: "방문 확정"}, 확정방문일: d, 방문시간: tm}); Notify(n & " · " & Text(d, "m/d") & " " & tm & " 방문을 확정했습니다", NotificationType.Success))`]],
+    note:"누르면 상태가 '방문 확정'으로 바뀌고 업체가 왼쪽 목록에서 빠집니다. 11단계 흐름을 만들면 일정표·알림도 자동으로 갑니다."}
+ ],
+ result:[
+  {n:"galResult",t:"galV",d:"결과 입력 대상",wf:[220,84,360,664],p:[["Items",`Filter(방문처, (상태.Value = "방문 확정" && 확정방문일 < Today()) || 상태.Value = "방문 완료" || 상태.Value = "Capa 회신 대기")`],["X","220"],["Y","84"],["Width","360"],["Height","664"],["TemplateSize","64"],["Fill",WHITE],["Default","varVisit"],["OnSelect","Set(varVisit, ThisItem)"]]},
+  {n:"제목 글자",t:"galTitle",in:"galResult",d:"큰 글자",p:[["Text","ThisItem.업체명"]]},
+  {n:"부제목 글자",t:"galSub",in:"galResult",d:"작은 글자",p:[["Text",`ThisItem.상태.Value & " · " & Text(ThisItem.확정방문일, "[$-ko-KR]m/d (ddd)") & If(ThisItem.상태.Value = "Capa 회신 대기" && !IsBlank(ThisItem.Capa요청일), " · " & DateDiff(ThisItem.Capa요청일, Today()) & "일 경과", "")`]]},
+  {n:"frmResult",t:"form",d:"결과 입력 양식",wf:[600,84,746,600],p:[["DataSource","방문처"],["Item","galResult.Selected"],["DefaultMode","FormMode.Edit"],["X","600"],["Y","84"],["Width","746"],["Height","600"],["OnSuccess",`Notify("결과를 저장했습니다", NotificationType.Success)`]],note:"보일 칸은 아래 9-1에서 고릅니다."},
+  {n:"btnResultSave",t:"button",d:"저장",wf:[600,700,140,44],p:[["Text",`"저장"`],["X","600"],["Y","700"],["Width","140"],["Height","44"],["OnSelect","SubmitForm(frmResult)"]]},
+  {n:"lblResultHint",t:"label",d:"판정 안내",wf:[760,700,586,44],p:[["Text",`"판정은 '상태'에서 고르세요 → 방문 완료 · Capa 회신 대기 · 등록 완료 · 등록 불가"`],["X","760"],["Y","700"],["Width","586"],["Height","44"],["Size","12"],["Color",GRAY]]}
+ ]
+};
+const INS={
+  rect:'<b>삽입(+)</b> 검색칸에 <span class="v" data-c="사각형">사각형</span> → <b>사각형</b> <span class="en">(Rectangle)</span>',
+  label:'<b>삽입(+)</b> 검색칸에 <span class="v" data-c="레이블">레이블</span> → <b>텍스트 레이블</b> <span class="en">(Text label, 클래식)</span>',
+  button:'<b>삽입(+)</b> 검색칸에 <span class="v" data-c="단추">단추</span> → <b>단추</b> <span class="en">(Button, 클래식)</span>',
+  text:'<b>삽입(+)</b> 검색칸에 <span class="v" data-c="텍스트 입력">텍스트 입력</span> → <b>텍스트 입력</b> <span class="en">(Text input, 클래식)</span>',
+  dd:'<b>삽입(+)</b> 검색칸에 <span class="v" data-c="드롭다운">드롭다운</span> → <b>드롭다운</b> <span class="en">(Drop down, 클래식)</span>',
+  date:'<b>삽입(+)</b> 검색칸에 <span class="v" data-c="날짜 선택">날짜 선택</span> → <b>날짜 선택</b> <span class="en">(Date picker, 클래식)</span>',
+  galV:'<b>삽입(+)</b> 검색칸에 <span class="v" data-c="세로 갤러리">세로 갤러리</span> → <b>세로 갤러리</b> <span class="en">(Vertical gallery)</span>. 데이터 원본을 고르라는 창이 뜨면 <b>방문처</b>. 그다음 오른쪽 속성 창 <b>레이아웃</b> <span class="en">(Layout)</span>을 <b>제목 및 부제목</b> <span class="en">(Title and subtitle)</span>으로',
+  galBV:'<b>삽입(+)</b> 검색칸에 <span class="v" data-c="빈 세로 갤러리">빈 세로 갤러리</span> → <b>빈 세로 갤러리</b> <span class="en">(Blank vertical gallery)</span>. 데이터 원본 창이 뜨면 아무거나 골라도 됩니다(Items로 바꿉니다)',
+  galBH:'<b>삽입(+)</b> 검색칸에 <span class="v" data-c="빈 가로 갤러리">빈 가로 갤러리</span> → <b>빈 가로 갤러리</b> <span class="en">(Blank horizontal gallery)</span>. 데이터 원본 창이 뜨면 닫아도 됩니다',
+  form:'<b>삽입(+)</b> 검색칸에 <span class="v" data-c="편집 양식">편집 양식</span> → <b>편집 양식</b> <span class="en">(Edit form)</span>. 데이터 원본 창에서 <b>방문처</b>',
+  galTitle:'갤러리 <b>첫 줄의 큰 글자(제목)</b>를 클릭합니다 (새로 넣지 않아요)',
+  galSub:'갤러리 <b>첫 줄의 작은 글자(부제목)</b>를 클릭합니다 (새로 넣지 않아요)'
+};
+const CLS={rect:"rect",label:"lbl",button:"btn",text:"inp",dd:"inp",date:"inp",galV:"gal",galBV:"gal",galBH:"gal",form:"form"};
+
+/* ================= 렌더 ================= */
+const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function colRows(list){return list.map((r,i)=>`<tr><td class="num">${i+1}</td><td><span class="v" data-c="${esc(r[0])}">${esc(r[0])}</span></td><td><b>${r[1]}</b></td><td>${r[2]}</td></tr>`).join("");}
+$("#tblVisit").innerHTML=colRows(LIST_VISIT);
+$("#tblCand").innerHTML=colRows(LIST_CAND);
+$("#tblTrip").innerHTML=colRows(LIST_TRIP);
+$("#tblTripData").innerHTML=TRIP.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join("");
+$("#tblState").innerHTML=STATE_MAP.map(r=>`<tr><td>${r[0]}</td><td><span class="v" data-c="${r[1]}">${r[1]}</span></td></tr>`).join("");
+
+function propTable(p){return `<table><tbody>${p.map(r=>`<tr><td>${esc(r[0])}</td><td><span class="code" style="display:block;margin:0;padding:6px 8px">${esc(r[1])}</span></td><td><button class="cp" type="button" data-c="${esc(r[1])}">복사</button></td></tr>`).join("")}</tbody></table>`;}
+function renderScreen(key){
+  const list=SCREENS[key]; let no=0; const num={};
+  list.forEach(c=>{if(!c.in&&c.wf)num[c.n]=++no;});
+  // 배치도
+  const wire=$(`[data-wire="${key}"]`);
+  if(wire){
+    let boxes=list.filter(c=>c.wf&&!c.in).map(c=>{const [x,y,w,h]=c.wf;
+      return `<div class="w ${CLS[c.t]||""} ${c.cls||""}" style="left:${x/13.66}%;top:${y/7.68}%;width:${w/13.66}%;height:${h/7.68}%"><b>${num[c.n]}</b>${esc(c.n)}</div>`;}).join("");
+    if(key==="home")boxes+=[506,792,1078].map((x,i)=>`<div class="w rect" style="left:${x/13.66}%;top:${84/7.68}%;width:${268/13.66}%;height:${100/7.68}%">요약 칸 ${i+2}</div>`).join("");
+    if(key==="coord")boxes+=[["후보일",540,220],["업체",770,140],["협력생산",920,140],["품질보증",1070,140],["공통",1220,120]].map(h=>`<div class="w lbl" style="left:${h[1]/13.66}%;top:${128/7.68}%;width:${h[2]/13.66}%;height:${24/7.68}%">${h[0]}</div>`).join("");
+    if(key!=="hdr")boxes=`<div class="w rect hdr" style="left:0;top:0;width:100%;height:${64/7.68}%">머리글 (5단계에서 복사됨)</div><div class="w rect" style="left:0;top:${64/7.68}%;width:${200/13.66}%;height:${704/7.68}%">메뉴 (복사됨)</div>`+boxes;
+    wire.outerHTML=`<div class="wire" aria-label="화면 배치도">${boxes}</div><p class="wire-cap">화면 배치도 (가로 1366 × 세로 768 기준) — 빨간 번호는 아래 카드 번호와 같습니다.</p>`;
+  }
+  // 컨트롤 카드
+  const box=$(`[data-ctls="${key}"]`); if(!box)return;
+  box.outerHTML=list.map(c=>{
+    const id=`${key}-${c.n}-${c.in||""}`;
+    let how="", body="";
+    if(c.t==="copy3"){
+      const T=[["2","506","522",`"방문 확정"`,`CountRows(Filter(방문처, 상태.Value = "방문 확정", 확정방문일 >= Today())) & " 건"`],
+               ["3","792","808",`"결과 미입력"`,`CountRows(Filter(방문처, (상태.Value = "방문 확정" && 확정방문일 < Today()) || (상태.Value = "방문 완료" && IsBlank(방문결과)))) & " 건"`],
+               ["4","1078","1094",`"Capa 회신 대기 · 7일 경과 " & CountRows(Filter(방문처, 상태.Value = "Capa 회신 대기", DateDiff(Capa요청일, Today()) >= 7)) & "건"`,`CountRows(Filter(방문처, 상태.Value = "Capa 회신 대기")) & " 건"`]];
+      how=`트리 뷰에서 <b>recTile1</b>, <b>lblTile1Title</b>, <b>lblTile1Num</b>을 Ctrl+클릭으로 함께 선택 → Ctrl+C → Ctrl+V. 붙은 3개를 아래 값으로 바꿉니다. 이것을 3번 반복해 요약 칸 2·3·4를 만듭니다. (이름은 recTile2, lblTile2Title… 로 바꿔 두면 찾기 쉬워요.)`;
+      body=T.map(t=>`<p style="margin:10px 0 4px"><b>요약 칸 ${t[0]}</b></p>`+propTable([["사각형의 X",t[1]],["제목 글자의 X",t[2]],["숫자 글자의 X",t[2]],["제목 글자의 Text",t[3]],["숫자 글자의 Text",t[4]]])).join("");
+      return card(id,"+",c.n,c.d,how,body,null,false);
+    }
+    if(c.t==="heads"){
+      how=`<b>텍스트 레이블</b>을 5개 넣고(하나 넣고 Ctrl+C, Ctrl+V 4번) 아래처럼 바꿉니다. 모두 Y <b>128</b>, Height <b>24</b>, Size <b>12</b>, Color <span class="v" data-c="${GRAY}">${GRAY}</span>.`;
+      body=`<table><thead><tr><th>Text</th><th>X</th><th>Width</th></tr></thead><tbody>${[["후보일",540,220],["업체",770,140],["협력생산",920,140],["품질보증",1070,140],["공통",1220,120]].map(h=>`<tr><td><span class="v" data-c='"${h[0]}"'>"${h[0]}"</span></td><td><span class="v" data-c="${h[1]}">${h[1]}</span></td><td><span class="v" data-c="${h[2]}">${h[2]}</span></td></tr>`).join("")}</tbody></table>`;
+      return card(id,"+",c.n,c.d,how,body,null,false);
+    }
+    if(c.in&&(c.t==="galTitle"||c.t==="galSub")) how=`<b>${esc(c.in)}</b> 안에서: `+INS[c.t];
+    else if(c.in) how=`<b>${esc(c.in)}</b>를 클릭 → 첫 칸 왼쪽 위 <b>연필(✏)</b> 클릭 → `+(c.copy?`이미 만든 <b>${c.copy}</b>를 클릭해 Ctrl+C → 연필(✏) 상태에서 Ctrl+V`:INS[c.t]);
+    else if(c.copy) how=`<b>${c.copy}</b>를 클릭 → Ctrl+C → Ctrl+V. 아래 값만 바꿉니다.`;
+    else how=INS[c.t];
+    const rename=(c.t==="galTitle"||c.t==="galSub")?"":` → 트리 뷰에서 이름을 <span class="v" data-c="${esc(c.n)}">${esc(c.n)}</span>로 바꾸기`;
+    return card(id,c.in?"└":(num[c.n]||"·"),c.n,c.d,how+rename,propTable(c.p),c.note,!!c.in);
+  }).join("");
+}
+function card(id,nb,nm,ds,how,body,note,sub){
+  return `<div class="ctl${sub?" sub-ctl":""}" data-ctl="${esc(id)}"><div class="ctl-h"><input type="checkbox" class="ck" data-k="${esc(id)}" aria-label="${esc(nm)} 완료"><span class="nb">${nb}</span><span class="nm">${esc(nm)}</span><span class="ds">${esc(ds)}</span></div>
+    <div class="ctl-b"><div class="how">${how}</div>${body}${note?`<div class="note">💡 ${note}</div>`:""}</div></div>`;
+}
+["hdr","home","list","coord","result"].forEach(renderScreen);
+
+/* ================= 복사 ================= */
+async function copyText(t,el){
+  try{await navigator.clipboard.writeText(t);}catch(e){
+    const ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");}catch(_){}ta.remove();}
+  if(el){el.classList.add("ok");const o=el.textContent;if(el.classList.contains("cp"))el.textContent="복사됨";setTimeout(()=>{el.classList.remove("ok");if(el.classList.contains("cp"))el.textContent=o;},1100);}
+}
+$$("div.code").forEach(d=>{if(d.querySelector(".cp"))return;const b=document.createElement("button");b.type="button";b.className="cp";b.textContent="복사";
+  b.dataset.c=d.dataset.copy!=null?d.dataset.copy:d.textContent.replace(/^[①-⑤] 입력: |^[①-⑤] 이어서 입력: /,"");d.appendChild(b);});
+document.addEventListener("click",e=>{
+  const t=e.target.closest("[data-c]"); if(!t||t.matches("input"))return;
+  copyText(t.dataset.c,t);
+});
+$("#cpTrip").addEventListener("click",e=>{e.stopPropagation();copyText(TRIP.map(r=>r.join("\t")).join("\n"),e.target);});
+
+/* ================= 체크 · 진행률 · 목차 ================= */
+const KEY="pa_guide_checks_v1"; let SAVED={};
+try{SAVED=JSON.parse(localStorage.getItem(KEY)||"{}")||{};}catch(e){SAVED={};}
+$$("ol.steps>li[data-k]").forEach(li=>{const c=document.createElement("input");c.type="checkbox";c.className="ck";c.dataset.k=li.dataset.k;c.setAttribute("aria-label","완료");li.prepend(c);});
+const boxes=()=>$$("input.ck[data-k]");
+function paint(){
+  boxes().forEach(c=>{c.checked=!!SAVED[c.dataset.k];const host=c.closest("li,.ctl");if(host)host.classList.toggle("done",c.checked);});
+  const all=boxes(), done=all.filter(c=>c.checked).length;
+  $("#pt").textContent=`${done} / ${all.length}`; $("#pb").style.width=(all.length?done/all.length*100:0)+"%";
+  $$("section.part").forEach(s=>{const b=$$(`#${s.id} input.ck[data-k]`), d=b.filter(c=>c.checked).length, el=$(`#toc a[href="#${s.id}"] .c`);
+    if(el){el.textContent=`${d}/${b.length}`;el.classList.toggle("done",b.length>0&&d===b.length);}});
+}
+document.addEventListener("change",e=>{const c=e.target;if(!c.matches("input.ck[data-k]"))return;
+  if(c.checked)SAVED[c.dataset.k]=1;else delete SAVED[c.dataset.k];
+  try{localStorage.setItem(KEY,JSON.stringify(SAVED));}catch(_){} paint();});
+$("#reset").onclick=()=>{if(!confirm("체크 표시를 모두 지울까요?"))return;SAVED={};try{localStorage.removeItem(KEY);}catch(_){} paint();};
+$("#toc").innerHTML=$$("section.part").map((s,i)=>`<a href="#${s.id}"><span class="n">${i}</span>${esc(s.dataset.title.replace(/^\d+\.\s*/,""))}<span class="c"></span></a>`).join("");
+const io=new IntersectionObserver(es=>{es.forEach(en=>{if(en.isIntersecting){$$("#toc a").forEach(a=>a.classList.toggle("on",a.getAttribute("href")==="#"+en.target.id));}});},{rootMargin:"-30% 0px -60% 0px"});
+$$("section.part").forEach(s=>io.observe(s));
+paint();
+</script>
+</body>
+</html>
