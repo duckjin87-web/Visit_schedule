@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="data:,">
+<title>방문예정처 — Power Apps 구현 예상 목업</title>
+<style>
+/* Fluent 2 계열 토큰 (Power Apps 최신 컨트롤 기본 테마와 유사한 값) */
+:root{
+  --brand:#0F6CBD; --brand-h:#115EA3; --brand-p:#0C3B5E; --brand-bg:#EBF3FC; --brand-bg2:#CFE4FA;
+  --bg1:#FFFFFF; --bg2:#FAFAFA; --bg3:#F5F5F5; --bg4:#F0F0F0; --page:#E9EAEC;
+  --fg1:#242424; --fg2:#424242; --fg3:#616161; --fg4:#707070;
+  --st1:#D1D1D1; --st2:#E0E0E0; --st3:#F0F0F0;
+  --ok:#0E700E; --ok-bg:#F1FAF1; --warn:#BC4B09; --warn-bg:#FFF9F5; --bad:#C50F1F; --bad-bg:#FDF3F4; --pur:#5C2E91; --pur-bg:#F7F4FB;
+  --sh4:0 0 2px rgba(0,0,0,.12),0 2px 4px rgba(0,0,0,.14);
+  --sh16:0 0 2px rgba(0,0,0,.12),0 8px 16px rgba(0,0,0,.14);
+  --font:"Segoe UI","Malgun Gothic","Apple SD Gothic Neo",-apple-system,system-ui,sans-serif;
+  --anno:#8A3FFC;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--page);color:var(--fg1);font-family:var(--font);font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+[hidden]{display:none!important}
+
+/* ---------- 페이지(목업 바깥) ---------- */
+.page{max-width:1400px;margin:0 auto;padding:20px 16px 48px}
+.intro{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px 20px;margin-bottom:14px}
+.intro h1{font-size:20px;font-weight:700;letter-spacing:-.01em}
+.intro p{font-size:13px;color:var(--fg3);margin-top:2px}
+.ctrls{margin-left:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.seg{display:inline-flex;background:var(--bg1);border:1px solid var(--st1);border-radius:6px;padding:2px}
+.seg button{border:0;background:none;padding:6px 12px;border-radius:4px;font-size:13px;font-weight:600;color:var(--fg3)}
+.seg button[aria-pressed="true"]{background:var(--brand);color:#fff}
+.sw{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--fg2);cursor:pointer;user-select:none}
+.sw input{appearance:none;width:36px;height:20px;border-radius:10px;border:1px solid var(--fg4);background:var(--bg1);position:relative;cursor:pointer}
+.sw input::after{content:"";position:absolute;top:3px;left:3px;width:12px;height:12px;border-radius:50%;background:var(--fg3);transition:.15s}
+.sw input:checked{background:var(--anno);border-color:var(--anno)}
+.sw input:checked::after{left:19px;background:#fff}
+.frame-cap{font-size:12px;color:var(--fg3);margin:0 0 6px 2px}
+.wrap{position:relative;width:100%;overflow:hidden}
+.stage{position:absolute;top:0;left:0;transform-origin:0 0;background:var(--bg3);box-shadow:var(--sh16);border-radius:8px;overflow:hidden}
+.stage.tablet{width:1366px;height:768px}
+.stage.phone{width:410px;height:864px;border-radius:28px;border:10px solid #1f1f1f}
+
+/* ---------- 앱 공통 (Power Apps 컨트롤 모양) ---------- */
+.app{position:absolute;inset:0;display:flex;flex-direction:column}
+.hdr{height:56px;flex:none;background:var(--brand);color:#fff;display:flex;align-items:center;gap:12px;padding:0 20px}
+.hdr h2{font-size:18px;font-weight:600}
+.hdr .who{margin-left:auto;display:flex;align-items:center;gap:10px;font-size:13px}
+.av{width:32px;height:32px;border-radius:50%;background:#fff;color:var(--brand);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center}
+.notify{position:absolute;left:0;right:0;top:56px;z-index:30;background:var(--ok);color:#fff;font-size:14px;font-weight:600;padding:10px 20px;display:flex;align-items:center;gap:10px;opacity:0;visibility:hidden;transform:translateY(-8px);transition:opacity .18s,transform .18s,visibility .18s}
+.notify.on{opacity:1;visibility:visible;transform:none}
+.notify.info{background:var(--brand)}
+.card{background:var(--bg1);border-radius:8px;box-shadow:var(--sh4)}
+.lbl{font-size:12px;color:var(--fg3);font-weight:600}
+.h3{font-size:16px;font-weight:600}
+.btn{border:1px solid var(--st1);background:var(--bg1);color:var(--fg1);border-radius:4px;padding:5px 12px;font-size:14px;font-weight:600;min-height:32px;white-space:nowrap}
+.btn:hover{background:var(--bg3)}
+.btn.pri{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn.pri:hover{background:var(--brand-h)}
+.btn.pri:disabled{background:var(--bg4);border-color:var(--st2);color:#BDBDBD;cursor:default}
+.btn.sub{border-color:transparent;background:none;color:var(--brand)}
+.btn.sub:hover{background:var(--brand-bg)}
+.inp,.dd{border:1px solid var(--st1);border-bottom-color:var(--fg4);border-radius:4px;background:var(--bg1);padding:5px 10px;min-height:32px;font-size:14px;width:100%}
+.inp:focus,.dd:focus{outline:none;border-bottom:2px solid var(--brand);padding-bottom:4px}
+textarea.inp{resize:none;line-height:1.45}
+.dd{appearance:none;-webkit-appearance:none;padding-right:28px;background-image:linear-gradient(45deg,transparent 50%,var(--fg3) 50%),linear-gradient(135deg,var(--fg3) 50%,transparent 50%);background-position:calc(100% - 15px) 50%,calc(100% - 10px) 50%;background-size:5px 5px;background-repeat:no-repeat;cursor:pointer}
+.bdg{display:inline-flex;align-items:center;font-size:12px;font-weight:600;padding:1px 8px;border-radius:999px;border:1px solid currentColor;white-space:nowrap;line-height:18px}
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--bg3);border-radius:4px;padding:2px 8px;font-size:13px}
+.chip .av{width:20px;height:20px;font-size:10px;background:var(--brand-bg2);color:var(--brand-p)}
+.gal{overflow:auto}
+.gi{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--st3);cursor:pointer;position:relative;background:var(--bg1)}
+.gi:hover{background:var(--bg2)}
+.gi.sel{background:var(--brand-bg)}
+.gi.sel::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--brand)}
+.gi .t{font-size:14px;font-weight:600}
+.gi .s{font-size:12px;color:var(--fg3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gi .tx{flex:1;min-width:0}
+.gi .chev{color:var(--fg4);font-size:18px;line-height:1}
+.ico{width:32px;height:32px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-size:15px}
+.ico.l3{background:var(--bad-bg);color:var(--bad)} .ico.l2{background:var(--brand-bg);color:var(--brand)} .ico.l1{background:var(--bg3);color:var(--fg3)}
+.fld{display:grid;gap:4px}
+.fld .v{font-size:14px;color:var(--fg1);min-height:20px;white-space:pre-wrap}
+.sect{font-size:13px;font-weight:700;color:var(--brand);padding-bottom:6px;border-bottom:1px solid var(--st2);margin:4px 0 12px}
+.radio{display:flex;flex-direction:column;gap:6px}
+.radio label{display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer}
+.radio input{accent-color:var(--brand);width:16px;height:16px}
+.empty{color:var(--fg3);font-size:13px;padding:24px;text-align:center}
+
+/* ---------- 태블릿 레이아웃 ---------- */
+.tb-body{flex:1;display:flex;min-height:0}
+.nav{width:200px;flex:none;background:var(--bg1);border-right:1px solid var(--st2);padding:12px 8px;display:flex;flex-direction:column;gap:2px}
+.nav button{display:flex;align-items:center;gap:12px;border:0;background:none;border-radius:4px;padding:10px 12px;font-size:14px;font-weight:600;color:var(--fg2);text-align:left;position:relative}
+.nav button:hover{background:var(--bg3)}
+.nav button.on{background:var(--brand-bg);color:var(--brand)}
+.nav button.on::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:3px;border-radius:2px;background:var(--brand)}
+.nav svg{width:20px;height:20px;flex:none}
+.nav .cnt{margin-left:auto;font-size:11px;font-weight:700;background:var(--brand);color:#fff;border-radius:9px;padding:0 6px;min-width:18px;text-align:center;line-height:18px}
+.nav .foot{margin-top:auto;font-size:11px;color:var(--fg4);padding:8px 12px;line-height:1.5}
+.scr{flex:1;padding:20px;min-width:0;display:none;gap:16px}
+.scr.on{display:flex}
+/* 홈 */
+#t-home{flex-direction:column}
+.greet{display:flex;align-items:baseline;gap:10px}
+.greet h3{font-size:20px;font-weight:600}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.tile{padding:14px 16px;cursor:pointer;text-align:left;border:0;position:relative}
+.tile:hover{box-shadow:var(--sh16)}
+.tile .n{font-size:30px;font-weight:700;line-height:1.2;margin-top:2px}
+.tile .n small{font-size:14px;font-weight:600;color:var(--fg3);margin-left:2px}
+.tile .x{font-size:12px;color:var(--fg3)}
+.tile .x.bad{color:var(--bad);font-weight:600}
+.home-mid{display:grid;grid-template-columns:1.35fr 1fr;gap:16px;flex:1;min-height:0}
+.home-mid .card{display:flex;flex-direction:column;min-height:0}
+.ch{display:flex;align-items:center;gap:8px;padding:14px 16px 10px}
+.ch .sp{flex:1}
+.strip{display:grid;grid-template-columns:repeat(14,1fr);gap:6px;padding:0 16px 14px}
+.dy{border:1px solid var(--st2);border-radius:4px;padding:5px 6px;min-height:66px;background:var(--bg1)}
+.dy.we{background:var(--bg2)}
+.dy.td{border:2px solid var(--brand);padding:4px 5px}
+.dy .d{font-size:11px;color:var(--fg3);font-weight:600}
+.dy .d b{font-size:14px;color:var(--fg1);margin-left:2px}
+.dy.td .d b{color:var(--brand)}
+.ev{display:block;width:100%;text-align:left;border:0;margin-top:3px;background:var(--brand-bg);border-left:3px solid var(--brand);border-radius:2px;padding:2px 4px;font-size:11px;font-weight:600;line-height:1.3;word-break:break-all;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ev.done{background:var(--ok-bg);border-left-color:var(--ok)}
+/* 목록 · 결과 (목록 + 상세 템플릿) */
+.lp{width:380px;flex:none;display:flex;flex-direction:column;min-height:0}
+.lp-h{padding:14px 16px;display:grid;gap:8px;border-bottom:1px solid var(--st2)}
+.lp-h .row{display:flex;gap:8px}
+.lp .gal{flex:1}
+.rp{flex:1;display:flex;flex-direction:column;min-height:0;min-width:0}
+.rp-h{display:flex;align-items:center;gap:10px;padding:16px 20px;border-bottom:1px solid var(--st2)}
+.rp-h h3{font-size:20px;font-weight:600}
+.rp-h .sp{flex:1}
+.rp-b{flex:1;overflow:auto;padding:16px 20px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px 24px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px 24px}
+.span2{grid-column:span 2}
+.rp-f{display:flex;gap:8px;justify-content:flex-end;padding:12px 20px;border-top:1px solid var(--st2)}
+/* 일정 조율 */
+#t-coord{flex-direction:column}
+.co-top{display:flex;align-items:center;gap:16px;padding:14px 16px}
+.co-top .dd{width:260px}
+.co-top .meta{font-size:13px;color:var(--fg3)}
+.co-main{flex:1;display:grid;grid-template-columns:1fr 340px;gap:16px;min-height:0}
+.co-main .card{display:flex;flex-direction:column;min-height:0}
+.ctbl{width:100%;border-collapse:collapse}
+.ctbl th{font-size:12px;font-weight:600;color:var(--fg3);text-align:left;padding:8px 12px;border-bottom:1px solid var(--st2);background:var(--bg2);position:sticky;top:0}
+.ctbl th.me{color:var(--brand)}
+.ctbl td{padding:8px 12px;border-bottom:1px solid var(--st3);font-size:14px;vertical-align:middle}
+.ctbl tr.cm td{background:var(--ok-bg)}
+.ctbl .dd{min-height:30px;padding:3px 26px 3px 8px;font-size:13px;width:108px}
+.r-가능{color:var(--ok);font-weight:600} .r-불가{color:var(--bad);font-weight:600} .r-조건부{color:var(--warn);font-weight:600} .r-미응답{color:var(--fg4)}
+.cmk{font-size:13px;font-weight:700;color:var(--ok)}
+.cmk.no{color:var(--fg4);font-weight:400}
+.banner{margin:0 16px 12px;padding:10px 12px;border-radius:4px;font-size:13px;font-weight:600;display:flex;gap:8px;align-items:center}
+.banner.ok{background:var(--ok-bg);color:var(--ok)} .banner.warn{background:var(--warn-bg);color:var(--warn)} .banner.bad{background:var(--bad-bg);color:var(--bad)} .banner.info{background:var(--brand-bg);color:var(--brand)}
+.cf{padding:16px;display:grid;gap:14px;overflow:auto}
+.cf .note{font-size:12px;color:var(--fg3);background:var(--bg2);border-radius:4px;padding:8px 10px;line-height:1.5}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.trip{font-size:13px;color:var(--fg2)}
+.trip b{color:var(--fg1)}
+
+/* ---------- 휴대폰 레이아웃 ---------- */
+.ph .hdr{padding:0 16px}
+.ph .hdr h2{font-size:17px}
+.ph .back{border:0;background:none;color:#fff;font-size:22px;width:28px;line-height:1}
+.ph-body{flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:14px;background:var(--bg3)}
+.ph-body.flush{padding:0;gap:0}
+.ph-tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ph-tiles .tile{padding:12px}
+.ph-tiles .tile .n{font-size:24px}
+.tabbar{height:64px;flex:none;background:var(--bg1);border-top:1px solid var(--st2);display:flex}
+.tabbar button{flex:1;border:0;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:11px;font-weight:600;color:var(--fg3)}
+.tabbar button.on{color:var(--brand)}
+.tabbar svg{width:22px;height:22px}
+.ph-search{padding:12px 16px;background:var(--bg1);border-bottom:1px solid var(--st2)}
+.resp{display:flex;gap:6px}
+.resp button{flex:1;border:1px solid var(--st1);background:var(--bg1);border-radius:4px;padding:6px 0;font-size:13px;font-weight:600;color:var(--fg2)}
+.resp button[aria-pressed="true"].가능{background:var(--ok);border-color:var(--ok);color:#fff}
+.resp button[aria-pressed="true"].불가{background:var(--bad);border-color:var(--bad);color:#fff}
+.resp button[aria-pressed="true"].조건부{background:var(--warn);border-color:var(--warn);color:#fff}
+.pc{padding:14px}
+.pc+.pc{margin-top:0}
+.cand-row{padding:10px 0;border-top:1px solid var(--st3);display:grid;gap:8px}
+.cand-row:first-of-type{border-top:0}
+.cand-row .top{display:flex;justify-content:space-between;font-size:14px;font-weight:600}
+.cand-row .oth{font-size:12px;color:var(--fg3)}
+
+/* ---------- 구성 요소 표시 (주석) ---------- */
+.annot [data-ctl]{outline:1.5px dashed var(--anno);outline-offset:-1px;position:relative}
+.annot [data-ctl]::after{content:attr(data-ctl);position:absolute;top:2px;right:2px;z-index:40;background:var(--anno);color:#fff;font-size:10px;font-weight:600;line-height:1;padding:3px 5px;border-radius:3px;white-space:nowrap;pointer-events:none;font-family:var(--font)}
+
+/* ---------- 구현 메모 ---------- */
+.memo{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:20px}
+.memo .card{padding:16px 18px}
+.memo h4{font-size:15px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.memo h4 span{font-size:11px;font-weight:700;color:#fff;background:var(--brand);border-radius:4px;padding:2px 6px}
+.memo table{width:100%;border-collapse:collapse;font-size:13px}
+.memo th,.memo td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--st3);vertical-align:top}
+.memo th{font-size:12px;color:var(--fg3);font-weight:600;background:var(--bg2)}
+.memo ul{padding-left:18px;font-size:13px;color:var(--fg2);display:grid;gap:5px}
+.memo b{color:var(--fg1)}
+.disc{font-size:12px;color:var(--fg3);margin-top:16px;line-height:1.6}
+@media (max-width:900px){.memo{grid-template-columns:1fr}.intro h1{font-size:18px}}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="intro">
+    <div>
+      <h1>방문예정처 — Power Apps 구현 예상 목업</h1>
+      <p>SharePoint 목록 + Power Apps 캔버스 앱 + Power Automate로 만들었을 때의 예상 화면입니다. 실제 Power Apps 화면이 아닌 HTML 재현이며, 가명 데이터이고 저장되지 않습니다.</p>
+    </div>
+    <div class="ctrls">
+      <div class="seg" role="group" aria-label="레이아웃">
+        <button type="button" data-layout="tablet" aria-pressed="true">태블릿 (PC · Teams)</button>
+        <button type="button" data-layout="phone" aria-pressed="false">휴대폰 (모바일 앱)</button>
+      </div>
+      <label class="sw"><input type="checkbox" id="annot"> 구성 요소 표시</label>
+    </div>
+  </div>
+  <p class="frame-cap" id="cap"></p>
+
+  <div class="wrap" id="wrap">
+    <!-- ===================== 태블릿 레이아웃 (1366×768) ===================== -->
+    <div class="stage tablet" id="tablet">
+      <div class="app">
+        <div class="hdr" data-ctl="헤더 컨테이너">
+          <h2>방문예정처</h2>
+          <div class="who"><span>김지훈 · 협력생산팀</span><span class="av">김</span></div>
+        </div>
+        <div class="notify" id="t-notify"></div>
+        <div class="tb-body">
+          <nav class="nav" data-ctl="탐색 갤러리" aria-label="화면">
+            <button type="button" data-scr="home" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>홈</button>
+            <button type="button" data-scr="list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg>방문 목록</button>
+            <button type="button" data-scr="coord"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>일정 조율<span class="cnt" id="n-coord"></span></button>
+            <button type="button" data-scr="result"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>방문 결과<span class="cnt" id="n-result"></span></button>
+            <div class="foot">데이터: SharePoint 목록<br>알림: Power Automate</div>
+          </nav>
+
+          <!-- 홈 -->
+          <section class="scr on" id="t-home">
+            <div class="greet"><h3>안녕하세요, 김지훈 님</h3><span class="lbl" id="t-today"></span></div>
+            <div class="tiles" id="t-tiles"></div>
+            <div class="home-mid">
+              <div class="card" data-ctl="갤러리 · Filter(담당 = User())">
+                <div class="ch"><span class="h3">내가 처리할 업무</span></div>
+                <div class="gal" id="t-todo"></div>
+              </div>
+              <div class="card" data-ctl="갤러리 · 확정 방문">
+                <div class="ch"><span class="h3">다가오는 방문</span></div>
+                <div class="gal" id="t-up"></div>
+              </div>
+            </div>
+            <div class="card" data-ctl="가로 갤러리 (14일)">
+              <div class="ch"><span class="h3">방문 확정 일정</span><span class="lbl" id="t-range"></span><span class="sp"></span>
+                <button class="btn sub" type="button" data-week="-1">‹ 이전</button><button class="btn sub" type="button" data-week="0">이번 주</button><button class="btn sub" type="button" data-week="1">다음 ›</button></div>
+              <div class="strip" id="t-strip"></div>
+            </div>
+          </section>
+
+          <!-- 방문 목록 -->
+          <section class="scr" id="t-list">
+            <div class="card lp">
+              <div class="lp-h">
+                <div data-ctl="텍스트 입력 · Search()"><input class="inp" id="t-q" placeholder="업체명 · 지역 검색"></div>
+                <div class="row">
+                  <div style="flex:1" data-ctl="드롭다운 · 상태"><select class="dd" id="t-fst"></select></div>
+                  <button class="btn pri" type="button" id="t-new" data-ctl="단추 · NewForm">＋ 새 방문처</button>
+                </div>
+              </div>
+              <div class="gal" id="t-gal" data-ctl="갤러리 · 방문처 목록"></div>
+            </div>
+            <div class="card rp" id="t-detail" data-ctl="표시 양식 (SharePoint)"></div>
+          </section>
+
+          <!-- 일정 조율 -->
+          <section class="scr" id="t-coord">
+            <div class="card co-top">
+              <div data-ctl="드롭다운 · 조율 중 업체"><select class="dd" id="t-cosel"></select></div>
+              <span class="meta" id="t-cometa"></span>
+            </div>
+            <div class="co-main">
+              <div class="card" data-ctl="갤러리 · 방문후보일 목록">
+                <div class="ch"><span class="h3">후보일 응답</span><span class="lbl">각 부서가 후보일마다 가능 여부를 선택합니다</span><span class="sp"></span>
+                  <button class="btn" type="button" id="t-addc" data-ctl="단추 · Patch(후보일)">＋ 후보일 추가</button></div>
+                <div id="t-banner"></div>
+                <div class="gal" style="flex:1"><table class="ctbl"><thead><tr><th>후보일</th><th>시간대</th><th>업체</th><th class="me">협력생산 (나)</th><th>품질보증</th><th>공통</th></tr></thead><tbody id="t-cands"></tbody></table></div>
+              </div>
+              <div class="card" id="t-confirm" data-ctl="편집 양식 · 확정"></div>
+            </div>
+          </section>
+
+          <!-- 방문 결과 -->
+          <section class="scr" id="t-result">
+            <div class="card lp">
+              <div class="lp-h"><span class="h3">결과 입력 대상</span><span class="lbl">방문일이 지났거나 판정·Capa 회신이 남은 건</span></div>
+              <div class="gal" id="t-rgal" data-ctl="갤러리 · Filter(결과 대상)"></div>
+            </div>
+            <div class="card rp" id="t-rform" data-ctl="편집 양식 · SubmitForm()"></div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== 휴대폰 레이아웃 (390×844) ===================== -->
+    <div class="stage phone" id="phone" hidden>
+      <div class="app ph">
+        <div class="hdr" data-ctl="헤더"><button class="back" type="button" id="p-back" hidden aria-label="뒤로">‹</button><h2 id="p-title">방문예정처</h2><div class="who"><span class="av">김</span></div></div>
+        <div class="notify" id="p-notify"></div>
+        <div class="ph-body" id="p-home"></div>
+        <div class="ph-body flush" id="p-list" hidden>
+          <div class="ph-search" data-ctl="텍스트 입력"><input class="inp" id="p-q" placeholder="업체명 · 지역 검색"></div>
+          <div class="gal" id="p-gal" data-ctl="갤러리"></div>
+        </div>
+        <div class="ph-body" id="p-detail" hidden></div>
+        <div class="tabbar" data-ctl="탐색 단추 모음">
+          <button type="button" data-ptab="home" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>홈</button>
+          <button type="button" data-ptab="list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg>방문 목록</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== 구현 메모 ===================== -->
+  <div class="memo">
+    <div class="card">
+      <h4><span>데이터</span>SharePoint 목록 3개</h4>
+      <table>
+        <thead><tr><th>목록</th><th>주요 열</th></tr></thead>
+        <tbody>
+          <tr><td><b>방문처</b></td><td>업체명, 상태(선택), 구분, 소재지, 업체 담당자·연락처, 주담당(사용자), 선정주체·사유, 확정 방문일·시간, 참석자(사용자, 여러 명), 방문 결과, 판정, Capa 요청일</td></tr>
+          <tr><td><b>방문후보일</b></td><td>방문처(조회), 후보일, 시간대, 업체·협력생산·품질보증 응답(가능/불가/조건부/미응답), 메모</td></tr>
+          <tr><td><b>지역 이동시간</b></td><td>지역명, 거리(km), 소요시간(분) — 현재 웹앱의 지역 표를 그대로 옮김</td></tr>
+        </tbody>
+      </table>
+      <ul style="margin-top:10px">
+        <li>수정자·수정 시각은 SharePoint가 자동 기록하고, 버전 기록으로 이전 값을 복구할 수 있습니다.</li>
+        <li>회사 계정으로 로그인하고, 사이트 구성원만 보고 고칠 수 있습니다.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4><span>자동화</span>Power Automate 흐름 3개</h4>
+      <table>
+        <thead><tr><th>시점</th><th>하는 일</th></tr></thead>
+        <tbody>
+          <tr><td>후보일 등록 시</td><td>응답이 필요한 부서 담당자에게 Teams 메시지</td></tr>
+          <tr><td>방문 확정 시</td><td>참석자 Outlook 일정 생성 + 팀 채널 알림</td></tr>
+          <tr><td>매일 아침</td><td>Capa 요청 후 7일 지난 건을 주담당에게 Teams로 알림</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h4><span>변경점</span>지금 웹앱과 달라지는 점</h4>
+      <ul>
+        <li><b>가능일 입력 방식:</b> "11/12~14" 같은 자유 입력 대신 후보일을 한 줄씩 등록하고, 각 부서가 가능/불가를 고릅니다. 세 쪽 모두 가능한 날이 공통일로 표시됩니다.</li>
+        <li><b>공유:</b> 10명이 같은 데이터를 보고, 저장은 업체 한 건 단위로 되어 서로 덮어쓰지 않습니다.</li>
+        <li><b>엑셀 업로드:</b> 앱 안 기능이 아니라 기존 정리 파일을 SharePoint 목록으로 한 번 옮깁니다 (엑셀에서 목록 만들기 또는 그리드 편집에 붙여넣기).</li>
+        <li><b>이동시간:</b> 지역 이동시간 목록에서 찾아 계산합니다 (지금과 같은 추정치).</li>
+        <li><b>화면:</b> 디자인 자유도는 웹앱보다 낮지만, Teams 탭과 휴대폰 앱에서 바로 열립니다.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4><span>확인</span>도입 전에 확인할 것</h4>
+      <ul>
+        <li><b>라이선스:</b> SharePoint·Outlook·Teams는 표준 커넥터라, 회사 Microsoft 365 플랜에 포함된 Power Apps·Power Automate 사용 권한으로 만들 수 있는 경우가 많습니다. 플랜과 사내 정책은 IT 확인이 필요합니다.</li>
+        <li><b>권한:</b> SharePoint 사이트(또는 Teams 팀) 생성, 앱·흐름 만들기 허용 여부.</li>
+        <li><b>규모:</b> 검색처럼 SharePoint에 위임되지 않는 조회는 최대 2,000건까지만 처리합니다. 현재 규모(수백 건)에서는 문제 없습니다.</li>
+        <li><b>이관:</b> 기존 정리 파일의 열 이름을 목록 열에 맞춰 정리한 뒤 한 번에 옮깁니다.</li>
+      </ul>
+    </div>
+  </div>
+  <p class="disc">이 페이지는 Power Apps 기본 컨트롤(갤러리, 양식, 드롭다운, 날짜 선택, 알림 표시줄)로 구성했을 때의 모양과 흐름을 미리 보기 위한 HTML 목업입니다. 업체·사람·일정은 가명이며, 입력은 새로고침하면 처음 상태로 돌아갑니다.</p>
+</div>
+
+<script>
+/* ================= 기본 ================= */
+const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+const TODAY=new Date(); TODAY.setHours(0,0,0,0);
+function isoLocal(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
+const T0=isoLocal(TODAY);
+function addDays(n){const d=new Date(TODAY);d.setDate(d.getDate()+n);return d;}
+function D(n){return isoLocal(addDays(n));}
+function wd(n){const s=n>=0?1:-1;let d=addDays(n);while(d.getDay()===0||d.getDay()===6){n+=s;d=addDays(n);}return n;}
+const WD=["일","월","화","수","목","금","토"];
+function fd(iso){if(!iso)return "—";const d=new Date(iso+"T00:00:00");return (d.getMonth()+1)+"/"+d.getDate()+" ("+WD[d.getDay()]+")";}
+function daysUntil(iso){return Math.round((new Date(iso+"T00:00:00")-TODAY)/864e5);}
+function since(iso){return iso?Math.floor((TODAY-new Date(iso+"T00:00:00"))/864e5):null;}
+function weekMonday(d){const x=new Date(d);x.setDate(x.getDate()-((x.getDay()+6)%7));return x;}
+
+/* ================= 상태 · 이동시간 ================= */
+const ST={nego:["일정 조율 중","#0F6CBD"],plan:["방문 확정","#5C2E91"],done:["방문 완료","#0E700E"],wait:["Capa 회신 대기","#BC4B09"],
+  reg:["등록 완료","#616161"],ng:["등록 불가","#C50F1F"],cxl:["방문 취소","#707070"],hold:["보류","#707070"]};
+const badge=st=>`<span class="bdg" style="color:${ST[st][1]}">${ST[st][0]}</span>`;
+const CITY=[["안산",145,105],["수원",105,80],["화성",110,85],["청주",30,32],["음성",55,48],["천안",30,32],["아산",35,35],["대전",45,40],
+ ["구미",145,112],["김해",260,185],["익산",95,78],["부산",280,195],["춘천",160,120],["세종",12,18]];
+const PROV=[["경기",120,90],["충북",50,45],["충남",45,42],["경북",160,120],["경남",250,180],["전북",110,85],["강원",150,115]];
+function trip(addr,hhmm){
+  const a=String(addr||""); let t=null;
+  for(const c of CITY)if(a.indexOf(c[0])>=0){t=c;break;}
+  if(!t)for(const p of PROV)if(a.indexOf(p[0])>=0){t=p;break;}
+  if(!t||!hhmm)return null;
+  const [h,m]=hhmm.split(":").map(Number); let mm=h*60+m-t[2]-20; if(mm<0)mm+=1440;
+  return {km:t[1],min:t[2],out:String(Math.floor(mm/60)).padStart(2,"0")+":"+String(mm%60).padStart(2,"0")};
+}
+
+/* ================= 가명 데이터 (SharePoint 목록을 흉내낸 메모리 데이터) ================= */
+const ME="김지훈";
+const A=((8-TODAY.getDay())%7)||7, B=A+7, SOON=wd(TODAY.getDay()===4?1:2);
+const C=(n,slot,v,c,q)=>({d:D(n),slot:slot,v:v,c:c,q:q});
+let VISITS=[
+  {co:"노바코스",st:"nego",kind:"OEM",addr:"경기 안산시 단원구 산단로 200",mgr:"한지민 이사",tel:"010-0000-2000",owner:"김지훈",picker:"협력생산팀",reason:"2차 벤더 확보",product:"앰플 신규",
+   cands:[C(A+1,"10:00–12:00","가능","가능","가능"),C(A+2,"14:00–16:00","가능","가능","조건부"),C(A+3,"10:00–12:00","가능","불가","가능")]},
+  {co:"그린셀랩",st:"nego",kind:"ODM",addr:"충북 청주시 흥덕구 오송읍",mgr:"오세훈 팀장",tel:"010-0000-2001",owner:"김지훈",picker:"협력생산팀",reason:"기존 벤더 납기 지연",product:"세럼 신규",
+   cands:[C(A,"10:00–12:00","가능","가능","불가"),C(A+1,"14:00–16:00","가능","불가","가능")]},
+  {co:"블루오션코스메틱",st:"nego",kind:"OEM/ODM",addr:"대전 대덕구 대덕대로 1600",mgr:"정예린 팀장",tel:"010-0000-2002",owner:"박도윤",picker:"품질보증팀",reason:"2차 벤더 확보",product:"크림 리뉴얼",
+   cands:[C(A+2,"10:00–12:00","미응답","가능","가능"),C(A+3,"14:00–16:00","미응답","가능","가능")]},
+  {co:"한결바이오",st:"nego",kind:"ODM",addr:"충남 아산시 둔포면",mgr:"윤도현 팀장",tel:"010-0000-2003",owner:"박도윤",picker:"협력생산팀",reason:"신규 카테고리 진입",product:"클렌징 신규",
+   cands:[C(B,"10:00–12:00","가능","미응답","가능"),C(B+1,"14:00–16:00","가능","미응답","가능")]},
+  {co:"유니크팩토리",st:"plan",kind:"OEM",addr:"경기 화성시 향남읍",mgr:"강민서 이사",tel:"010-0000-2004",owner:"김지훈",picker:"협력생산팀",reason:"2차 벤더 확보",product:"스틱 파운데이션",fix:D(SOON),time:"10:30",att:["김지훈","이수민"]},
+  {co:"나린코스",st:"plan",kind:"OEM",addr:"경북 구미시 산동읍",mgr:"신지우 팀장",tel:"010-0000-1003",owner:"박도윤",picker:"협력생산팀",reason:"2차 벤더 확보",product:"마스크팩 신규",fix:D(A+3),time:"13:00",att:["박도윤","정하늘"]},
+  {co:"라온코스메틱",st:"plan",kind:"ODM",addr:"경남 김해시 주촌면",mgr:"문하은 팀장",tel:"010-0000-1004",owner:"김지훈",picker:"품질보증팀",reason:"2차 벤더 확보",product:"마스크팩 신규",fix:D(wd(-2)),time:"09:00",att:["김지훈","이수민"]},
+  {co:"미래코스텍",st:"done",kind:"OEM/ODM",addr:"전북 익산시 함열읍",mgr:"조하늘 팀장",tel:"010-0000-2005",owner:"김지훈",picker:"협력생산팀",reason:"2차 벤더 확보",product:"마스크팩 대량",fix:D(wd(-6)),time:"11:00",att:["김지훈","정하늘"]},
+  {co:"라온랩",st:"done",kind:"OEM",addr:"충북 음성군 대소면",mgr:"신현우 팀장",tel:"010-0000-1000",owner:"박도윤",picker:"품질보증팀",reason:"2차 벤더 확보",product:"대용량 헤어",fix:D(wd(-12)),time:"14:00",att:["박도윤","이수민"],res:"설비 상태 양호, 소량 다품종 대응 우수"},
+  {co:"세라젬코스",st:"wait",kind:"OEM",addr:"충북 음성군 금왕읍",mgr:"백승호 팀장",tel:"010-0000-2006",owner:"김지훈",picker:"품질보증팀",reason:"기존 벤더 납기 지연",product:"바디로션 신규",fix:D(wd(-16)),time:"14:00",att:["김지훈"],res:"설비 여유 확인 후 월 캐파 회신 요청",cq:D(wd(-10))},
+  {co:"마루바이오",st:"wait",kind:"ODM",addr:"전북 익산시 왕궁면",mgr:"임도윤 팀장",tel:"010-0000-1001",owner:"박도윤",picker:"품질보증팀",reason:"2차 벤더 확보",product:"마스크팩 신규",fix:D(wd(-8)),time:"10:00",att:["박도윤","정하늘"],res:"인쇄 4도 대응 가능, 합지 라인 노후",cq:D(wd(-3))},
+  {co:"대한뷰티팜",st:"reg",kind:"ODM",addr:"경남 김해시 진례면",mgr:"남주원 대표",tel:"010-0000-2007",owner:"김지훈",picker:"협력생산팀",reason:"2차 벤더 확보",product:"선스틱 신규",fix:D(wd(-40)),time:"09:00",att:["김지훈","이수민"],res:"품질시스템 우수, 정식 거래처 등록 완료"},
+  {co:"정도코스메딕",st:"ng",kind:"OEM",addr:"부산 강서구 녹산산단",mgr:"문지호 팀장",tel:"010-0000-2008",owner:"박도윤",picker:"품질보증팀",reason:"2차 벤더 확보",product:"립 제품",fix:D(wd(-35)),time:"13:00",att:["박도윤"],res:"GMP 미비로 등록 불가"}
+].map((v,i)=>Object.assign({id:"V"+String(i+1).padStart(2,"0"),fix:"",time:"",att:[],res:"",cq:"",vdone:"",cands:[]},v));
+const byId=id=>VISITS.find(v=>v.id===id);
+
+/* ================= 판단 (Power Fx 수식으로 구현할 부분) ================= */
+const OK=r=>r==="가능"||r==="조건부";
+const isCommon=c=>OK(c.v)&&OK(c.c)&&OK(c.q);
+const commons=v=>v.cands.filter(isCommon).sort((a,b)=>a.d.localeCompare(b.d));
+const pending=v=>v.cands.some(c=>c.v==="미응답"||c.c==="미응답"||c.q==="미응답");
+const needResult=v=>(v.st==="plan"&&v.fix&&v.fix<T0)||v.st==="done"||v.st==="wait";
+const upcoming=v=>v.st==="plan"&&v.fix&&v.fix>=T0;
+function coordInfo(v){
+  const cm=commons(v);
+  if(cm.length)return {k:"ok",t:"공통 가능일 "+cm.length+"일 — 확정할 수 있습니다"};
+  if(pending(v)){const who=[];if(v.cands.some(c=>c.v==="미응답"))who.push("업체");if(v.cands.some(c=>c.c==="미응답"))who.push("협력생산");if(v.cands.some(c=>c.q==="미응답"))who.push("품질보증");
+    return {k:"info",t:who.join("·")+" 응답 대기 중"};}
+  if(!v.cands.length)return {k:"info",t:"후보일을 추가하세요"};
+  return {k:"bad",t:"공통 가능일 없음 — 후보일을 다시 잡아야 합니다"};
+}
+function myTodos(){
+  const out=[];
+  VISITS.forEach(v=>{
+    if(v.st==="nego"&&v.cands.some(c=>c.c==="미응답"))out.push({v,lv:2,t:"후보일 응답 (협력생산)",s:v.cands.filter(c=>c.c==="미응답").map(c=>fd(c.d)).join(", "),go:"coord",i:"✎"});
+    if(v.owner!==ME)return;
+    if(v.st==="nego"&&commons(v).length)out.push({v,lv:2,t:"방문일 확정",s:"공통 가능 "+commons(v).map(c=>fd(c.d)).join(", "),go:"coord",i:"✓"});
+    else if(v.st==="nego"&&!pending(v)&&v.cands.length)out.push({v,lv:2,t:"후보일 다시 잡기",s:"세 쪽이 모두 가능한 날이 없습니다",go:"coord",i:"↻"});
+    if(v.st==="plan"&&v.fix<T0)out.push({v,lv:3,t:"방문 결과 입력",s:"방문일 "+fd(v.fix)+" 지남",go:"result",i:"!"});
+    if(v.st==="done"&&!v.res)out.push({v,lv:3,t:"방문 결과 입력",s:"방문 "+fd(v.fix),go:"result",i:"!"});
+    if(v.st==="wait"&&since(v.cq)>=7)out.push({v,lv:3,t:"Capa 회신 확인",s:"요청 후 "+since(v.cq)+"일 경과",go:"result",i:"!"});
+  });
+  return out.sort((a,b)=>b.lv-a.lv);
+}
+
+/* ================= 태블릿: 화면 전환 ================= */
+const SEL={list:"V01",coord:null,result:null};
+let week=weekMonday(TODAY);
+function nav(scr,id){
+  if(id)SEL[scr]=id;
+  $$("#tablet .nav [data-scr]").forEach(b=>b.classList.toggle("on",b.dataset.scr===scr));
+  $$("#tablet .scr").forEach(s=>s.classList.toggle("on",s.id==="t-"+scr));
+  renderTablet();
+}
+function notify(msg,kind,where){
+  const n=$((where||"#t")+"-notify"); n.className="notify on"+(kind?" "+kind:""); n.textContent=msg;
+  clearTimeout(notify._t); notify._t=setTimeout(()=>n.classList.remove("on"),3200);
+}
+function renderTablet(){
+  $("#n-coord").textContent=VISITS.filter(v=>v.st==="nego").length;
+  const nr=VISITS.filter(needResult).length; $("#n-result").textContent=nr; $("#n-result").hidden=!nr;
+  renderHome(); renderList(); renderCoord(); renderResult();
+}
+
+/* ---- 홈 ---- */
+function renderHome(){
+  $("#t-today").textContent=fd(T0)+" 기준";
+  const nego=VISITS.filter(v=>v.st==="nego"), up=VISITS.filter(upcoming), noRes=VISITS.filter(v=>needResult(v)&&!v.res), wait=VISITS.filter(v=>v.st==="wait");
+  const late=wait.filter(v=>since(v.cq)>=7).length, wait2=nego.filter(pending).length;
+  const tiles=[["일정 조율 중",nego.length,"응답 대기 "+wait2+"건","coord",""],["방문 확정",up.length,"3일 이내 "+up.filter(v=>daysUntil(v.fix)<=3).length+"건","list",""],
+    ["결과 미입력",noRes.length,"방문 후 결과 기록 필요","result",noRes.length?"bad":""],["Capa 회신 대기",wait.length,"7일 경과 "+late+"건","result",late?"bad":""]];
+  $("#t-tiles").innerHTML=tiles.map(t=>`<button class="card tile" type="button" data-go="${t[3]}" data-ctl="카드 · CountRows()"><div class="lbl">${t[0]}</div><div class="n">${t[1]}<small>건</small></div><div class="x ${t[4]}">${t[2]}</div></button>`).join("");
+  const td=myTodos();
+  $("#t-todo").innerHTML=td.length?td.slice(0,6).map(x=>`<div class="gi" data-go="${x.go}" data-id="${x.v.id}"><span class="ico l${x.lv}">${x.i}</span><div class="tx"><div class="t">${esc(x.v.co)} · ${esc(x.t)}</div><div class="s">${esc(x.s)}</div></div><span class="chev">›</span></div>`).join(""):`<p class="empty">처리할 업무가 없습니다.</p>`;
+  const ups=up.sort((a,b)=>(a.fix+a.time).localeCompare(b.fix+b.time));
+  $("#t-up").innerHTML=ups.length?ups.map(v=>{const t=trip(v.addr,v.time),n=daysUntil(v.fix);
+    return `<div class="gi" data-go="list" data-id="${v.id}"><div class="tx"><div class="t">${esc(v.co)}</div><div class="s">${fd(v.fix)} ${esc(v.time)}${t?" · "+t.out+" 출발":""} · ${esc(v.att.join(", "))}</div></div><span class="bdg" style="color:${n<=3?"var(--warn)":"var(--fg3)"}">D-${n}</span></div>`;}).join(""):`<p class="empty">확정된 방문이 없습니다.</p>`;
+  const days=Array.from({length:14},(_,i)=>{const d=new Date(week);d.setDate(d.getDate()+i);return d;});
+  $("#t-range").textContent=`${days[0].getMonth()+1}/${days[0].getDate()} – ${days[13].getMonth()+1}/${days[13].getDate()}`;
+  $("#t-strip").innerHTML=days.map(d=>{const k=isoLocal(d),w=d.getDay();
+    const ev=VISITS.filter(v=>v.fix===k&&v.st!=="cxl").map(v=>`<button class="ev${v.st==="plan"?"":" done"}" type="button" data-go="list" data-id="${v.id}" title="${esc(v.time+" "+v.co)}">${esc(v.co)}</button>`).join("");
+    return `<div class="dy${w===0||w===6?" we":""}${k===T0?" td":""}"><div class="d">${WD[w]}<b>${d.getDate()}</b></div>${ev}</div>`;}).join("");
+}
+
+/* ---- 방문 목록 ---- */
+function renderList(){
+  const q=$("#t-q").value.trim(), f=$("#t-fst").value;
+  const rows=VISITS.filter(v=>(!f||v.st===f)&&(!q||(v.co+v.addr).indexOf(q)>=0));
+  $("#t-gal").innerHTML=rows.length?rows.map(v=>`<div class="gi${v.id===SEL.list?" sel":""}" data-pick="list" data-id="${v.id}"><div class="tx"><div class="t">${esc(v.co)}</div><div class="s">${esc(v.addr.split(" ").slice(0,2).join(" "))} · ${v.fix?fd(v.fix):"방문일 미정"}</div></div>${badge(v.st)}<span class="chev">›</span></div>`).join(""):`<p class="empty">검색 결과가 없습니다.</p>`;
+  const v=byId(SEL.list), box=$("#t-detail");
+  if(!v){box.innerHTML=`<p class="empty">방문처를 선택하세요.</p>`;return;}
+  const F=(l,val,cls)=>`<div class="fld${cls?" "+cls:""}"><span class="lbl">${l}</span><span class="v">${val||'<span style="color:var(--fg4)">—</span>'}</span></div>`;
+  const t=trip(v.addr,v.time);
+  box.innerHTML=`<div class="rp-h"><h3>${esc(v.co)}</h3>${badge(v.st)}<span class="sp"></span>
+      ${v.st==="nego"?`<button class="btn" type="button" data-go="coord" data-id="${v.id}">일정 조율</button>`:""}
+      ${needResult(v)?`<button class="btn" type="button" data-go="result" data-id="${v.id}">결과 입력</button>`:""}
+      <button class="btn pri" type="button" data-act="edit">편집</button></div>
+    <div class="rp-b">
+      <div class="sect">업체 정보</div>
+      <div class="g3">${F("구분",esc(v.kind))}${F("소재지",esc(v.addr),"span2")}${F("업체 담당자",esc(v.mgr))}${F("연락처",esc(v.tel))}${F("의뢰 예상 제품",esc(v.product))}</div>
+      <div class="sect" style="margin-top:20px">방문</div>
+      <div class="g3">${F("주담당",`<span class="chip"><span class="av">${esc(v.owner[0])}</span>${esc(v.owner)}</span>`)}${F("선정주체",esc(v.picker))}${F("선정 사유",esc(v.reason))}
+        ${F("확정 방문일",v.fix?fd(v.fix)+" "+esc(v.time):"")}${F("예상 출발",t?`${t.out} 출발 (약 ${t.km}km · ${t.min}분)`:"")}${F("참석자",v.att.map(a=>`<span class="chip"><span class="av">${esc(a[0])}</span>${esc(a)}</span>`).join(" "))}</div>
+      <div class="sect" style="margin-top:20px">결과</div>
+      <div class="g3">${F("방문 결과",esc(v.res),"span2")}${F("Capa 요청일",v.cq?fd(v.cq)+" ("+since(v.cq)+"일 경과)":"")}</div>
+    </div>`;
+}
+
+/* ---- 일정 조율 ---- */
+function renderCoord(){
+  const list=VISITS.filter(v=>v.st==="nego");
+  if(!list.some(v=>v.id===SEL.coord))SEL.coord=list[0]?list[0].id:null;
+  $("#t-cosel").innerHTML=list.map(v=>`<option value="${v.id}"${v.id===SEL.coord?" selected":""}>${esc(v.co)}</option>`).join("")||`<option>조율 중인 업체 없음</option>`;
+  const v=byId(SEL.coord);
+  if(!v){$("#t-cometa").textContent="";$("#t-banner").innerHTML="";$("#t-cands").innerHTML="";$("#t-confirm").innerHTML=`<p class="empty">조율 중인 업체가 없습니다.</p>`;return;}
+  $("#t-cometa").textContent=`${v.addr} · 업체 ${v.mgr} ${v.tel} · 주담당 ${v.owner}`;
+  const ci=coordInfo(v);
+  $("#t-banner").innerHTML=`<div class="banner ${ci.k}">${esc(ci.t)}</div>`;
+  const opt=val=>["미응답","가능","조건부","불가"].map(o=>`<option${o===val?" selected":""}>${o}</option>`).join("");
+  $("#t-cands").innerHTML=v.cands.length?v.cands.map((c,i)=>{const cm=isCommon(c);
+    return `<tr class="${cm?"cm":""}"><td><b>${fd(c.d)}</b></td><td>${esc(c.slot)}</td>
+      <td><span class="r-${c.v}">${c.v}</span></td>
+      <td><select class="dd r-${c.c}" data-resp="${i}" aria-label="협력생산 응답">${opt(c.c)}</select></td>
+      <td><span class="r-${c.q}">${c.q}</span></td>
+      <td>${cm?`<span class="cmk">✓ 공통${c.v==="조건부"||c.c==="조건부"||c.q==="조건부"?" (조건부)":""}</span>`:`<span class="cmk no">—</span>`}</td></tr>`;}).join("")
+    :`<tr><td colspan="6"><p class="empty">후보일이 없습니다. ＋ 후보일 추가로 등록하세요.</p></td></tr>`;
+  const cm=commons(v);
+  $("#t-confirm").innerHTML=`<div class="ch"><span class="h3">방문 확정</span></div>
+    <div class="cf">
+      <div class="fld"><span class="lbl">확정할 날짜</span>${cm.length?`<div class="radio" data-ctl="라디오 · Filter(공통)">${cm.map((c,i)=>`<label><input type="radio" name="cfd" value="${c.d}"${i===0?" checked":""}> ${fd(c.d)} · ${esc(c.slot)}</label>`).join("")}</div>`:`<span class="v" style="color:var(--fg3)">공통 가능일이 생기면 여기에 표시됩니다</span>`}</div>
+      <div class="fld"><span class="lbl">방문 시간</span><div data-ctl="날짜/시간 선택"><input class="inp" type="time" id="t-cft" value="${cm.length?cm[0].slot.slice(0,5):"10:00"}"${cm.length?"":" disabled"}></div></div>
+      <div class="trip" id="t-cftrip"></div>
+      <div class="fld"><span class="lbl">참석자</span><div class="chips" data-ctl="콤보 상자 · Office 365 사용자"><span class="chip"><span class="av">김</span>김지훈</span><span class="chip"><span class="av">이</span>이수민</span><button class="btn sub" type="button" style="min-height:24px;padding:0 6px">＋ 추가</button></div></div>
+      <button class="btn pri" type="button" id="t-cfgo"${cm.length?"":" disabled"} data-ctl="단추 · Patch + 흐름 실행">방문 확정</button>
+      <div class="note">확정하면 방문처 상태가 '방문 확정'으로 바뀌고, Power Automate가 참석자에게 Outlook 일정과 Teams 알림을 보냅니다.</div>
+    </div>`;
+  const upd=()=>{const tm=$("#t-cft").value,t=trip(v.addr,tm);$("#t-cftrip").innerHTML=cm.length&&t?`예상 출발 <b>${t.out}</b> · 약 ${t.km}km, ${t.min}분 (지역 이동시간 목록 기준)`:"";};
+  $("#t-cft").addEventListener("input",upd); upd();
+  $$("#t-cands [data-resp]").forEach(s=>s.addEventListener("change",()=>{v.cands[+s.dataset.resp].c=s.value;notify("응답을 저장했습니다 (Patch)");renderTablet();}));
+  if(cm.length)$("#t-cfgo").onclick=()=>{
+    v.fix=$("input[name=cfd]:checked").value; v.time=$("#t-cft").value; v.st="plan"; v.att=["김지훈","이수민"];
+    notify(`${v.co} · ${fd(v.fix)} ${v.time} 확정 — 참석자에게 Outlook 일정과 Teams 알림 발송`); renderTablet();
+  };
+}
+$("#t-cosel").addEventListener("change",e=>{SEL.coord=e.target.value;renderCoord();});
+$("#t-addc").onclick=()=>{const v=byId(SEL.coord);if(!v)return;
+  const last=v.cands.length?v.cands.map(c=>c.d).sort().pop():T0;
+  let n=Math.max(daysUntil(last)+1,1); n=wd(n);
+  v.cands.push(C(n,"10:00–12:00","미응답","미응답","미응답"));
+  notify("후보일을 추가했습니다 — 업체·품질보증 담당자에게 응답 요청 알림 발송","info"); renderTablet();};
+
+/* ---- 방문 결과 ---- */
+function renderResult(){
+  const list=VISITS.filter(needResult).sort((a,b)=>a.fix.localeCompare(b.fix));
+  if(!list.some(v=>v.id===SEL.result))SEL.result=list[0]?list[0].id:null;
+  $("#t-rgal").innerHTML=list.length?list.map(v=>{const late=v.st==="wait"&&since(v.cq)>=7;
+    const s=v.st==="wait"?`Capa 요청 ${fd(v.cq)} · ${since(v.cq)}일 경과`:v.res?"결과 입력됨 · 판정 대기":`방문 ${fd(v.fix)} · 결과 미입력`;
+    return `<div class="gi${v.id===SEL.result?" sel":""}" data-pick="result" data-id="${v.id}"><div class="tx"><div class="t">${esc(v.co)}</div><div class="s" style="${late||(!v.res&&v.st!=="wait")?"color:var(--bad)":""}">${esc(s)}</div></div>${badge(v.st)}<span class="chev">›</span></div>`;}).join(""):`<p class="empty">결과 입력이 필요한 건이 없습니다.</p>`;
+  const v=byId(SEL.result), box=$("#t-rform");
+  if(!v){box.innerHTML=`<p class="empty">방문을 선택하세요.</p>`;return;}
+  const cur=["done","wait","reg","ng"].indexOf(v.st)>=0?v.st:"done";
+  box.innerHTML=`<div class="rp-h"><h3>${esc(v.co)}</h3>${badge(v.st)}<span class="sp"></span><span class="lbl">예정 ${fd(v.fix)} ${esc(v.time)}</span></div>
+    <div class="rp-b"><div class="g2">
+      <div class="fld"><span class="lbl">실제 방문일 *</span><div data-ctl="날짜 선택"><input class="inp" type="date" id="r-day" value="${v.vdone||v.fix}"></div></div>
+      <div class="fld"><span class="lbl">참석자</span><div class="chips" data-ctl="콤보 상자 · 사용자">${v.att.map(a=>`<span class="chip"><span class="av">${esc(a[0])}</span>${esc(a)}</span>`).join("")}</div></div>
+      <div class="fld span2"><span class="lbl">주요 확인사항 · 종합 의견 *</span><div data-ctl="텍스트 입력 (여러 줄)"><textarea class="inp" id="r-res" rows="4" placeholder="설비, 생산능력, 품질 확인 내용과 판단 근거">${esc(v.res)}</textarea></div></div>
+      <div class="fld"><span class="lbl">판정 *</span><div class="radio" id="r-st" data-ctl="라디오">
+        ${[["done","방문 완료 (판정 보류)"],["wait","Capa 회신 대기"],["reg","등록 완료"],["ng","등록 불가"]].map(o=>`<label><input type="radio" name="rst" value="${o[0]}"${o[0]===cur?" checked":""}> ${o[1]}</label>`).join("")}</div></div>
+      <div class="fld" id="r-cqw"${cur==="wait"?"":" hidden"}><span class="lbl">Capa 요청일</span><div data-ctl="날짜 선택"><input class="inp" type="date" id="r-cq" value="${v.cq||T0}"></div><span class="lbl" style="font-weight:400">7일이 지나면 매일 아침 주담당에게 Teams 알림</span></div>
+    </div></div>
+    <div class="rp-f"><button class="btn" type="button" data-act="reset">취소</button><button class="btn pri" type="button" id="r-save" data-ctl="단추 · SubmitForm()">저장</button></div>`;
+  $$("#r-st input").forEach(r=>r.addEventListener("change",()=>{$("#r-cqw").hidden=r.value!=="wait";}));
+  $("#r-save").onclick=()=>{
+    const res=$("#r-res").value.trim(); if(!res){notify("주요 확인사항을 입력하세요","info");$("#r-res").focus();return;}
+    const st=$("input[name=rst]:checked").value;
+    v.res=res; v.vdone=$("#r-day").value; v.st=st; if(st==="wait")v.cq=$("#r-cq").value;
+    notify(`${v.co} · ${ST[st][0]}(으)로 저장했습니다`); renderTablet();
+  };
+}
+
+/* ================= 휴대폰 ================= */
+let PV={tab:"home",id:null};
+function pgo(tab,id){PV={tab,id:id||null};renderPhone();}
+function renderPhone(){
+  const det=PV.tab==="detail";
+  $("#p-home").hidden=PV.tab!=="home"; $("#p-list").hidden=PV.tab!=="list"; $("#p-detail").hidden=!det;
+  $("#p-back").hidden=!det; $("#p-title").textContent=det?byId(PV.id).co:PV.tab==="list"?"방문 목록":"방문예정처";
+  $$("#phone [data-ptab]").forEach(b=>b.classList.toggle("on",b.dataset.ptab===(det?"list":PV.tab)));
+  if(PV.tab==="home"){
+    const nego=VISITS.filter(v=>v.st==="nego").length, up=VISITS.filter(upcoming).length, nr=VISITS.filter(v=>needResult(v)&&!v.res).length, wt=VISITS.filter(v=>v.st==="wait").length;
+    const td=myTodos();
+    $("#p-home").innerHTML=`<div class="greet"><h3 style="font-size:18px">안녕하세요, 김지훈 님</h3></div>
+      <div class="ph-tiles">${[["일정 조율",nego],["방문 확정",up],["결과 미입력",nr],["Capa 대기",wt]].map(t=>`<div class="card tile" data-ctl="카드"><div class="lbl">${t[0]}</div><div class="n">${t[1]}<small>건</small></div></div>`).join("")}</div>
+      <div class="card" data-ctl="갤러리 · 내 업무"><div class="ch"><span class="h3">내가 처리할 업무</span></div>
+        ${td.slice(0,5).map(x=>`<div class="gi" data-pgo="detail" data-id="${x.v.id}"><span class="ico l${x.lv}">${x.i}</span><div class="tx"><div class="t">${esc(x.v.co)}</div><div class="s">${esc(x.t)}</div></div><span class="chev">›</span></div>`).join("")||`<p class="empty">처리할 업무가 없습니다.</p>`}</div>`;
+  }
+  if(PV.tab==="list"){
+    const q=$("#p-q").value.trim();
+    $("#p-gal").innerHTML=VISITS.filter(v=>!q||(v.co+v.addr).indexOf(q)>=0).map(v=>`<div class="gi" data-pgo="detail" data-id="${v.id}"><div class="tx"><div class="t">${esc(v.co)}</div><div class="s">${v.fix?fd(v.fix):"방문일 미정"} · ${esc(v.addr.split(" ").slice(0,2).join(" "))}</div></div>${badge(v.st)}</div>`).join("");
+  }
+  if(det){
+    const v=byId(PV.id), t=trip(v.addr,v.time);
+    let h=`<div class="card pc"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">${badge(v.st)}<span class="lbl">주담당 ${esc(v.owner)}</span></div>
+      <div style="display:grid;gap:10px">
+        <div class="fld"><span class="lbl">소재지</span><span class="v">${esc(v.addr)}</span></div>
+        <div class="fld"><span class="lbl">업체 담당자</span><span class="v">${esc(v.mgr)} · <a href="tel:${esc(v.tel)}" style="color:var(--brand)">${esc(v.tel)}</a></span></div>
+        ${v.fix?`<div class="fld"><span class="lbl">확정 방문일</span><span class="v">${fd(v.fix)} ${esc(v.time)}${t?` · ${t.out} 출발`:""}</span></div>`:""}
+      </div></div>`;
+    if(v.st==="nego")h+=`<div class="card pc" data-ctl="갤러리 · 내 부서 응답"><div class="h3" style="margin-bottom:6px">후보일 응답 (협력생산)</div>
+      ${v.cands.map((c,i)=>`<div class="cand-row"><div class="top"><span>${fd(c.d)}</span><span class="lbl">${esc(c.slot)}</span></div>
+        <div class="resp">${["가능","조건부","불가"].map(o=>`<button type="button" class="${o}" data-presp="${i}" data-val="${o}" aria-pressed="${c.c===o}">${o}</button>`).join("")}</div>
+        <div class="oth">업체 ${c.v} · 품질보증 ${c.q}${isCommon(c)?" · <b style='color:var(--ok)'>공통 가능</b>":""}</div></div>`).join("")}</div>`;
+    if(needResult(v))h+=`<div class="card pc" data-ctl="편집 양식"><div class="h3" style="margin-bottom:10px">방문 결과</div>
+      <div style="display:grid;gap:10px">
+        <div class="fld"><span class="lbl">주요 확인사항 *</span><textarea class="inp" id="p-res" rows="4">${esc(v.res)}</textarea></div>
+        <div class="fld"><span class="lbl">판정</span><select class="dd" id="p-st">${["done","wait","reg","ng"].map(k=>`<option value="${k}"${k===v.st?" selected":""}>${ST[k][0]}</option>`).join("")}</select></div>
+        <button class="btn pri" type="button" id="p-save">저장</button></div></div>`;
+    if(v.res&&!needResult(v))h+=`<div class="card pc"><div class="fld"><span class="lbl">방문 결과</span><span class="v">${esc(v.res)}</span></div></div>`;
+    $("#p-detail").innerHTML=h;
+    $$("#p-detail [data-presp]").forEach(b=>b.onclick=()=>{v.cands[+b.dataset.presp].c=b.dataset.val;notify("응답을 저장했습니다","","#p");renderPhone();renderTablet();});
+    const sv=$("#p-save"); if(sv)sv.onclick=()=>{const r=$("#p-res").value.trim();if(!r){notify("주요 확인사항을 입력하세요","info","#p");return;}
+      v.res=r;v.st=$("#p-st").value;if(v.st==="wait"&&!v.cq)v.cq=T0;notify("저장했습니다","","#p");renderPhone();renderTablet();};
+  }
+}
+$("#p-back").onclick=()=>pgo("list");
+$("#p-q").addEventListener("input",renderPhone);
+
+/* ================= 공통 이벤트 ================= */
+document.addEventListener("click",e=>{
+  const t=e.target.closest("[data-go],[data-pick],[data-scr],[data-week],[data-act],[data-ptab],[data-pgo],[data-layout]");
+  if(!t)return;
+  const d=t.dataset;
+  if(d.layout){setLayout(d.layout);return;}
+  if(d.scr){nav(d.scr);return;}
+  if(d.go){nav(d.go,d.id);return;}
+  if(d.pick){SEL[d.pick]=d.id;renderTablet();return;}
+  if(d.week!=null){const n=+d.week;if(n===0)week=weekMonday(TODAY);else{week=new Date(week);week.setDate(week.getDate()+n*7);}renderHome();return;}
+  if(d.act==="edit"){notify("편집 양식으로 전환됩니다 (EditForm) — 목업에서는 생략","info");return;}
+  if(d.act==="reset"){renderResult();return;}
+  if(d.ptab){pgo(d.ptab);return;}
+  if(d.pgo){pgo(d.pgo,d.id);return;}
+});
+$("#t-q").addEventListener("input",renderList);
+$("#t-fst").innerHTML=`<option value="">전체 상태</option>`+Object.keys(ST).map(k=>`<option value="${k}">${ST[k][0]}</option>`).join("");
+$("#t-fst").addEventListener("change",renderList);
+$("#t-new").onclick=()=>notify("새 방문처 양식이 열립니다 (NewForm) — 목업에서는 생략","info");
+$("#annot").addEventListener("change",e=>document.body.classList.toggle("annot",e.target.checked));
+
+/* ================= 레이아웃 · 화면 맞춤 (Power Apps '화면에 맞게 조정'과 같은 방식) ================= */
+let LAYOUT=window.innerWidth<760?"phone":"tablet";
+function setLayout(l){LAYOUT=l;
+  $$("[data-layout]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.layout===l?"true":"false"));
+  $("#tablet").hidden=l!=="tablet"; $("#phone").hidden=l!=="phone"; fit();}
+function fit(){
+  const st=LAYOUT==="tablet"?$("#tablet"):$("#phone"), W=LAYOUT==="tablet"?1366:410, H=LAYOUT==="tablet"?768:864;
+  const avail=$("#wrap").clientWidth, s=Math.min(1,avail/W);
+  st.style.transform=`scale(${s})`; st.style.left=Math.max(0,(avail-W*s)/2)+"px";
+  $("#wrap").style.height=Math.ceil(H*s)+"px";
+  $("#cap").textContent=(LAYOUT==="tablet"?"태블릿 레이아웃 1366×768":"휴대폰 레이아웃 390×844")+" · 화면 크기에 맞춰 "+Math.round(s*100)+"%로 표시";
+}
+window.addEventListener("resize",fit);
+
+renderTablet(); renderPhone(); setLayout(LAYOUT);
+</script>
+</body>
+</html>
