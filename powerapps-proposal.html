@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:,">
+<title>방문업무 Power Apps 구성 제안 — 화면 5안 · 월별 통계 · vendor-scout 연계</title>
+<style>
+:root{
+  --bg:#F3F4F6; --surface:#FFFFFF; --sunk:#F6F7F9; --ink:#15171C; --ink2:#4A505C; --ink3:#848A96;
+  --line:#E1E4E9; --line2:#CDD1D8; --brand:#0F6CBD; --brand-weak:#E9F2FB; --brand-ink:#0B5AA0;
+  --good:#0E7A3A; --good-weak:#E7F5EC; --warn:#9A5B00; --warn-weak:#FDF3E1; --bad:#B42318; --bad-weak:#FCEBEA;
+  --code:#F3F5F9; --code-ink:#1F2A44;
+  /* 차트 토큰 (dataviz 기본 팔레트 1·2번, 검증 통과) */
+  --s1:#2a78d6; --s2:#eb6834; --grid:#E6E8EC; --axis:#848A96; --viz-surface:#FFFFFF;
+  --font:"Pretendard","Segoe UI","Malgun Gothic","Apple SD Gothic Neo",-apple-system,system-ui,sans-serif;
+  --mono:Consolas,"D2Coding",Menlo,"Malgun Gothic",monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0F1115; --surface:#181B21; --sunk:#1E222A; --ink:#E9EBEF; --ink2:#B3B8C3; --ink3:#7E8591;
+  --line:#2A2F38; --line2:#394049; --brand:#5AA2EA; --brand-weak:#152A41; --brand-ink:#8EC2F5;
+  --good:#4CC28A; --good-weak:#132A1E; --warn:#E3A64B; --warn-weak:#2A2213; --bad:#EF7B70; --bad-weak:#2E1A18;
+  --code:#14181F; --code-ink:#D7DEEC;
+  --s1:#3987e5; --s2:#d95926; --grid:#2A2F38; --axis:#7E8591; --viz-surface:#181B21;
+}}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-padding-top:64px}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.65;-webkit-font-smoothing:antialiased}
+a{color:var(--brand-ink)}
+b,strong{font-weight:700}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+
+/* 상단 · 목차 */
+.top{position:sticky;top:0;z-index:40;background:color-mix(in srgb,var(--surface) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:16px;height:52px}
+.top b{font-size:14px;white-space:nowrap}
+.top nav{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;margin-left:auto}
+.top nav::-webkit-scrollbar{display:none}
+.top nav a{font-size:13px;font-weight:600;color:var(--ink2);text-decoration:none;padding:6px 10px;border-radius:6px;white-space:nowrap}
+.top nav a:hover,.top nav a.on{background:var(--brand-weak);color:var(--brand-ink)}
+
+/* 표지 */
+.hero{padding:44px 0 28px}
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--brand-ink);text-transform:uppercase}
+.hero h1{font-size:34px;line-height:1.25;font-weight:800;letter-spacing:-.025em;margin:8px 0 12px}
+.hero p.lead{font-size:17px;color:var(--ink2);max-width:820px}
+.verdict{margin-top:24px;display:grid;grid-template-columns:1.2fr 1fr;gap:16px}
+.box{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
+.box h3{font-size:13px;font-weight:700;color:var(--ink3);letter-spacing:.04em;margin-bottom:8px}
+.rec{border:2px solid var(--brand)}
+.rec .big{font-size:21px;font-weight:800;letter-spacing:-.015em;line-height:1.35}
+.rec ul{margin:10px 0 0 18px;color:var(--ink2);font-size:14px;display:grid;gap:4px}
+.facts{list-style:none;display:grid;gap:10px;font-size:14px;color:var(--ink2)}
+.facts li{display:flex;gap:10px}
+.facts li span{flex:none;width:22px;height:22px;border-radius:6px;background:var(--brand-weak);color:var(--brand-ink);font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center}
+
+/* 섹션 */
+section.sec{padding:36px 0 8px}
+.sec>.wrap>h2{font-size:26px;font-weight:800;letter-spacing:-.02em;display:flex;align-items:baseline;gap:12px}
+.sec>.wrap>h2 .n{font-size:14px;color:var(--brand-ink);font-weight:800}
+.sec>.wrap>p.sub{color:var(--ink2);margin:6px 0 18px;max-width:860px}
+h3.h{font-size:18px;font-weight:700;margin:26px 0 10px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:2px 9px;border-radius:999px;background:var(--sunk);border:1px solid var(--line);color:var(--ink2);white-space:nowrap}
+.note{font-size:13px;color:var(--ink3)}
+.callout{border-left:4px solid var(--brand);background:var(--brand-weak);border-radius:8px;padding:12px 16px;font-size:14px;margin:14px 0}
+.callout.warn{border-color:var(--warn);background:var(--warn-weak)}
+.code{position:relative;background:var(--code);color:var(--code-ink);border:1px solid var(--line);border-radius:10px;padding:12px 70px 12px 14px;font-family:var(--mono);font-size:13px;line-height:1.6;white-space:pre-wrap;word-break:break-word;margin:8px 0}
+.cp{position:absolute;top:8px;right:8px;border:1px solid var(--line2);background:var(--surface);color:var(--ink2);border-radius:6px;padding:2px 10px;font:600 12px var(--font);cursor:pointer;white-space:nowrap}
+.cp:hover{border-color:var(--brand);color:var(--brand-ink)}
+.cp.ok{background:var(--good);border-color:var(--good);color:#fff}
+table.t{width:100%;border-collapse:collapse;font-size:14px}
+table.t th,table.t td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+table.t th{font-size:12.5px;color:var(--ink2);background:var(--sunk);font-weight:700;white-space:nowrap}
+.tw{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:12px}
+
+/* 원칙 */
+.prin{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.prin div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.prin b{display:block;font-size:15px;margin-bottom:2px}
+.prin p{font-size:13.5px;color:var(--ink2)}
+
+/* ===== 안 카드 ===== */
+.opt{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px;margin:18px 0;display:grid;grid-template-columns:1.45fr 1fr;gap:22px;align-items:start}
+.opt.recm{border:2px solid var(--brand);box-shadow:0 6px 24px rgba(15,108,189,.10)}
+.opt-h{grid-column:1/-1;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.opt-h .no{font-size:13px;font-weight:800;color:#fff;background:var(--ink);border-radius:8px;padding:3px 10px}
+.opt.recm .opt-h .no{background:var(--brand)}
+.opt-h h3{font-size:21px;font-weight:800;letter-spacing:-.015em}
+.opt-h .tag{margin-left:auto}
+.opt dl{display:grid;gap:10px;font-size:14px}
+.opt dt{font-size:12px;font-weight:700;color:var(--ink3);letter-spacing:.03em}
+.opt dd{color:var(--ink2)}
+.opt dd ul{margin-left:18px;display:grid;gap:2px}
+.score{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:13px;margin-top:4px}
+.score span:nth-child(odd){color:var(--ink3)}
+.dots{letter-spacing:2px;color:var(--brand);font-size:12px}
+.dots i{color:var(--line2);font-style:normal}
+
+/* ===== 목업 공통 (Power Apps 화면 축소판) ===== */
+.scr{container-type:inline-size;position:relative;width:100%;aspect-ratio:16/9;background:#F5F5F5;border-radius:10px;border:1px solid #D6D9DE;overflow:hidden;color:#242424;font-family:"Segoe UI","Malgun Gothic",sans-serif;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+.scr *{font-size:1.45cqw;line-height:1.35}
+.m-hd{position:absolute;left:0;right:0;top:0;height:7.5%;background:#0F6CBD;color:#fff;display:flex;align-items:center;padding:0 2%;gap:2%}
+.m-hd b{font-size:1.9cqw}
+.m-hd .u{margin-left:auto;display:flex;align-items:center;gap:1cqw;opacity:.95}
+.m-av{width:2.6cqw;height:2.6cqw;border-radius:50%;background:#fff;color:#0F6CBD;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:1.2cqw}
+.m-body{position:absolute;left:0;right:0;top:7.5%;bottom:0;display:flex}
+.m-nav{width:13%;background:#fff;border-right:1px solid #E0E0E0;padding:1cqw .6cqw;display:flex;flex-direction:column;gap:.4cqw}
+.m-nav span{padding:.8cqw 1cqw;border-radius:.5cqw;color:#424242;font-weight:600}
+.m-nav span.on{background:#EBF3FC;color:#0F6CBD}
+.m-main{flex:1;padding:1.4cqw;display:flex;flex-direction:column;gap:1.1cqw;min-width:0}
+.m-card{background:#fff;border-radius:.7cqw;box-shadow:0 0 1px rgba(0,0,0,.14),0 1px 2px rgba(0,0,0,.12);padding:1cqw 1.2cqw;min-width:0}
+.m-t{font-weight:700;font-size:1.6cqw}
+.m-s{color:#707070}
+.m-row{display:flex;align-items:center;gap:1cqw}
+.m-row>.sp{flex:1}
+.bdg{display:inline-flex;align-items:center;gap:.4cqw;font-weight:700;border:1px solid currentColor;border-radius:99cqw;padding:0 .7cqw;white-space:nowrap;font-size:1.25cqw}
+.g-A{color:#0E700E}.g-B{color:#0F6CBD}.g-C{color:#B8560A}.g-D{color:#707070}
+.m-btn{border:1px solid #D1D1D1;border-radius:.4cqw;background:#fff;padding:.25cqw .9cqw;font-weight:600;white-space:nowrap}
+.m-btn.p{background:#0F6CBD;border-color:#0F6CBD;color:#fff}
+.m-tabs{display:flex;gap:.3cqw;border-bottom:1px solid #E0E0E0}
+.m-tabs span{padding:.7cqw 1.2cqw;font-weight:600;color:#616161;border-bottom:.25cqw solid transparent;white-space:nowrap}
+.m-tabs span.on{color:#242424;border-bottom-color:#0F6CBD}
+.m-tabs span i{font-style:normal;font-size:1.1cqw;background:#0F6CBD;color:#fff;border-radius:99cqw;padding:0 .6cqw;margin-left:.4cqw}
+.m-tbl{width:100%;border-collapse:collapse}
+.m-tbl th{font-weight:600;color:#707070;text-align:left;padding:.6cqw .8cqw;border-bottom:1px solid #E0E0E0;background:#FAFAFA}
+.m-tbl td{padding:.75cqw .8cqw;border-bottom:1px solid #F0F0F0;white-space:nowrap}
+.m-kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:1cqw}
+.m-kpi .m-card b{display:block;font-size:2.6cqw;font-weight:800}
+.m-col{background:#EEF0F3;border-radius:.7cqw;padding:.8cqw;display:flex;flex-direction:column;gap:.7cqw;min-width:0}
+.m-col h5{font-size:1.4cqw;font-weight:700;color:#424242;display:flex;gap:.5cqw}
+.m-col h5 i{font-style:normal;color:#707070;font-weight:600}
+.m-k{background:#fff;border-radius:.5cqw;padding:.8cqw;box-shadow:0 1px 2px rgba(0,0,0,.1);display:grid;gap:.4cqw}
+.m-k.sel{outline:.2cqw solid #0F6CBD}
+.m-step{display:flex;align-items:center;gap:.6cqw}
+.m-step span{display:flex;align-items:center;gap:.4cqw;color:#707070;font-weight:600;white-space:nowrap}
+.m-step span::before{content:"";width:1.3cqw;height:1.3cqw;border-radius:50%;border:.2cqw solid #BDBDBD;background:#fff}
+.m-step span.ok{color:#0E700E}.m-step span.ok::before{background:#0E700E;border-color:#0E700E}
+.m-step span.now{color:#0F6CBD}.m-step span.now::before{border-color:#0F6CBD;background:#0F6CBD;box-shadow:0 0 0 .3cqw #CFE4FA}
+.m-step i{flex:1;height:.15cqw;background:#D1D1D1;min-width:1cqw}
+.m-chk{display:grid;grid-template-columns:auto 1fr auto;gap:.4cqw 1cqw;align-items:center}
+.ok-i{color:#0E700E;font-weight:800}.wn-i{color:#B8560A;font-weight:800}.no-i{color:#9E9E9E;font-weight:800}
+.m-bars{display:flex;align-items:flex-end;gap:.8cqw;height:100%;padding-top:1cqw;border-bottom:1px solid #E0E0E0}
+.m-bars div{flex:1;display:flex;gap:.2cqw;align-items:flex-end;height:100%}
+.m-bars i{flex:1;border-radius:.4cqw .4cqw 0 0;background:#2a78d6}
+.m-bars i+i{background:#eb6834}
+.m-fn{display:grid;gap:.6cqw}
+.m-fn div{display:grid;grid-template-columns:34% 1fr auto;gap:.8cqw;align-items:center}
+.m-fn span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.m-fn i{display:block;height:1.4cqw;border-radius:0 .4cqw .4cqw 0;background:#2a78d6}
+/* 휴대폰 */
+.phones{display:flex;gap:14px;justify-content:center}
+.phone{container-type:inline-size;width:46%;max-width:250px;aspect-ratio:9/18.5;border:7px solid #1f1f1f;border-radius:26px;background:#F5F5F5;overflow:hidden;position:relative;color:#242424;font-family:"Segoe UI","Malgun Gothic",sans-serif;box-shadow:0 4px 16px rgba(0,0,0,.15)}
+.phone *{font-size:5.2cqw;line-height:1.35}
+.p-hd{background:#0F6CBD;color:#fff;padding:5cqw 5cqw 4cqw;display:flex;align-items:center;gap:3cqw}
+.p-hd b{font-size:6cqw}
+.p-body{padding:4cqw;display:grid;gap:3cqw}
+.p-seg{display:flex;background:#E8E8E8;border-radius:3cqw;padding:1cqw}
+.p-seg span{flex:1;text-align:center;padding:1.5cqw;border-radius:2.4cqw;font-weight:600;color:#616161}
+.p-seg span.on{background:#fff;color:#0F6CBD;box-shadow:0 1px 2px rgba(0,0,0,.1)}
+.p-c{background:#fff;border-radius:3cqw;padding:3.5cqw;box-shadow:0 1px 2px rgba(0,0,0,.12);display:grid;gap:2cqw}
+.p-c .tt{font-weight:700}
+.p-c .ss{color:#707070;font-size:4.4cqw}
+.p-btns{display:flex;gap:2cqw}
+.p-btns span{flex:1;text-align:center;border:1px solid #D1D1D1;border-radius:2cqw;padding:1.6cqw 0;font-weight:700;font-size:4.6cqw}
+.p-btns span.g{background:#0E700E;border-color:#0E700E;color:#fff}
+.p-btns span.p{background:#0F6CBD;border-color:#0F6CBD;color:#fff}
+.p-nav{position:absolute;left:0;right:0;bottom:0;height:13cqw;background:#fff;border-top:1px solid #E0E0E0;display:flex}
+.p-nav span{flex:1;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:4.2cqw;color:#707070}
+.p-nav span.on{color:#0F6CBD}
+.p-sc{display:grid;grid-template-columns:1fr auto;gap:1.5cqw 2cqw;align-items:center}
+.p-sc .sg{display:flex;gap:1cqw}
+.p-sc .sg i{min-width:6.5cqw;padding:0 1.4cqw;height:6.5cqw;border-radius:1.5cqw;white-space:nowrap;border:1px solid #D1D1D1;display:flex;align-items:center;justify-content:center;font-style:normal;font-size:4cqw;font-weight:700;color:#616161}
+.p-sc .sg i.on{background:#0F6CBD;border-color:#0F6CBD;color:#fff}
+
+/* 비교표 */
+.cmp td:first-child{font-weight:700;white-space:nowrap}
+.cmp td.c{text-align:center;white-space:nowrap}
+.cmp tr.recm td{background:var(--brand-weak)}
+
+/* ===== 통계 차트 ===== */
+.viz{background:var(--viz-surface);border:1px solid var(--line);border-radius:14px;padding:18px 18px 12px}
+.viz-h{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+.viz-h h4{font-size:16px;font-weight:700}
+.viz-h p{font-size:13px;color:var(--ink3)}
+.legend{display:flex;gap:14px;font-size:13px;color:var(--ink2);margin-left:auto;align-items:center}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.chart{position:relative}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart text{font-family:var(--font);fill:var(--ink3);font-size:12px}
+.chart text.val{fill:var(--ink);font-weight:700;font-size:12px}
+.tip{position:absolute;pointer-events:none;background:var(--surface);border:1px solid var(--line2);border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.14);padding:8px 10px;font-size:13px;min-width:150px;opacity:0;transition:opacity .12s;z-index:5}
+.tip.on{opacity:1}
+.tip b{display:block;margin-bottom:4px}
+.tip div{display:flex;align-items:center;gap:6px;color:var(--ink2)}
+.tip div span{margin-left:auto;font-weight:700;color:var(--ink)}
+.tip i{width:8px;height:8px;border-radius:2px;display:inline-block}
+.tbl-toggle{margin-top:8px;font-size:13px}
+.tbl-toggle summary{cursor:pointer;color:var(--ink2)}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.tile .l{font-size:13px;color:var(--ink2)}
+.tile .v{font-size:28px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.25}
+.tile .d{font-size:12.5px;color:var(--ink3)}
+.tile .d b{font-weight:700}
+.tile .d .up{color:var(--good)} .tile .d .down{color:var(--bad)}
+.funnel{display:grid;gap:10px;margin-top:6px}
+.funnel .fr{display:grid;grid-template-columns:150px 1fr 110px;gap:12px;align-items:center;font-size:14px}
+.funnel .fr .bar{height:18px;border-radius:0 4px 4px 0;background:var(--s1);min-width:2px}
+.funnel .fr .num{font-variant-numeric:tabular-nums;color:var(--ink)}
+.funnel .fr .num small{color:var(--ink3);margin-left:6px}
+
+/* 평가 체계 흐름 */
+.flow{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;position:relative}
+.flow .st{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;position:relative}
+.flow .st:not(:last-child)::after{content:"";position:absolute;right:-12px;top:50%;width:12px;height:2px;background:var(--line2)}
+.flow .st .k{font-size:12px;font-weight:800;color:var(--brand-ink)}
+.flow .st h4{font-size:16px;font-weight:800;margin:2px 0 6px}
+.flow .st p{font-size:13px;color:var(--ink2)}
+.flow .st .who{margin-top:8px}
+.lvl{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.lvl .box{position:relative}
+.lvl .box .lv{font-size:12px;font-weight:800;color:#fff;background:var(--ink2);border-radius:6px;padding:2px 8px;display:inline-block}
+.lvl .box.recm{border:2px solid var(--brand)}
+.lvl .box.recm .lv{background:var(--brand)}
+.lvl .box h4{font-size:16px;font-weight:800;margin:8px 0 4px}
+.lvl .box p{font-size:13.5px;color:var(--ink2)}
+.lvl .box ul{font-size:13px;color:var(--ink2);margin:8px 0 0 16px;display:grid;gap:2px}
+.road{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.road .box h4{font-size:15px;font-weight:800;margin-bottom:6px}
+.road .box ul{font-size:13.5px;color:var(--ink2);margin-left:16px;display:grid;gap:3px}
+.road .box .k{font-size:12px;font-weight:800;color:var(--brand-ink)}
+.decide{counter-reset:d;display:grid;gap:10px}
+.decide li{list-style:none;counter-increment:d;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 16px 12px 52px;position:relative;font-size:14.5px}
+.decide li::before{content:counter(d);position:absolute;left:14px;top:12px;width:26px;height:26px;border-radius:50%;background:var(--brand);color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center}
+.decide li small{display:block;color:var(--ink3);font-size:13px}
+footer{padding:36px 0 60px;color:var(--ink3);font-size:12.5px}
+
+@media (max-width:980px){
+  .verdict,.grid2,.opt{grid-template-columns:1fr}
+  .prin,.grid3,.lvl,.road{grid-template-columns:1fr 1fr}
+  .flow{grid-template-columns:1fr 1fr}.flow .st::after{display:none}
+  .tiles{grid-template-columns:1fr 1fr}
+}
+@media (max-width:620px){
+  .hero h1{font-size:26px}.prin,.grid3,.lvl,.road,.flow{grid-template-columns:1fr}
+  .funnel .fr{grid-template-columns:96px 1fr 84px;font-size:13px}
+  .top b{display:none}
+}
+@media print{.top{display:none}.opt,.box,.viz{break-inside:avoid}}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <b>방문업무 Power Apps 구성 제안</b>
+  <nav id="toc">
+    <a href="#principles">설계 원칙</a><a href="#options">화면 5안</a><a href="#compare">비교·추천</a>
+    <a href="#stats">월별 통계</a><a href="#scout">vendor-scout 연계</a><a href="#grading">평가 등급</a>
+    <a href="#report">리포트</a><a href="#data">데이터 구조</a><a href="#roadmap">추진 단계</a>
+  </nav>
+</div></header>
+
+<div class="wrap hero">
+  <div class="eyebrow">Power Apps 구성안 · 검토용</div>
+  <h1>방문업무 앱 화면 구성 5안과<br>사전검증 · 평가 · 리포트 연계 설계</h1>
+  <p class="lead">따라하기 안내서로 만드는 기본 앱(SharePoint 목록 + Power Apps + Power Automate)을 바탕으로, 10명이 매일 쓰기 쉬운 화면 구성 다섯 가지와 <b>월별 방문 · 등록 통계</b>를 제안합니다. 그리고 vendor-scout(공공데이터 사전검증)과 이어 <b>사전검토 → 사전 방문평가 등급 → 현장 평가 → 리포트</b>까지 한 흐름으로 묶는 설계를 담았습니다.</p>
+  <div class="verdict">
+    <div class="box rec">
+      <h3>추천</h3>
+      <div class="big">업체 한 곳의 모든 것을 한 화면에 모으는 <span style="color:var(--brand-ink)">안 4 · 업체 360</span>을 기본 뼈대로 하고, 홈은 <span style="color:var(--brand-ink)">안 3 · 대시보드</span>, 휴대폰은 <span style="color:var(--brand-ink)">안 5 · 내 할 일</span>로 구성</div>
+      <ul>
+        <li>사전검증 판정, 평가 점수, 일정, 방문 결과, 리포트가 업체 단위로 쌓이므로 vendor-scout 연계와 가장 잘 맞습니다.</li>
+        <li>팀장은 홈에서 월별 방문·등록 추이를 보고, 파트원은 휴대폰에서 응답과 현장 평가만 빠르게 처리합니다.</li>
+        <li>vendor-scout 연계는 <b>링크 연결(지금 바로)</b> → <b>요약 붙여넣기(추가 라이선스 없음)</b> 순서로 단계적으로 진행합니다.</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h3>vendor-scout 코드에서 확인한 연계 지점</h3>
+      <ul class="facts">
+        <li><span>1</span><div>주소에 <b>?q=업체명&amp;bno=사업자번호</b>를 붙여 열면 조회가 자동으로 실행됩니다. Power Apps 단추 한 번으로 열 수 있습니다.</div></li>
+        <li><span>2</span><div><b>종합판정 A~D</b>(방문 우선 검토 · 방문 검토 가능 · 위험 신호 · 검토불가)와 근거, <b>자료 신뢰도</b>가 따로 계산됩니다.</div></li>
+        <li><span>3</span><div><b>방문 크로스체크 시트</b>(조회값 vs 현장 확인)와 <b>리스크 플래그</b>가 있어 현장 평가표로 이어 쓸 수 있습니다.</div></li>
+        <li><span>4</span><div>저장 업체를 <b>JSON 파일로 내보내기</b>할 수 있습니다. 서버 없이 브라우저에만 저장됩니다.</div></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 설계 원칙 ===================== -->
+<section class="sec" id="principles"><div class="wrap">
+  <h2><span class="n">01</span>보기 쉽고 쓰기 쉬운 화면의 원칙</h2>
+  <p class="sub">다섯 안 모두 아래 여섯 가지를 지킵니다. Power Apps 기본 컨트롤만으로 구현할 수 있는 범위입니다.</p>
+  <div class="prin">
+    <div><b>한 화면, 한 가지 일</b><p>조율 화면에서는 조율만, 평가 화면에서는 평가만 합니다. 다른 일은 단추로 넘깁니다.</p></div>
+    <div><b>다음 행동은 단추 하나</b><p>업체마다 "지금 할 일"을 자동으로 계산해 주 단추 하나로 보여 줍니다(예: 후보일 응답, 결과 입력).</p></div>
+    <div><b>입력은 고르기 위주</b><p>가능/불가, 점수 1~5, 판정은 단추나 드롭다운으로 고릅니다. 글로 쓰는 칸은 결과·의견만 둡니다.</p></div>
+    <div><b>계산은 앱이 대신</b><p>공통 가능일, D-day, 출발 시각, 사전평가 점수, 월별 통계는 자동으로 계산합니다.</p></div>
+    <div><b>등급은 글자 + 뜻 함께</b><p>"B"만 쓰지 않고 "B · 방문 검토 가능"처럼 씁니다. 색만으로 구분하지 않습니다.</p></div>
+    <div><b>역할에 맞게 보이기</b><p>협력생산·품질보증·주담당이 각자 자기 칸과 자기 할 일을 먼저 봅니다.</p></div>
+  </div>
+</div></section>
+
+<!-- ===================== 화면 5안 ===================== -->
+<section class="sec" id="options"><div class="wrap">
+  <h2><span class="n">02</span>화면 구성 5안</h2>
+  <p class="sub">모두 같은 데이터(SharePoint 목록)를 쓰고, 보여 주는 방식만 다릅니다. 그림은 태블릿(PC · Teams) 화면을 줄인 모습이며 업체와 사람은 가명입니다.</p>
+
+  <!-- 안 1 -->
+  <article class="opt" id="opt1">
+    <div class="opt-h"><span class="no">안 1</span><h3>업무 단계 탭형</h3><span class="pill tag">입문용 · 가장 단순</span></div>
+    <div class="scr" aria-label="안 1 화면 예시">
+      <div class="m-hd"><b>방문예정처</b><span class="u">김지훈 · 협력생산 <span class="m-av">김</span></span></div>
+      <div class="m-body"><div class="m-main" style="padding-top:.6cqw">
+        <div class="m-tabs"><span class="on">사전검토<i>4</i></span><span>일정 조율<i>5</i></span><span>방문<i>2</i></span><span>결과 · 판정<i>3</i></span><span>등록</span><span>통계</span></div>
+        <div class="m-row"><span class="m-t">사전검토 대기 4곳</span><span class="sp"></span><span class="m-btn">업체명 검색</span><span class="m-btn p">+ 새 업체</span></div>
+        <div class="m-card" style="padding:0;overflow:hidden"><table class="m-tbl">
+          <tr><th>업체</th><th>사업자번호</th><th>사전검증 판정</th><th>조회일</th><th>다음 행동</th></tr>
+          <tr><td><b>노바코스</b></td><td>143-81-19635</td><td><span class="bdg g-A">A · 방문 우선 검토</span></td><td>11/02</td><td><span class="m-btn p">조율로 보내기</span></td></tr>
+          <tr><td><b>한결바이오</b></td><td>215-86-40211</td><td><span class="bdg g-B">B · 방문 검토 가능</span></td><td>11/01</td><td><span class="m-btn p">조율로 보내기</span></td></tr>
+          <tr><td><b>블루오션코스메틱</b></td><td>307-81-55620</td><td><span class="bdg g-C">C · 위험 신호</span></td><td>10/30</td><td><span class="m-btn">확인 메모</span></td></tr>
+          <tr><td><b>그린셀랩</b></td><td>—</td><td><span class="bdg g-D">미조회</span></td><td>—</td><td><span class="m-btn">사전검증 조회 ↗</span></td></tr>
+        </table></div>
+        <div class="m-s">탭마다 그 단계에 있는 업체만 보이고, 오른쪽 끝 단추로 다음 단계로 넘깁니다.</div>
+      </div></div>
+    </div>
+    <dl>
+      <dt>구성</dt><dd>위쪽 탭 = 업무 단계. 탭마다 그 단계의 업체 표와 "다음 행동" 단추. 마지막 탭은 통계.</dd>
+      <dt>잘 맞는 경우</dt><dd>처음 Power Apps를 쓰는 팀, 단계별 담당이 뚜렷한 팀.</dd>
+      <dt>장점 · 한계</dt><dd><ul><li>안내서 기본 앱에서 가장 적게 바꿔서 만들 수 있습니다.</li><li>업체 하나의 전체 이력을 보려면 탭을 오가야 합니다.</li></ul></dd>
+      <dt>Power Apps 구현</dt><dd>탭 = 단추 갤러리 + 변수, 표 = 세로 갤러리, 단계 필터 = <code>Filter(방문처, 단계.Value = varStage)</code></dd>
+      <dd class="score"><span>보기 쉬움</span><span class="dots">●●●●<i>●</i></span><span>입력 쉬움</span><span class="dots">●●●●<i>●</i></span><span>구현 쉬움</span><span class="dots">●●●●●</span></dd>
+    </dl>
+  </article>
+
+  <!-- 안 2 -->
+  <article class="opt" id="opt2">
+    <div class="opt-h"><span class="no">안 2</span><h3>파이프라인 보드형</h3><span class="pill tag">병목 한눈에</span></div>
+    <div class="scr" aria-label="안 2 화면 예시">
+      <div class="m-hd"><b>방문예정처 · 진행 보드</b><span class="u">이번 달 · 전체 <span class="m-av">김</span></span></div>
+      <div class="m-body"><div class="m-main" style="flex-direction:row;gap:.9cqw">
+        <div class="m-col" style="flex:1"><h5>사전검토 <i>4</i></h5>
+          <div class="m-k"><b>노바코스</b><span class="bdg g-A" style="justify-self:start">A · 방문 우선</span><span class="m-s">조회 11/02</span></div>
+          <div class="m-k"><b>블루오션</b><span class="bdg g-C" style="justify-self:start">C · 위험 신호</span><span class="m-s">회수 1건 확인 필요</span></div></div>
+        <div class="m-col" style="flex:1"><h5>일정 조율 <i>5</i></h5>
+          <div class="m-k sel"><b>한결바이오</b><span class="m-s">품보 응답 대기</span><span class="m-btn" style="justify-self:start">응답 요청</span></div>
+          <div class="m-k"><b>차온바이오</b><span class="m-s">공통일 11/10 (화)</span></div></div>
+        <div class="m-col" style="flex:1"><h5>방문 확정 <i>2</i></h5>
+          <div class="m-k"><b>유니크팩토리</b><span class="m-s">11/04 10:30 · D-1</span><span class="m-s">08:45 출발</span></div>
+          <div class="m-k"><b>나린코스</b><span class="m-s">11/12 13:00 · D-9</span></div></div>
+        <div class="m-col" style="flex:1"><h5>결과 · Capa <i>3</i></h5>
+          <div class="m-k"><b>세라젬코스</b><span class="m-s" style="color:#B42318">Capa 10일 경과</span></div>
+          <div class="m-k"><b>미래코스텍</b><span class="m-s">현장평가 미작성</span></div></div>
+        <div class="m-col" style="flex:1"><h5>등록 판정 <i>1</i></h5>
+          <div class="m-k"><b>라온랩</b><span class="m-s">현장 82점 · Ⅱ 적합</span><span class="m-btn p" style="justify-self:start">판정하기</span></div></div>
+      </div></div>
+    </div>
+    <dl>
+      <dt>구성</dt><dd>단계별 세로 열에 업체 카드. 카드에 사전검증 판정, D-day, 막힌 이유를 표시하고 카드의 단추로 다음 단계로 옮깁니다.</dd>
+      <dt>잘 맞는 경우</dt><dd>진행 건이 많아 "어디서 막혔는지"를 매일 봐야 하는 팀장 회의용.</dd>
+      <dt>장점 · 한계</dt><dd><ul><li>병목(응답 대기, Capa 지연)이 바로 보입니다.</li><li>Power Apps에는 끌어서 옮기기가 기본으로 없어 <b>단추로 이동</b>합니다. 열이 많아지면 휴대폰에서는 보기 어렵습니다.</li></ul></dd>
+      <dt>Power Apps 구현</dt><dd>가로 갤러리(단계) 안에 세로 갤러리(업체)를 넣은 중첩 갤러리 + 카드 단추의 <code>Patch</code></dd>
+      <dd class="score"><span>보기 쉬움</span><span class="dots">●●●●●</span><span>입력 쉬움</span><span class="dots">●●●<i>●●</i></span><span>구현 쉬움</span><span class="dots">●●●<i>●●</i></span></dd>
+    </dl>
+  </article>
+
+  <!-- 안 3 -->
+  <article class="opt" id="opt3">
+    <div class="opt-h"><span class="no">안 3</span><h3>대시보드 우선형</h3><span class="pill tag">팀장 · 보고용 홈</span></div>
+    <div class="scr" aria-label="안 3 화면 예시">
+      <div class="m-hd"><b>방문 현황</b><span class="u">최근 12개월 ▾ · 선정주체 전체 ▾ <span class="m-av">김</span></span></div>
+      <div class="m-body"><div class="m-nav"><span class="on">홈</span><span>업체</span><span>내 할 일</span><span>통계</span></div><div class="m-main">
+        <div class="m-kpi">
+          <div class="m-card"><span class="m-s">이번 달 방문</span><b>10</b><span class="m-s">전월 12</span></div>
+          <div class="m-card"><span class="m-s">이번 달 등록완료</span><b>4</b><span class="m-s">전월 5</span></div>
+          <div class="m-card"><span class="m-s">12개월 등록 전환율</span><b>35%</b><span class="m-s">방문 102 → 등록 36</span></div>
+          <div class="m-card"><span class="m-s">방문 → 판정</span><b>18일</b><span class="m-s">평균 소요</span></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:1cqw;flex:1;min-height:0">
+          <div class="m-card" style="display:flex;flex-direction:column"><div class="m-row"><span class="m-t">월별 방문 · 등록완료</span><span class="sp"></span><span class="m-s">■ 방문 ■ 등록</span></div>
+            <div class="m-bars" style="flex:1">
+              <div><i style="height:42%"></i><i style="height:8%"></i></div><div><i style="height:58%"></i><i style="height:17%"></i></div><div><i style="height:50%"></i><i style="height:17%"></i></div><div><i style="height:67%"></i><i style="height:25%"></i></div><div><i style="height:75%"></i><i style="height:17%"></i></div><div><i style="height:58%"></i><i style="height:25%"></i></div><div><i style="height:83%"></i><i style="height:33%"></i></div><div><i style="height:67%"></i><i style="height:25%"></i></div><div><i style="height:92%"></i><i style="height:33%"></i></div><div><i style="height:75%"></i><i style="height:25%"></i></div><div><i style="height:100%"></i><i style="height:42%"></i></div><div><i style="height:83%"></i><i style="height:33%"></i></div>
+            </div></div>
+          <div class="m-card"><span class="m-t">단계별 전환</span>
+            <div class="m-fn" style="margin-top:1cqw">
+              <div><span>사전검증</span><i style="width:100%"></i><b>148</b></div>
+              <div><span>방문 대상</span><i style="width:82%"></i><b>121</b></div>
+              <div><span>방문 완료</span><i style="width:69%"></i><b>102</b></div>
+              <div><span>등록 완료</span><i style="width:24%"></i><b>36</b></div>
+            </div></div>
+        </div>
+      </div></div>
+    </div>
+    <dl>
+      <dt>구성</dt><dd>홈 = 핵심 숫자 4개 + 월별 방문·등록 막대 + 단계별 전환. 숫자나 막대를 누르면 해당 업체 목록으로 내려갑니다.</dd>
+      <dt>잘 맞는 경우</dt><dd>월간 보고, 팀장 검토, "이번 달 몇 곳 방문했고 몇 곳 등록됐나"가 자주 필요한 팀.</dd>
+      <dt>장점 · 한계</dt><dd><ul><li>보고 자료를 따로 만들 필요가 줄어듭니다.</li><li>입력 화면은 따로 필요해서 단독으로는 쓰기 어렵고 <b>홈 화면으로 조합</b>할 때 가장 좋습니다.</li></ul></dd>
+      <dt>Power Apps 구현</dt><dd>열 차트(Column chart) 컨트롤 + 월별 집계 컬렉션(<a href="#stats">03 통계</a>의 수식). 더 정교한 분석은 Power BI 타일을 넣을 수 있습니다.</dd>
+      <dd class="score"><span>보기 쉬움</span><span class="dots">●●●●●</span><span>입력 쉬움</span><span class="dots">●●<i>●●●</i></span><span>구현 쉬움</span><span class="dots">●●●<i>●●</i></span></dd>
+    </dl>
+  </article>
+
+  <!-- 안 4 -->
+  <article class="opt recm" id="opt4">
+    <div class="opt-h"><span class="no">안 4</span><h3>업체 360 통합형</h3><span class="pill tag" style="background:var(--brand);color:#fff;border-color:var(--brand)">추천 · 기본 뼈대</span></div>
+    <div class="scr" aria-label="안 4 화면 예시">
+      <div class="m-hd"><b>방문예정처 · 업체</b><span class="u">김지훈 · 협력생산 <span class="m-av">김</span></span></div>
+      <div class="m-body"><div class="m-nav"><span>홈</span><span class="on">업체</span><span>내 할 일</span><span>통계</span></div>
+        <div style="width:24%;background:#fff;border-right:1px solid #E0E0E0;display:flex;flex-direction:column">
+          <div style="padding:1cqw"><div class="m-btn" style="color:#9E9E9E">업체명 · 지역 검색</div></div>
+          <div style="padding:.9cqw 1.2cqw;border-bottom:1px solid #F0F0F0"><b>노바코스</b><div class="m-s">사전검토 · <span class="g-A">A</span></div></div>
+          <div style="padding:.9cqw 1.2cqw;border-bottom:1px solid #F0F0F0;background:#EBF3FC;box-shadow:inset .3cqw 0 0 #0F6CBD"><b>한결바이오</b><div class="m-s">방문 확정 · <span class="g-B">B</span></div></div>
+          <div style="padding:.9cqw 1.2cqw;border-bottom:1px solid #F0F0F0"><b>세라젬코스</b><div class="m-s">Capa 대기 · <span class="g-B">B</span></div></div>
+          <div style="padding:.9cqw 1.2cqw;border-bottom:1px solid #F0F0F0"><b>블루오션코스메틱</b><div class="m-s">사전검토 · <span class="g-C">C</span></div></div>
+        </div>
+        <div class="m-main">
+          <div class="m-row"><span class="m-t" style="font-size:2.1cqw">한결바이오</span><span class="m-s">215-86-40211 · 충남 아산시</span><span class="sp"></span><span class="m-btn">vendor-scout ↗</span><span class="m-btn p">현장 평가 시작</span></div>
+          <div class="m-step"><span class="ok">사전검토</span><i></i><span class="ok">사전평가</span><i></i><span class="ok">일정 조율</span><i></i><span class="now">방문</span><i></i><span>현장평가</span><i></i><span>판정</span></div>
+          <div class="m-tabs"><span>개요</span><span class="on">사전검토</span><span>일정</span><span>방문 평가</span><span>리포트</span><span>이력</span></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1cqw;flex:1;min-height:0">
+            <div class="m-card"><div class="m-row"><span class="bdg g-B">B · 방문 검토 가능</span><span class="m-s">조회 11/01 · 자료 신뢰도 A</span></div>
+              <div class="m-s" style="margin:.6cqw 0">중대 위험 없음 · CGMP 미등재</div>
+              <div class="m-chk"><span class="ok-i">✓</span><span>제조업 허가</span><span class="m-s">식약처</span><span class="ok-i">✓</span><span>사업자 상태 · 계속</span><span class="m-s">국세청</span><span class="ok-i">✓</span><span>최근 3년 회수 없음</span><span class="m-s">식약처</span><span class="no-i">–</span><span>CGMP 미등재</span><span class="m-s">식약처</span><span class="ok-i">✓</span><span>부채비율 118%</span><span class="m-s">금융위</span></div></div>
+            <div class="m-card"><span class="m-t">사전 방문평가</span>
+              <div class="m-row" style="margin:.6cqw 0"><b style="font-size:3cqw">78</b><span class="m-s">/ 100</span><span class="bdg g-B">Ⅱ 적합</span></div>
+              <div class="m-fn"><div><span>품질 시스템</span><i style="width:60%"></i><b>18/30</b></div><div><span>생산 역량</span><i style="width:84%"></i><b>21/25</b></div><div><span>재무 안정성</span><i style="width:93%"></i><b>14/15</b></div><div><span>사업 적합성</span><i style="width:75%"></i><b>15/20</b></div><div><span>자료 신뢰도</span><i style="width:100%"></i><b>10/10</b></div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <dl>
+      <dt>구성</dt><dd>왼쪽 업체 목록, 오른쪽 업체 상세. 위에 <b>진행 단계 표시줄</b>, 아래 탭 6개(개요 · 사전검토 · 일정 · 방문 평가 · 리포트 · 이력). 업체의 모든 기록이 한곳에 쌓입니다.</dd>
+      <dt>잘 맞는 경우</dt><dd>업체별 검토 근거를 남기고 다시 꺼내 봐야 하는 팀. <b>사전검증 → 평가 → 리포트 연계에 가장 적합</b>합니다.</dd>
+      <dt>장점 · 한계</dt><dd><ul><li>"이 업체 왜 등록했지?"에 화면 하나로 답합니다. 감사·인수인계에 강합니다.</li><li>여러 업체를 한꺼번에 처리하는 일은 홈(안 3)이나 내 할 일(안 5)에서 합니다.</li></ul></dd>
+      <dt>Power Apps 구현</dt><dd>목록-상세 템플릿 + 탭 = 단추 갤러리와 컨테이너 <code>Visible</code> 전환. 진행 단계 표시줄 = 가로 갤러리.</dd>
+      <dd class="score"><span>보기 쉬움</span><span class="dots">●●●●<i>●</i></span><span>입력 쉬움</span><span class="dots">●●●●<i>●</i></span><span>구현 쉬움</span><span class="dots">●●●<i>●●</i></span></dd>
+    </dl>
+  </article>
+
+  <!-- 안 5 -->
+  <article class="opt" id="opt5">
+    <div class="opt-h"><span class="no">안 5</span><h3>역할별 내 할 일형 (휴대폰 우선)</h3><span class="pill tag">현장 · 파트원용</span></div>
+    <div class="phones" aria-label="안 5 휴대폰 화면 예시">
+      <div class="phone">
+        <div class="p-hd"><b>오늘 할 일</b><span style="margin-left:auto;font-size:4.2cqw">김지훈 · 협생</span></div>
+        <div class="p-body">
+          <div class="p-seg"><span class="on">내 할 일 4</span><span>팀 전체 12</span></div>
+          <div class="p-c"><div class="tt">한결바이오 · 후보일 응답</div><div class="ss">11/10 (화) 10:00–12:00</div><div class="p-btns"><span class="g">가능</span><span>조건부</span><span>불가</span></div></div>
+          <div class="p-c"><div class="tt">유니크팩토리 · 내일 방문</div><div class="ss">10:30 · 08:45 출발 · 화성시</div><div class="p-btns"><span class="p">크로스체크 보기</span></div></div>
+          <div class="p-c"><div class="tt" style="color:#B42318">세라젬코스 · Capa 10일 경과</div><div class="ss">회신 확인 후 결과 입력</div></div>
+        </div>
+        <div class="p-nav"><span class="on">할 일</span><span>업체</span><span>평가</span><span>통계</span></div>
+      </div>
+      <div class="phone">
+        <div class="p-hd"><b>현장 평가</b><span style="margin-left:auto;font-size:4.2cqw">유니크팩토리</span></div>
+        <div class="p-body">
+          <div class="p-c"><div class="tt">크로스체크 · 3/6</div>
+            <div class="p-sc"><span>생산 인원 42명</span><span class="sg"><i class="on">일치</i><i>✕</i></span>
+            <span>제형 · 크림</span><span class="sg"><i class="on">일치</i><i>✕</i></span></div></div>
+          <div class="p-c"><div class="tt">품질 항목 (1~5점)</div>
+            <div class="p-sc"><span>설비 상태</span><span class="sg"><i>3</i><i class="on">4</i><i>5</i></span>
+            <span>위생 · 청정</span><span class="sg"><i>3</i><i>4</i><i class="on">5</i></span>
+            <span>창고 온습도</span><span class="sg"><i class="on">3</i><i>4</i><i>5</i></span></div></div>
+          <div class="p-c"><div class="p-btns"><span>📷 사진</span><span class="p">저장</span></div></div>
+        </div>
+        <div class="p-nav"><span>할 일</span><span>업체</span><span class="on">평가</span><span>통계</span></div>
+      </div>
+    </div>
+    <dl>
+      <dt>구성</dt><dd>로그인한 사람의 역할(주담당 · 협력생산 · 품질보증)에 맞는 할 일만 급한 순서로. 카드 안에서 바로 응답하거나 평가합니다. 아래 탭 4개.</dd>
+      <dt>잘 맞는 경우</dt><dd>현장 방문, 이동 중 응답처럼 <b>휴대폰으로 빠르게 처리</b>하는 일이 많은 파트원.</dd>
+      <dt>장점 · 한계</dt><dd><ul><li>10명 참여율이 가장 높아지는 구조입니다. 앱을 열면 할 일만 보입니다.</li><li>전체 현황이나 업체 비교에는 맞지 않아 PC용 화면과 함께 씁니다.</li></ul></dd>
+      <dt>Power Apps 구현</dt><dd>휴대폰 레이아웃 화면을 따로 만들고 <code>User().Email</code>과 역할 목록으로 필터합니다. 현장 평가는 1~5점 단추 + 사진 추가(카메라/첨부 컨트롤)로 구성합니다.</dd>
+      <dd class="score"><span>보기 쉬움</span><span class="dots">●●●●<i>●</i></span><span>입력 쉬움</span><span class="dots">●●●●●</span><span>구현 쉬움</span><span class="dots">●●●<i>●●</i></span></dd>
+    </dl>
+  </article>
+</div></section>
+
+<!-- ===================== 비교 · 추천 ===================== -->
+<section class="sec" id="compare"><div class="wrap">
+  <h2><span class="n">—</span>비교와 추천 조합</h2>
+  <p class="sub">점은 5점 만점입니다. "vendor-scout 연계"는 사전검증 판정 · 평가 · 리포트를 업체별로 보관하고 보여 주기 쉬운 정도입니다.</p>
+  <div class="tw"><table class="t cmp">
+    <thead><tr><th>안</th><th>보기 쉬움</th><th>입력 쉬움</th><th>휴대폰</th><th>월별 통계</th><th>vendor-scout 연계</th><th>구현 쉬움</th><th>한 줄 평</th></tr></thead>
+    <tbody>
+      <tr><td>안 1 · 단계 탭</td><td class="c">●●●●○</td><td class="c">●●●●○</td><td class="c">●●●○○</td><td class="c">●●●○○</td><td class="c">●●●○○</td><td class="c">●●●●●</td><td>가장 빨리 시작</td></tr>
+      <tr><td>안 2 · 보드</td><td class="c">●●●●●</td><td class="c">●●●○○</td><td class="c">●●○○○</td><td class="c">●●○○○</td><td class="c">●●●○○</td><td class="c">●●●○○</td><td>회의 · 병목 관리</td></tr>
+      <tr><td>안 3 · 대시보드</td><td class="c">●●●●●</td><td class="c">●●○○○</td><td class="c">●●●○○</td><td class="c">●●●●●</td><td class="c">●●●○○</td><td class="c">●●●○○</td><td>홈 화면으로 최적</td></tr>
+      <tr class="recm"><td>안 4 · 업체 360 ★</td><td class="c">●●●●○</td><td class="c">●●●●○</td><td class="c">●●●○○</td><td class="c">●●●○○</td><td class="c">●●●●●</td><td class="c">●●●○○</td><td>기본 뼈대로 추천</td></tr>
+      <tr><td>안 5 · 내 할 일</td><td class="c">●●●●○</td><td class="c">●●●●●</td><td class="c">●●●●●</td><td class="c">●○○○○</td><td class="c">●●●○○</td><td class="c">●●●○○</td><td>휴대폰 화면으로 최적</td></tr>
+    </tbody>
+  </table></div>
+  <div class="callout"><b>추천 조합 — 화면 4개로 끝내기.</b> ① <b>홈</b> = 안 3 대시보드(팀장 · 월간 보고) · ② <b>업체</b> = 안 4 업체 360(모든 기록의 중심) · ③ <b>내 할 일</b> = 안 5(휴대폰 · 파트원) · ④ <b>통계</b> = 월별 상세. 안 1의 단계 탭은 ② 업체 목록 위의 <b>단계 필터</b>로 흡수하고, 안 2의 보드는 필요하면 홈의 탭 하나로 추가합니다.</div>
+</div></section>
+
+<!-- ===================== 월별 통계 ===================== -->
+<section class="sec" id="stats"><div class="wrap">
+  <h2><span class="n">03</span>월별 방문 · 등록완료 통계</h2>
+  <p class="sub">홈(안 3)과 통계 화면에 들어갈 지표입니다. 아래 숫자는 예시 데이터이며, 막대에 마우스를 올리면 그 달의 값이 보입니다.</p>
+  <div class="tiles" id="tiles"></div>
+  <div class="grid2" style="grid-template-columns:1.55fr 1fr">
+    <div class="viz">
+      <div class="viz-h"><div><h4>월별 방문 완료 · 등록 완료</h4><p>최근 12개월 · 방문은 실제 방문일, 등록은 판정일 기준</p></div>
+        <div class="legend"><span><i style="background:var(--s1)"></i>방문 완료</span><span><i style="background:var(--s2)"></i>등록 완료</span></div></div>
+      <div class="chart" id="chart"><div class="tip" id="tip"></div></div>
+      <details class="tbl-toggle"><summary>표로 보기</summary><div class="tw" style="margin-top:8px"><table class="t" id="chartTable"></table></div></details>
+    </div>
+    <div class="viz">
+      <div class="viz-h"><div><h4>단계별 전환 (최근 12개월)</h4><p>사전검증부터 등록까지 몇 곳이 남았나</p></div></div>
+      <div class="funnel" id="funnel"></div>
+      <p class="note" style="margin-top:14px">방문 대상 = 사전평가 Ⅲ 조건부 이상 · 등록 전환율 = 등록 완료 ÷ 방문 완료</p>
+    </div>
+  </div>
+
+  <h3 class="h">지표 정의 — 무엇을 어떻게 셀지</h3>
+  <div class="tw"><table class="t">
+    <thead><tr><th>지표</th><th>계산</th><th>필요한 열</th><th>보는 곳</th></tr></thead>
+    <tbody>
+      <tr><td><b>월별 방문 완료</b></td><td>그 달에 <b>실제방문일</b>이 있는 업체 수</td><td>실제방문일 (추가)</td><td>홈 · 통계</td></tr>
+      <tr><td><b>월별 등록 완료</b></td><td>그 달에 <b>판정일</b>이 있고 판정결과 = 등록 완료인 업체 수</td><td>판정일 · 판정결과 (추가)</td><td>홈 · 통계</td></tr>
+      <tr><td><b>등록 전환율</b></td><td>기간 내 등록 완료 ÷ 기간 내 방문 완료</td><td>위 두 지표</td><td>홈 숫자 칸</td></tr>
+      <tr><td><b>방문 → 판정 소요일</b></td><td>판정일 − 실제방문일의 평균</td><td>실제방문일 · 판정일</td><td>홈 숫자 칸</td></tr>
+      <tr><td><b>단계별 전환</b></td><td>사전검증 조회 → 방문 대상 → 방문 완료 → 등록 완료 업체 수</td><td>사전조회일 · 사전평가등급 · 실제방문일 · 판정결과</td><td>홈 · 통계</td></tr>
+      <tr><td><b>현재 단계 분포</b></td><td>지금 단계별 업체 수</td><td>상태(단계)</td><td>업체 목록 필터</td></tr>
+      <tr><td><b>선정주체 · 지역별</b></td><td>위 지표를 선정주체·시도별로 나눔</td><td>선정주체 · 소재지</td><td>통계 화면 필터</td></tr>
+    </tbody>
+  </table></div>
+  <div class="callout warn"><b>꼭 필요한 변경:</b> 지금 목록에는 <b>확정방문일</b>(예정일)만 있어 "실제로 언제 방문했는지", "언제 등록이 결정됐는지"를 셀 수 없습니다. <b>실제방문일 · 판정일 · 판정결과</b> 세 열을 추가하고, 방문 결과를 저장할 때 앱이 자동으로 채우게 합니다.</div>
+
+  <h3 class="h">Power Apps 구현 — 월별 집계 수식</h3>
+  <p class="note">통계 화면이 열릴 때(<b>OnVisible</b>) 최근 12개월 집계를 컬렉션으로 만들고, <b>열 차트(Column chart)</b> 컨트롤의 Items에 넣습니다.</p>
+  <div class="code" data-copy>ClearCollect(colMonthly,
+  ForAll(Sequence(12, 0),
+    With({m: DateAdd(Date(Year(Today()), Month(Today()), 1), -(11 - Value), TimeUnit.Months)},
+      {월: Text(m, "yy.mm"),
+       방문완료: CountRows(Filter(방문처, 실제방문일 >= m, 실제방문일 &lt; DateAdd(m, 1, TimeUnit.Months))),
+       등록완료: CountRows(Filter(방문처, 판정결과.Value = "등록 완료", 판정일 >= m, 판정일 &lt; DateAdd(m, 1, TimeUnit.Months)))})))</div>
+  <div class="code" data-copy>// 홈 숫자 칸 — 최근 12개월 등록 전환율
+Text(Sum(colMonthly, 등록완료) / Max(1, Sum(colMonthly, 방문완료)), "0%")</div>
+  <p class="note">업체가 수천 건을 넘거나 지역 · 담당자별 교차 분석이 필요해지면 같은 SharePoint 목록에 <b>Power BI</b> 보고서를 붙이고 Power Apps에 타일로 넣을 수 있습니다. 다만 보고서를 팀에 공유하려면 Power BI 라이선스 확인이 필요합니다.</p>
+</div></section>
+
+<!-- ===================== vendor-scout 연계 ===================== -->
+<section class="sec" id="scout"><div class="wrap">
+  <h2><span class="n">04</span>vendor-scout 연계 — 사전검토를 방문 업무 앞단에 붙이기</h2>
+  <p class="sub">vendor-scout는 업체명 · 사업자번호로 식약처 · 국세청 · 금융위 · 국민연금 등 공공데이터를 모아 <b>방문할 만한 업체인지</b>를 판정합니다. 이 결과를 Power Apps의 업체 기록으로 가져와 평가와 리포트의 출발점으로 씁니다.</p>
+
+  <h3 class="h">전체 흐름</h3>
+  <div class="flow">
+    <div class="st"><div class="k">STEP 1 · vendor-scout</div><h4>발굴 · 사전검증</h4><p>급성장 신호 · 제조업 명단에서 후보 발굴 → 사전검증 조회 → <b>종합판정 A~D</b>, 리스크 플래그, 크로스체크 항목 생성</p><div class="who"><span class="pill">자동 · 공공데이터</span></div></div>
+    <div class="st"><div class="k">STEP 2 · Power Apps</div><h4>사전 방문평가</h4><p>판정 결과를 업체 기록으로 가져오고, 서류 · 상담 내용을 더해 <b>100점 사전평가 → 등급 Ⅰ~Ⅳ</b>. 방문 여부를 결정합니다.</p><div class="who"><span class="pill">반자동 · 주담당</span></div></div>
+    <div class="st"><div class="k">STEP 3 · Power Apps</div><h4>일정 조율 · 현장 평가</h4><p>공통 가능일로 방문 확정 → 현장에서 <b>크로스체크(조회값 vs 현장)</b> + 품질 항목 점수 + 사진 입력</p><div class="who"><span class="pill">휴대폰 · 방문자</span></div></div>
+    <div class="st"><div class="k">STEP 4 · Power Automate</div><h4>판정 · 리포트</h4><p>사전 + 현장 결과로 등록 판정, <b>업체 리포트 PDF</b> 자동 생성 · 보관 · Teams 공유, 월별 통계 반영</p><div class="who"><span class="pill">자동 · 팀장 승인</span></div></div>
+  </div>
+
+  <h3 class="h">연계 방식 4단계 — 쉬운 것부터</h3>
+  <div class="lvl">
+    <div class="box"><span class="lv">L1</span><h4>링크 연결</h4><p>업체 화면의 <b>"vendor-scout ↗"</b> 단추가 그 업체로 바로 조회합니다. 결과를 보고 판정을 골라 입력하고, 인쇄 요약을 PDF로 첨부합니다.</p>
+      <ul><li>개발 없음 · 오늘 바로</li><li>판정 입력은 수동</li></ul></div>
+    <div class="box recm"><span class="lv">L2 · 추천</span><h4>요약 붙여넣기</h4><p>vendor-scout에 <b>"Power Apps용 요약 복사"</b> 단추를 추가합니다. Power Apps의 붙여넣기 칸에 넣으면 판정 · 근거 · CGMP · 회수 · 재무 · 인력이 <b>한 번에 자동 입력</b>됩니다.</p>
+      <ul><li>추가 라이선스 없음 (ParseJSON)</li><li>vendor-scout 소규모 수정</li><li>회사 데이터는 외부로 나가지 않음</li></ul></div>
+    <div class="box"><span class="lv">L3</span><h4>일괄 가져오기</h4><p>vendor-scout의 기존 <b>저장업체 내보내기(JSON)</b> 파일을 SharePoint 폴더에 올리면, Power Automate가 업체별로 찾아 판정과 리포트를 반영합니다.</p>
+      <ul><li>표준 커넥터만 사용</li><li>여러 업체를 한 번에 처리</li></ul></div>
+    <div class="box"><span class="lv">L4</span><h4>자동 동기화</h4><p>vendor-scout에서 조회하면 바로 SharePoint에 기록됩니다.</p>
+      <ul><li>HTTP 트리거(프리미엄) 또는 IT의 앱 등록 필요</li><li>사용량이 많아진 뒤 검토</li></ul></div>
+  </div>
+
+  <h3 class="h">L1 · 링크 연결 수식 (지금 바로)</h3>
+  <p class="note">방문처 목록에 <b>사업자번호</b>(한 줄 텍스트) 열을 추가하고, 업체 화면의 단추 <b>OnSelect</b>에 넣습니다. 사업자번호의 하이픈은 vendor-scout가 알아서 지웁니다.</p>
+  <div class="code" data-copy>Launch("https://vendor-scout-gilt.vercel.app/?q=" &amp; EncodeUrl(galVendors.Selected.업체명) &amp; "&amp;bno=" &amp; EncodeUrl(galVendors.Selected.사업자번호))</div>
+
+  <h3 class="h">L2 · 요약 붙여넣기 (추천)</h3>
+  <div class="grid2">
+    <div>
+      <p class="note"><b>① vendor-scout가 복사해 줄 요약</b> — 이미 계산하고 있는 종합판정(qualityGrade)의 근거를 그대로 담습니다.</p>
+      <div class="code" data-copy>{"app":"vendor-scout","kind":"pa-summary","v":1,
+ "vendor":"한결바이오","bno":"2158640211",
+ "queryAt":"2026-11-01T09:12:00+09:00",
+ "verdict":"B","verdictLabel":"방문 검토 가능",
+ "why":"중대 위험 없음 · CGMP 미등재",
+ "dataGrade":"A","licensed":true,"bizStatus":"계속사업자",
+ "cgmp":false,"recalls3y":0,"recallsSevere":0,
+ "debtRatio":118,"workforce":42,
+ "riskFlags":["공장 번지 미확인"],
+ "crosscheck":[{"key":"생산 인원","expected":"42명"},
+               {"key":"주력 제형","expected":"크림 · 로션"}]}</div>
+    </div>
+    <div>
+      <p class="note"><b>② Power Apps "반영" 단추</b> — 다른 업체의 결과를 실수로 붙이면 막습니다.</p>
+      <div class="code" data-copy>With({j: ParseJSON(txtScout.Text), v: galVendors.Selected},
+  If(Text(j.bno) &lt;&gt; Substitute(v.사업자번호, "-", ""),
+    Notify("다른 업체의 결과입니다. 사업자번호를 확인하세요.", NotificationType.Error),
+    Patch(방문처, v, {
+      사전판정: {Value: Text(j.verdict)},
+      판정근거: Text(j.why),
+      자료신뢰도: {Value: Text(j.dataGrade)},
+      CGMP: Boolean(j.cgmp),
+      회수3년: Value(j.recalls3y),
+      부채비율: Value(j.debtRatio),
+      제조인력: Value(j.workforce),
+      사전조회일: DateValue(Left(Text(j.queryAt), 10))});
+    Notify("사전검증 결과를 반영했습니다", NotificationType.Success)))</div>
+      <p class="note">크로스체크 항목은 같은 방식으로 <b>크로스체크</b> 목록에 한 줄씩 넣어 현장 평가에서 그대로 확인합니다(<code>ForAll(Table(j.crosscheck), Patch(...))</code>).</p>
+    </div>
+  </div>
+
+  <h3 class="h">L3 · 일괄 가져오기 흐름 (Power Automate, 표준 커넥터)</h3>
+  <div class="tw"><table class="t">
+    <thead><tr><th>#</th><th>동작</th><th>설정</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>트리거: SharePoint <b>폴더에 파일이 만들어진 경우</b></td><td>문서 라이브러리 "vendor-scout 가져오기"</td></tr>
+      <tr><td>2</td><td><b>파일 콘텐츠 가져오기</b> → <b>JSON 구문 분석</b></td><td>vendor-scout 내보내기 형식: <code>{app:"vendor-scout", kind:"saved-firms", v:1, items:[…]}</code></td></tr>
+      <tr><td>3</td><td><b>각각에 적용</b>(items) → <b>항목 가져오기</b>(업체명 일치)</td><td>있으면 업데이트, 없으면 사전검토 단계로 새로 만들기</td></tr>
+      <tr><td>4</td><td><b>항목 업데이트</b></td><td>사전판정 = items.grade, 사전조회일 = items.queryAt</td></tr>
+      <tr><td>5</td><td><b>파일 만들기</b>(업체별 스냅샷)</td><td>"사전검토 리포트" 라이브러리에 <code>업체명_조회일.json</code> 보관 — vendor-scout의 "조회 1회 = 불변 스냅샷" 원칙과 같게</td></tr>
+    </tbody>
+  </table></div>
+  <div class="callout warn"><b>보안 원칙:</b> vendor-scout는 누구나 열 수 있는 공개 사이트이고 데이터를 브라우저에만 저장합니다. 연계는 <b>vendor-scout → Power Apps 한 방향</b>으로만 하고, 내부 평가 점수 · 메모 · 판정은 vendor-scout에 넣지 않습니다.</div>
+</div></section>
+
+<!-- ===================== 평가 등급 ===================== -->
+<section class="sec" id="grading"><div class="wrap">
+  <h2><span class="n">05</span>사전 방문평가 · 현장 평가 등급 체계</h2>
+  <p class="sub">세 가지 판단을 서로 다른 글자로 구분합니다. vendor-scout 코드에도 "판정 글자와 신뢰도 글자를 같은 A~D로 쓰면 헷갈린다"는 검토 의견이 있어, 내부 평가는 <b>점수 + 로마 숫자 등급</b>으로 씁니다.</p>
+  <div class="tw"><table class="t">
+    <thead><tr><th>구분</th><th>표기</th><th>누가 · 어떻게</th><th>쓰임</th></tr></thead>
+    <tbody>
+      <tr><td><b>사전검증 판정</b></td><td><span class="pill">A 방문 우선 검토</span> <span class="pill">B 방문 검토 가능</span> <span class="pill">C 위험 신호</span> <span class="pill">D 검토불가</span></td><td>vendor-scout 자동 (공식 기관 자료만)</td><td>방문 진행 관문: D는 보류, C는 팀장 확인 후 진행</td></tr>
+      <tr><td><b>사전 방문평가</b></td><td>100점 → <span class="pill">Ⅰ 우수 85↑</span> <span class="pill">Ⅱ 적합 70~84</span> <span class="pill">Ⅲ 조건부 55~69</span> <span class="pill">Ⅳ 부적합 &lt;55</span></td><td>자동 항목 + 주담당 입력</td><td>방문 여부 · 우선순위 결정 (Ⅲ 이상만 일정 조율)</td></tr>
+      <tr><td><b>현장 평가</b></td><td>100점 → 같은 Ⅰ~Ⅳ</td><td>방문자 휴대폰 입력</td><td>등록 판정의 주된 근거</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 class="h">사전 방문평가 점수표 (100점)</h3>
+  <div class="tw"><table class="t">
+    <thead><tr><th>영역</th><th>배점</th><th>항목 (배점)</th><th>자료</th></tr></thead>
+    <tbody>
+      <tr><td><b>품질 시스템</b></td><td>30</td><td>CGMP 적합업소 (15) · 최근 3년 회수 없음 (10) · 품질 서류 수령 (5)</td><td>vendor-scout 자동 · 주담당</td></tr>
+      <tr><td><b>생산 역량</b></td><td>25</td><td>제조 인력 규모 (10) · 의뢰 제형 생산 이력 (10) · 설비 · 캐파 자료 (5)</td><td>국민연금 · 식약처 보고품목 자동 · 주담당</td></tr>
+      <tr><td><b>재무 안정성</b></td><td>15</td><td>부채비율 · 자본잠식 (10) · 업력 (5)</td><td>금융위 · 국세청 자동</td></tr>
+      <tr><td><b>사업 적합성</b></td><td>20</td><td>의뢰 제품 적합도 (10) · 거리 · 물류 (5) · 가격 · MOQ (5)</td><td>주담당 · 지역이동시간 목록</td></tr>
+      <tr><td><b>자료 신뢰도</b></td><td>10</td><td>vendor-scout 자료 신뢰도 A 10 · B 7 · C 4 · D 0</td><td>vendor-scout 자동</td></tr>
+    </tbody>
+  </table></div>
+  <div class="code" data-copy>// 사전평가 점수 — 자동 항목 부분 (예시). 수동 항목은 드롭다운 점수를 더합니다.
+If(ThisItem.CGMP, 15, 0) + If(ThisItem.회수3년 = 0, 10, 0)
++ If(ThisItem.부채비율 &lt;= 200, 10, ThisItem.부채비율 &lt;= 400, 5, 0)
++ Switch(ThisItem.자료신뢰도.Value, "A", 10, "B", 7, "C", 4, 0)</div>
+
+  <h3 class="h">현장 평가표 (휴대폰 · 100점)</h3>
+  <div class="grid2">
+    <div class="box"><h3>크로스체크 (관문)</h3><p style="font-size:14px;color:var(--ink2)">vendor-scout의 조회값을 현장에서 <b>일치 · 불일치 · 확인 불가</b>로 표시합니다. 생산 인원, 주력 제형, 공장 소재지, 제조업 허가증, CGMP 인증서, 대표자 등. <b>중대 불일치가 1건이라도 있으면 등록 보류</b>로 넘깁니다.</p></div>
+    <div class="box"><h3>품질 항목 8개 × 1~5점 → 100점 환산</h3><p style="font-size:14px;color:var(--ink2)">설비 상태 · 위생 · 청정 관리 · 원료 · 완제품 보관(창고 온습도) · 시험 · QC · 문서 · 기록 관리 · 인력 숙련도 · 캐파 여유 · 개선 대응. 항목마다 사진과 한 줄 메모를 남깁니다.</p></div>
+  </div>
+  <div class="callout"><b>등록 판정 기준(안):</b> 사전평가 Ⅲ 이상 + 현장 평가 70점 이상 + 크로스체크 중대 불일치 0건 → <b>등록 추천</b>. 현장 55~69점이면 개선 조건부(Capa 요청), 그 아래는 등록 불가. 최종 판정은 <b>팀장 승인</b>으로 남깁니다. 점수는 판단을 돕는 근거이고 결정은 사람이 합니다.</div>
+</div></section>
+
+<!-- ===================== 리포트 ===================== -->
+<section class="sec" id="report"><div class="wrap">
+  <h2><span class="n">06</span>리포트 연동</h2>
+  <p class="sub">업체 한 곳당 리포트 두 개를 남깁니다. 둘 다 업체 360 화면의 <b>리포트 탭</b>에서 열립니다.</p>
+  <div class="grid2">
+    <div class="box"><h3>사전검토 리포트 · 방문 전</h3>
+      <ul style="font-size:14px;color:var(--ink2);margin-left:18px;display:grid;gap:4px">
+        <li>vendor-scout의 인쇄 요약(PDF로 저장) + 조회 스냅샷(JSON)</li>
+        <li>조회 시점이 다르면 새 파일로 쌓습니다 (덮어쓰지 않음)</li>
+        <li>"사전검토 리포트" 문서 라이브러리에 업체 · 조회일 정보와 함께 보관</li>
+      </ul></div>
+    <div class="box"><h3>방문평가 리포트 · 방문 후 자동 생성</h3>
+      <ul style="font-size:14px;color:var(--ink2);margin-left:18px;display:grid;gap:4px">
+        <li>표지(업체 · 사전판정 · 평가 등급) → 사전검증 요약과 근거 → 사전평가 점수표 → 크로스체크 결과 → 현장 평가 점수 · 사진 → 종합 의견 · 후속 조치 → 이력</li>
+        <li>판정 저장 시 Power Automate가 만들어 SharePoint에 보관하고 Teams 채널에 링크를 올립니다</li>
+      </ul></div>
+  </div>
+  <div class="tw" style="margin-top:14px"><table class="t">
+    <thead><tr><th>만드는 방법</th><th>라이선스</th><th>특징</th></tr></thead>
+    <tbody>
+      <tr><td><b>HTML → PDF 변환</b> (OneDrive "파일 만들기" + "파일 변환")</td><td>표준 커넥터</td><td>추가 비용 없이 시작. 표 · 글 위주 양식에 충분</td></tr>
+      <tr><td><b>Word 템플릿 채우기</b> → PDF</td><td>프리미엄</td><td>회사 서식 그대로, 로고 · 표 배치가 정교함</td></tr>
+      <tr><td><b>Power Apps 리포트 화면</b> + 인쇄</td><td>추가 없음</td><td>자동 보관은 안 되지만 바로 볼 수 있음 (1단계 임시)</td></tr>
+    </tbody>
+  </table></div>
+</div></section>
+
+<!-- ===================== 데이터 구조 ===================== -->
+<section class="sec" id="data"><div class="wrap">
+  <h2><span class="n">07</span>데이터 구조 — 안내서 기본 앱에 더할 것</h2>
+  <p class="sub">안내서로 만든 목록 3개는 그대로 두고, 열과 목록을 더하는 방식입니다. 기존 데이터는 바뀌지 않습니다.</p>
+  <div class="tw"><table class="t">
+    <thead><tr><th>대상</th><th>추가 열 · 목록</th><th>용도</th></tr></thead>
+    <tbody>
+      <tr><td><b>방문처</b> (열 추가)</td><td>사업자번호 · 사전판정(A~D) · 판정근거 · 자료신뢰도 · CGMP · 회수3년 · 부채비율 · 제조인력 · 사전조회일</td><td>vendor-scout 결과 (L1 수동 / L2 자동)</td></tr>
+      <tr><td></td><td>사전평가점수 · 사전평가등급 · 현장평가점수 · 현장평가등급</td><td>평가 등급</td></tr>
+      <tr><td></td><td>실제방문일 · 판정일 · 판정결과 · 판정자(사용자)</td><td>월별 통계 · 판정 기록</td></tr>
+      <tr><td><b>평가</b> (새 목록)</td><td>방문처ID · 구분(사전/현장) · 평가일 · 평가자 · 항목 점수들 · 총점 · 의견 · 사진(첨부)</td><td>평가표 원본 보관</td></tr>
+      <tr><td><b>크로스체크</b> (새 목록)</td><td>방문처ID · 항목 · 조회값 · 현장값 · 결과(일치/불일치/확인불가) · 중대 여부</td><td>현장 확인 기록</td></tr>
+      <tr><td><b>사전검토 리포트</b> (문서 라이브러리)</td><td>파일 + 방문처ID · 조회일 · 판정</td><td>스냅샷 · PDF 보관</td></tr>
+      <tr><td><b>방문평가 리포트</b> (문서 라이브러리)</td><td>파일 + 방문처ID · 판정일 · 등급</td><td>자동 생성 PDF</td></tr>
+    </tbody>
+  </table></div>
+</div></section>
+
+<!-- ===================== 추진 단계 ===================== -->
+<section class="sec" id="roadmap"><div class="wrap">
+  <h2><span class="n">08</span>추진 단계</h2>
+  <p class="sub">각 단계가 끝나면 바로 쓸 수 있게 나눴습니다. 앞 단계가 자리 잡은 뒤 다음으로 넘어가세요.</p>
+  <div class="road">
+    <div class="box"><div class="k">1단계 · 기본 운영</div><h4>안내서 앱 + 통계 준비</h4><ul><li>따라하기 안내서대로 기본 앱</li><li>사업자번호 · 실제방문일 · 판정일 · 판정결과 열 추가</li><li>vendor-scout <b>L1 링크</b> 단추</li><li>홈에 월별 방문 · 등록 숫자</li></ul></div>
+    <div class="box"><div class="k">2단계 · 화면 개편</div><h4>추천 조합 적용</h4><ul><li>홈(안 3) · 업체 360(안 4) · 내 할 일(안 5)</li><li>월별 차트 · 단계별 전환</li><li>사전 방문평가 점수표</li></ul></div>
+    <div class="box"><div class="k">3단계 · 연계 강화</div><h4>사전검증 자동 반영</h4><ul><li>vendor-scout <b>L2 요약 복사</b> 단추 추가</li><li>크로스체크 · 현장 평가(휴대폰)</li><li>등록 판정 · 팀장 승인</li></ul></div>
+    <div class="box"><div class="k">4단계 · 자동화</div><h4>리포트 · 일괄 처리</h4><ul><li>방문평가 리포트 PDF 자동 생성</li><li>L3 일괄 가져오기</li><li>필요 시 Power BI · L4 자동 동기화</li></ul></div>
+  </div>
+
+  <h3 class="h">정해 주시면 바로 진행할 수 있는 것</h3>
+  <ol class="decide">
+    <li>기본 뼈대 — <b>추천 조합(안 3 + 4 + 5)</b>으로 갈지, 다른 안으로 갈지<small>정해지면 해당 화면의 따라하기 안내(배치도 · 수식 · 복사 단추)를 안내서에 추가합니다.</small></li>
+    <li>사전 방문평가 배점 — 위 점수표의 영역 · 배점 · 등급 경계값을 그대로 쓸지<small>품질 · 생산 · 재무 · 적합성 · 신뢰도 30/25/15/20/10</small></li>
+    <li>vendor-scout 수정 — <b>"Power Apps용 요약 복사"</b> 단추(L2)를 vendor-scout에 넣어도 될지<small>vendor-scout 저장소(duckjin87-web/vendor-scout)를 고쳐야 합니다.</small></li>
+    <li>리포트 양식 — 표준(HTML → PDF)으로 시작할지, 회사 Word 서식(프리미엄)이 필요한지</li>
+  </ol>
+</div></section>
+
+<footer><div class="wrap">검토용 제안서입니다. 화면 그림과 통계 숫자는 예시(가명 데이터)입니다. vendor-scout 연계 내용은 duckjin87-web/vendor-scout 저장소 코드(종합판정 · 크로스체크 · 저장업체 내보내기 · 조회 주소 형식)를 기준으로 작성했습니다. Microsoft 라이선스 구분은 회사 플랜에 따라 다를 수 있어 IT 확인이 필요합니다.</div></footer>
+
+<script>
+/* ---------- 예시 데이터 (최근 12개월) ---------- */
+const VISIT=[5,7,6,8,9,7,10,8,11,9,12,10], REG=[1,2,2,3,2,3,4,3,4,3,5,4];
+const now=new Date(); const MONTHS=Array.from({length:12},(_,i)=>{const d=new Date(now.getFullYear(),now.getMonth()-11+i,1);return {y:d.getFullYear(),m:d.getMonth()+1};});
+const lbl=(o,full)=>full?`${o.y}년 ${o.m}월`:`${o.m}월`;
+const sum=a=>a.reduce((x,y)=>x+y,0), pct=(a,b)=>b?Math.round(a/b*100):0;
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+
+/* ---------- 숫자 칸 ---------- */
+(function(){
+  const n=11, dv=VISIT[n]-VISIT[n-1], dr=REG[n]-REG[n-1];
+  const sign=x=>x>0?`<b class="up">▲ ${x}</b>`:x<0?`<b class="down">▼ ${-x}</b>`:"<b>— 0</b>";
+  const T=[["이번 달 방문 완료",VISIT[n],`전월 대비 ${sign(dv)} (전월 ${VISIT[n-1]})`],
+           ["이번 달 등록 완료",REG[n],`전월 대비 ${sign(dr)} (전월 ${REG[n-1]})`],
+           ["12개월 등록 전환율",pct(sum(REG),sum(VISIT))+"%",`방문 ${sum(VISIT)} → 등록 ${sum(REG)}`],
+           ["방문 → 판정 평균",'18일',"판정일 − 실제방문일"]];
+  document.getElementById("tiles").innerHTML=T.map(t=>`<div class="tile"><div class="l">${t[0]}</div><div class="v">${t[1]}</div><div class="d">${t[2]}</div></div>`).join("");
+})();
+
+/* ---------- 묶은 세로 막대 차트 ---------- */
+function drawChart(){
+  const box=document.getElementById("chart"), tip=document.getElementById("tip");
+  const W=Math.max(320,box.clientWidth), H=260, P={l:30,r:8,t:18,b:28};
+  const iw=W-P.l-P.r, ih=H-P.t-P.b, band=iw/12, bw=Math.min(14,(band-10)/2), gap=2;
+  const max=12, y=v=>P.t+ih-(v/max)*ih;
+  const c1=css("--s1"), c2=css("--s2"), grid=css("--grid");
+  const bar=(x,v,col)=>{ if(!v)return ""; const top=y(v), h=P.t+ih-top, r=Math.min(4,h);
+    return `<path d="M${x},${P.t+ih} V${top+r} Q${x},${top} ${x+r},${top} H${x+bw-r} Q${x+bw},${top} ${x+bw},${top+r} V${P.t+ih} Z" fill="${col}"/>`;};
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="월별 방문 완료와 등록 완료 막대 차트">`;
+  [0,4,8,12].forEach(t=>{s+=`<line x1="${P.l}" x2="${W-P.r}" y1="${y(t)}" y2="${y(t)}" stroke="${grid}" stroke-width="1"/><text x="${P.l-8}" y="${y(t)+4}" text-anchor="end">${t}</text>`;});
+  MONTHS.forEach((mo,i)=>{
+    const gx=P.l+band*i+(band-(bw*2+gap))/2;
+    s+=bar(gx,VISIT[i],c1)+bar(gx+bw+gap,REG[i],c2);
+    if(i===11){ s+=`<text class="val" x="${gx+bw/2}" y="${y(VISIT[i])-6}" text-anchor="middle">${VISIT[i]}</text><text class="val" x="${gx+bw+gap+bw/2}" y="${y(REG[i])-6}" text-anchor="middle">${REG[i]}</text>`; }
+    if(W>=520||i%2===1) s+=`<text x="${P.l+band*i+band/2}" y="${H-8}" text-anchor="middle">${lbl(mo)}</text>`;
+    s+=`<rect class="hit" data-i="${i}" x="${P.l+band*i}" y="${P.t}" width="${band}" height="${ih}" fill="transparent"/>`;
+  });
+  s+=`</svg>`;
+  box.innerHTML=s; box.appendChild(tip);
+  box.querySelectorAll(".hit").forEach(r=>{
+    const show=()=>{const i=+r.dataset.i, bx=box.getBoundingClientRect(), rb=r.getBoundingClientRect();
+      tip.innerHTML=`<b>${lbl(MONTHS[i],true)}</b><div><i style="background:${c1}"></i>방문 완료<span>${VISIT[i]}</span></div><div><i style="background:${c2}"></i>등록 완료<span>${REG[i]}</span></div><div>등록 전환율<span>${pct(REG[i],VISIT[i])}%</span></div>`;
+      let x=rb.left-bx.left+rb.width/2-80; x=Math.max(0,Math.min(x,bx.width-170));
+      tip.style.left=x+"px"; tip.style.top="0px"; tip.classList.add("on"); r.setAttribute("fill","rgba(127,127,127,.08)");};
+    const hide=()=>{tip.classList.remove("on"); r.setAttribute("fill","transparent");};
+    r.addEventListener("mouseenter",show); r.addEventListener("mouseleave",hide);
+    r.addEventListener("click",show);
+  });
+}
+document.getElementById("chartTable").innerHTML="<thead><tr><th>월</th><th>방문 완료</th><th>등록 완료</th><th>전환율</th></tr></thead><tbody>"+
+  MONTHS.map((mo,i)=>`<tr><td>${lbl(mo,true)}</td><td>${VISIT[i]}</td><td>${REG[i]}</td><td>${pct(REG[i],VISIT[i])}%</td></tr>`).join("")+
+  `<tr><td><b>합계</b></td><td><b>${sum(VISIT)}</b></td><td><b>${sum(REG)}</b></td><td><b>${pct(sum(REG),sum(VISIT))}%</b></td></tr></tbody>`;
+
+/* ---------- 단계별 전환 (단일 계열 가로 막대) ---------- */
+(function(){
+  const F=[["사전검증 조회",148],["방문 대상 (Ⅲ 이상)",121],["방문 완료",sum(VISIT)],["등록 완료",sum(REG)]];
+  document.getElementById("funnel").innerHTML=F.map((f,i)=>`<div class="fr"><span>${f[0]}</span><div class="bar" style="width:${f[1]/F[0][1]*100}%" title="${f[0]} ${f[1]}곳"></div><span class="num">${f[1]}곳${i?`<small>${pct(f[1],F[i-1][1])}%</small>`:""}</span></div>`).join("");
+})();
+
+drawChart();
+let rt; window.addEventListener("resize",()=>{clearTimeout(rt);rt=setTimeout(drawChart,120);});
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change",drawChart);
+
+/* ---------- 코드 복사 ---------- */
+document.querySelectorAll(".code[data-copy]").forEach(d=>{const b=document.createElement("button");b.type="button";b.className="cp";b.textContent="복사";
+  b.onclick=async()=>{const t=d.textContent.replace(/복사$/,"").trim();
+    try{await navigator.clipboard.writeText(t);}catch(e){const a=document.createElement("textarea");a.value=t;document.body.appendChild(a);a.select();try{document.execCommand("copy");}catch(_){}a.remove();}
+    b.textContent="복사됨";b.classList.add("ok");setTimeout(()=>{b.textContent="복사";b.classList.remove("ok");},1100);};
+  d.appendChild(b);});
+
+/* ---------- 목차 현재 위치 ---------- */
+const links=[...document.querySelectorAll("#toc a")];
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)links.forEach(a=>a.classList.toggle("on",a.getAttribute("href")==="#"+e.target.id));}),{rootMargin:"-35% 0px -60% 0px"});
+document.querySelectorAll("section.sec").forEach(s=>io.observe(s));
+</script>
+</body>
+</html>
