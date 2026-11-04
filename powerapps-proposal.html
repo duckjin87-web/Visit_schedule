@@ -67,6 +67,16 @@ h3.h{font-size:18px;font-weight:700;margin:26px 0 10px}
 .note{font-size:13px;color:var(--ink3)}
 .callout{border-left:4px solid var(--brand);background:var(--brand-weak);border-radius:8px;padding:12px 16px;font-size:14px;margin:14px 0}
 .callout.warn{border-color:var(--warn);background:var(--warn-weak)}
+.decided{border:1.5px solid var(--good);background:var(--good-weak);border-radius:14px;padding:16px 20px;margin:18px 0 6px}
+.decided h3{font-size:15px;font-weight:800;color:var(--good);margin-bottom:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.decided h3 small{font-weight:600;color:var(--ink3);font-size:12.5px}
+.decided ol{list-style:none;display:grid;grid-template-columns:repeat(2,1fr);gap:8px 18px;counter-reset:d}
+.decided li{counter-increment:d;position:relative;padding-left:30px;font-size:14px;line-height:1.55}
+.decided li::before{content:counter(d);position:absolute;left:0;top:1px;width:21px;height:21px;border-radius:50%;background:var(--good);color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.decided li.off::before{background:var(--ink3)}
+.decided .links{margin-top:12px;font-size:13.5px;display:flex;gap:14px;flex-wrap:wrap}
+.callout.off{border-color:var(--ink3);background:var(--sunk,rgba(127,127,127,.08))}
+@media (max-width:720px){.decided ol{grid-template-columns:1fr}}
 .code{position:relative;background:var(--code);color:var(--code-ink);border:1px solid var(--line);border-radius:10px;padding:12px 70px 12px 14px;font-family:var(--mono);font-size:13px;line-height:1.6;white-space:pre-wrap;word-break:break-word;margin:8px 0}
 .cp{position:absolute;top:8px;right:8px;border:1px solid var(--line2);background:var(--surface);color:var(--ink2);border-radius:6px;padding:2px 10px;font:600 12px var(--font);cursor:pointer;white-space:nowrap}
 .cp:hover{border-color:var(--brand);color:var(--brand-ink)}
@@ -257,7 +267,7 @@ footer{padding:36px 0 60px;color:var(--ink3);font-size:12.5px}
 <header class="top"><div class="wrap">
   <b>방문업무 Power Apps 구성 제안</b>
   <nav id="toc">
-    <a href="#principles">설계 원칙</a><a href="#options">화면 5안</a><a href="#compare">비교·추천</a>
+    <a href="#decided">결정 사항</a><a href="#principles">설계 원칙</a><a href="#options">화면 5안</a><a href="#compare">비교·추천</a>
     <a href="#stats">월별 통계</a><a href="#scout">vendor-scout 연계</a><a href="#grading">평가 등급</a>
     <a href="#report">리포트</a><a href="#data">데이터 구조</a><a href="#roadmap">추진 단계</a>
   </nav>
@@ -267,9 +277,20 @@ footer{padding:36px 0 60px;color:var(--ink3);font-size:12.5px}
   <div class="eyebrow">Power Apps 구성안 · 검토용</div>
   <h1>방문업무 앱 화면 구성 5안과<br>사전검증 · 평가 · 리포트 연계 설계</h1>
   <p class="lead">따라하기 안내서로 만드는 기본 앱(SharePoint 목록 + Power Apps + Power Automate)을 바탕으로, 10명이 매일 쓰기 쉬운 화면 구성 다섯 가지와 <b>월별 방문 · 등록 통계</b>를 제안합니다. 그리고 vendor-scout(공공데이터 사전검증)과 이어 <b>사전검토 → 사전 방문평가 등급 → 현장 평가 → 리포트</b>까지 한 흐름으로 묶는 설계를 담았습니다.</p>
+  <div class="decided" id="decided">
+    <h3>✓ 11/4 결정 사항 <small>아래 원래 제안 중 이 결정과 다른 부분은 참고용입니다</small></h3>
+    <ol>
+      <li><b>화면은 안 1 · 업무 단계 탭형이 메인</b> — 일정 조율 → 방문 예정 → 결과·판정, 그리고 전체 업체 · 통계까지 탭 5개.</li>
+      <li><b>통계 탭은 안 3 · 대시보드 모양</b> — 숫자 4칸 + 월별 방문/등록 막대 + 단계별 업체 수 + <b>최근 방문 내용</b> 표.</li>
+      <li class="off"><b>사전 방문평가 배점(100점 · 등급)은 쓰지 않음</b> — 05 평가 등급 장은 참고로만 둡니다.</li>
+      <li class="off"><b>vendor-scout 연계는 별도로 진행</b> — 04 장은 이번 구축 범위에서 제외합니다.</li>
+      <li style="grid-column:1/-1"><b>리포트는 표준 방식</b> — 판정이 나면 Power Automate가 HTML 리포트를 OneDrive <b>파일 변환</b>으로 PDF로 만들어 SharePoint <b>방문 리포트</b> 라이브러리에 저장합니다(프리미엄 라이선스 불필요).</li>
+    </ol>
+    <div class="links"><a href="powerapps-guide.html">→ 개편된 따라하기 안내서 (탭 5개 · 통계 · 리포트 흐름 ④)</a><a href="powerapps-mockup.html">→ 바뀐 Power Apps 예상 목업</a></div>
+  </div>
   <div class="verdict">
     <div class="box rec">
-      <h3>추천</h3>
+      <h3>처음 제안했던 추천 (참고)</h3>
       <div class="big">업체 한 곳의 모든 것을 한 화면에 모으는 <span style="color:var(--brand-ink)">안 4 · 업체 360</span>을 기본 뼈대로 하고, 홈은 <span style="color:var(--brand-ink)">안 3 · 대시보드</span>, 휴대폰은 <span style="color:var(--brand-ink)">안 5 · 내 할 일</span>로 구성</div>
       <ul>
         <li>사전검증 판정, 평가 점수, 일정, 방문 결과, 리포트가 업체 단위로 쌓이므로 vendor-scout 연계와 가장 잘 맞습니다.</li>
@@ -527,7 +548,7 @@ footer{padding:36px 0 60px;color:var(--ink3);font-size:12.5px}
       <tr><td><b>선정주체 · 지역별</b></td><td>위 지표를 선정주체·시도별로 나눔</td><td>선정주체 · 소재지</td><td>통계 화면 필터</td></tr>
     </tbody>
   </table></div>
-  <div class="callout warn"><b>꼭 필요한 변경:</b> 지금 목록에는 <b>확정방문일</b>(예정일)만 있어 "실제로 언제 방문했는지", "언제 등록이 결정됐는지"를 셀 수 없습니다. <b>실제방문일 · 판정일 · 판정결과</b> 세 열을 추가하고, 방문 결과를 저장할 때 앱이 자동으로 채우게 합니다.</div>
+  <div class="callout warn"><b>꼭 필요한 변경:</b> 지금 목록에는 <b>확정방문일</b>(예정일)만 있어 "실제로 언제 방문했는지", "언제 등록이 결정됐는지"를 셀 수 없습니다. <b>실제방문일 · 판정일 · 판정결과</b> 세 열을 추가하고, 방문 결과를 저장할 때 앱이 자동으로 채우게 합니다.<br><small><b>11/4 결정안:</b> 판정결과 열은 따로 만들지 않고 기존 <b>상태</b>(등록 완료/등록 불가)를 그대로 씁니다. 그래서 <b>실제방문일 · 판정일</b> 두 열만 추가하고, 수식의 <code>판정결과.Value</code>는 <code>상태.Value</code>가 됩니다(안내서 10단계).</small></div>
 
   <h3 class="h">Power Apps 구현 — 월별 집계 수식</h3>
   <p class="note">통계 화면이 열릴 때(<b>OnVisible</b>) 최근 12개월 집계를 컬렉션으로 만들고, <b>열 차트(Column chart)</b> 컨트롤의 Items에 넣습니다.</p>
@@ -546,6 +567,7 @@ Text(Sum(colMonthly, 등록완료) / Max(1, Sum(colMonthly, 방문완료)), "0%"
 <section class="sec" id="scout"><div class="wrap">
   <h2><span class="n">04</span>vendor-scout 연계 — 사전검토를 방문 업무 앞단에 붙이기</h2>
   <p class="sub">vendor-scout는 업체명 · 사업자번호로 식약처 · 국세청 · 금융위 · 국민연금 등 공공데이터를 모아 <b>방문할 만한 업체인지</b>를 판정합니다. 이 결과를 Power Apps의 업체 기록으로 가져와 평가와 리포트의 출발점으로 씁니다.</p>
+  <div class="callout off"><b>11/4 결정:</b> vendor-scout 연계는 별도로 진행하기로 해서 이번 구축 범위에서 제외합니다. 아래는 나중을 위한 참고 자료입니다.</div>
 
   <h3 class="h">전체 흐름</h3>
   <div class="flow">
@@ -624,6 +646,7 @@ Text(Sum(colMonthly, 등록완료) / Max(1, Sum(colMonthly, 방문완료)), "0%"
 <section class="sec" id="grading"><div class="wrap">
   <h2><span class="n">05</span>사전 방문평가 · 현장 평가 등급 체계</h2>
   <p class="sub">세 가지 판단을 서로 다른 글자로 구분합니다. vendor-scout 코드에도 "판정 글자와 신뢰도 글자를 같은 A~D로 쓰면 헷갈린다"는 검토 의견이 있어, 내부 평가는 <b>점수 + 로마 숫자 등급</b>으로 씁니다.</p>
+  <div class="callout off"><b>11/4 결정:</b> 사전 방문평가 배점은 사용하지 않습니다. 이 장은 참고용이며, 앱의 판정은 <b>상태(등록 완료 / 등록 불가 / Capa 회신 대기)</b>와 <b>방문 결과</b> 글로 남깁니다.</div>
   <div class="tw"><table class="t">
     <thead><tr><th>구분</th><th>표기</th><th>누가 · 어떻게</th><th>쓰임</th></tr></thead>
     <tbody>
@@ -661,6 +684,7 @@ If(ThisItem.CGMP, 15, 0) + If(ThisItem.회수3년 = 0, 10, 0)
 <section class="sec" id="report"><div class="wrap">
   <h2><span class="n">06</span>리포트 연동</h2>
   <p class="sub">업체 한 곳당 리포트 두 개를 남깁니다. 둘 다 업체 360 화면의 <b>리포트 탭</b>에서 열립니다.</p>
+  <div class="callout"><b>11/4 결정:</b> 리포트는 <b>표준 방식(HTML → PDF)</b>으로, 판정 리포트 하나만 자동으로 만듭니다. 만드는 법은 <a href="powerapps-guide.html#s15">따라하기 안내서 15단계(흐름 ④)</a>에 있습니다.</div>
   <div class="grid2">
     <div class="box"><h3>사전검토 리포트 · 방문 전</h3>
       <ul style="font-size:14px;color:var(--ink2);margin-left:18px;display:grid;gap:4px">

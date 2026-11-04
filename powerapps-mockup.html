@@ -91,34 +91,40 @@ textarea.inp{resize:none;line-height:1.45}
 .empty{color:var(--fg3);font-size:13px;padding:24px;text-align:center}
 
 /* ---------- 태블릿 레이아웃 ---------- */
-.tb-body{flex:1;display:flex;min-height:0}
-.nav{width:200px;flex:none;background:var(--bg1);border-right:1px solid var(--st2);padding:12px 8px;display:flex;flex-direction:column;gap:2px}
-.nav button{display:flex;align-items:center;gap:12px;border:0;background:none;border-radius:4px;padding:10px 12px;font-size:14px;font-weight:600;color:var(--fg2);text-align:left;position:relative}
-.nav button:hover{background:var(--bg3)}
-.nav button.on{background:var(--brand-bg);color:var(--brand)}
-.nav button.on::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:3px;border-radius:2px;background:var(--brand)}
-.nav svg{width:20px;height:20px;flex:none}
-.nav .cnt{margin-left:auto;font-size:11px;font-weight:700;background:var(--brand);color:#fff;border-radius:9px;padding:0 6px;min-width:18px;text-align:center;line-height:18px}
-.nav .foot{margin-top:auto;font-size:11px;color:var(--fg4);padding:8px 12px;line-height:1.5}
-.scr{flex:1;padding:20px;min-width:0;display:none;gap:16px}
+.tb-body{flex:1;display:flex;flex-direction:column;min-height:0}
+.tabs{height:48px;flex:none;background:var(--bg1);border-bottom:1px solid var(--st2);display:flex;align-items:stretch;padding:0 12px}
+.tabs button{border:0;background:none;padding:0 18px;font-size:14px;font-weight:600;color:var(--fg2);position:relative;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.tabs button:hover{background:var(--bg2)}
+.tabs button.on{color:var(--brand)}
+.tabs button.on::after{content:"";position:absolute;left:12px;right:12px;bottom:0;height:3px;border-radius:3px 3px 0 0;background:var(--brand)}
+.tabs .no{font-size:11px;font-weight:700;color:var(--fg4)}
+.tabs button.on .no{color:var(--brand)}
+.tabs .cnt{font-size:11px;font-weight:700;background:var(--bg4);color:var(--fg2);border-radius:9px;padding:0 7px;min-width:20px;text-align:center;line-height:18px}
+.tabs button.on .cnt{background:var(--brand);color:#fff}
+.tabs .arr{display:flex;align-items:center;color:var(--fg4);font-size:13px;padding:0 2px}
+.tabs .div{width:1px;background:var(--st2);margin:12px 8px}
+.tabs .foot{margin-left:auto;display:flex;align-items:center;font-size:11px;color:var(--fg4)}
+.scr{flex:1;padding:16px 20px;min-width:0;min-height:0;display:none;gap:16px}
 .scr.on{display:flex}
-/* 홈 */
-#t-home{flex-direction:column}
-.greet{display:flex;align-items:baseline;gap:10px}
-.greet h3{font-size:20px;font-weight:600}
-.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
-.tile{padding:14px 16px;cursor:pointer;text-align:left;border:0;position:relative}
-.tile:hover{box-shadow:var(--sh16)}
-.tile .n{font-size:30px;font-weight:700;line-height:1.2;margin-top:2px}
-.tile .n small{font-size:14px;font-weight:600;color:var(--fg3);margin-left:2px}
-.tile .x{font-size:12px;color:var(--fg3)}
-.tile .x.bad{color:var(--bad);font-weight:600}
-.home-mid{display:grid;grid-template-columns:1.35fr 1fr;gap:16px;flex:1;min-height:0}
-.home-mid .card{display:flex;flex-direction:column;min-height:0}
 .ch{display:flex;align-items:center;gap:8px;padding:14px 16px 10px}
 .ch .sp{flex:1}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;flex:none}
+.tile{padding:12px 16px;text-align:left;border:0;position:relative}
+.tile .n{font-size:28px;font-weight:700;line-height:1.2;margin-top:2px;font-variant-numeric:tabular-nums}
+.tile .n small{font-size:14px;font-weight:600;color:var(--fg3);margin-left:2px}
+.tile .x{font-size:12px;color:var(--fg3)}
+.tile .x b{font-weight:700}
+.tile .x .up{color:var(--ok)} .tile .x .down{color:var(--bad)}
+.tile .x.bad{color:var(--bad);font-weight:600}
+/* 방문 예정 */
+#t-plan{flex-direction:column}
+.pl-main{flex:1;display:grid;grid-template-columns:1.15fr 1fr;gap:16px;min-height:0}
+.pl-main .card{display:flex;flex-direction:column;min-height:0}
+.dday{font-size:12px;font-weight:700;border-radius:4px;padding:2px 8px;background:var(--bg3);color:var(--fg2);white-space:nowrap}
+.dday.near{background:var(--warn-bg);color:var(--warn)}
+.dday.today{background:var(--brand);color:#fff}
 .strip{display:grid;grid-template-columns:repeat(14,1fr);gap:6px;padding:0 16px 14px}
-.dy{border:1px solid var(--st2);border-radius:4px;padding:5px 6px;min-height:66px;background:var(--bg1)}
+.dy{border:1px solid var(--st2);border-radius:4px;padding:5px 6px;min-height:62px;background:var(--bg1)}
 .dy.we{background:var(--bg2)}
 .dy.td{border:2px solid var(--brand);padding:4px 5px}
 .dy .d{font-size:11px;color:var(--fg3);font-weight:600}
@@ -126,6 +132,36 @@ textarea.inp{resize:none;line-height:1.45}
 .dy.td .d b{color:var(--brand)}
 .ev{display:block;width:100%;text-align:left;border:0;margin-top:3px;background:var(--brand-bg);border-left:3px solid var(--brand);border-radius:2px;padding:2px 4px;font-size:11px;font-weight:600;line-height:1.3;word-break:break-all;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .ev.done{background:var(--ok-bg);border-left-color:var(--ok)}
+/* 통계 */
+#t-stats{flex-direction:column;gap:12px}
+.st-mid{display:grid;grid-template-columns:1.65fr 1fr;gap:12px;flex:none}
+.st-mid .card{display:flex;flex-direction:column}
+.legend{display:flex;gap:12px;font-size:12px;color:var(--fg2);align-items:center}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.chart{position:relative;padding:0 12px 8px}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart text{font-family:var(--font);fill:var(--fg3);font-size:11px}
+.chart text.val{fill:var(--fg1);font-weight:700}
+.ctip{position:absolute;pointer-events:none;background:var(--bg1);border:1px solid var(--st1);border-radius:6px;box-shadow:var(--sh16);padding:8px 10px;font-size:12px;min-width:150px;opacity:0;transition:opacity .12s;z-index:5;top:0}
+.ctip.on{opacity:1}
+.ctip b{display:block;margin-bottom:4px;font-size:13px}
+.ctip div{display:flex;align-items:center;gap:6px;color:var(--fg2)}
+.ctip div span{margin-left:auto;font-weight:700;color:var(--fg1)}
+.ctip i{width:8px;height:8px;border-radius:2px;display:inline-block}
+.stg{display:grid;gap:9px;padding:2px 16px 14px}
+.stg .sr{display:grid;grid-template-columns:104px 1fr 34px;gap:10px;align-items:center;font-size:13px}
+.stg .sr .bar{height:14px;border-radius:0 3px 3px 0;background:var(--brand);min-width:2px}
+.stg .sr .num{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.stg-tot{font-size:12px;color:var(--fg3);padding:0 16px 12px}
+.recent{flex:1;display:flex;flex-direction:column;min-height:0}
+.rtbl{width:100%;border-collapse:collapse;table-layout:fixed}
+.rtbl th{font-size:12px;font-weight:600;color:var(--fg3);text-align:left;padding:6px 12px;border-bottom:1px solid var(--st2);background:var(--bg2);position:sticky;top:0;z-index:1}
+.rtbl td{padding:7px 12px;border-bottom:1px solid var(--st3);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rtbl tr{cursor:pointer}
+.rtbl tbody tr:hover td{background:var(--bg2)}
+.rtbl .res{color:var(--fg2)}
+.greet{display:flex;align-items:baseline;gap:10px}
 /* 목록 · 결과 (목록 + 상세 템플릿) */
 .lp{width:380px;flex:none;display:flex;flex-direction:column;min-height:0}
 .lp-h{padding:14px 16px;display:grid;gap:8px;border-bottom:1px solid var(--st2)}
@@ -213,7 +249,7 @@ textarea.inp{resize:none;line-height:1.45}
   <div class="intro">
     <div>
       <h1>방문예정처 — Power Apps 구현 예상 목업</h1>
-      <p>SharePoint 목록 + Power Apps 캔버스 앱 + Power Automate로 만들었을 때의 예상 화면입니다. 실제 Power Apps 화면이 아닌 HTML 재현이며, 가명 데이터이고 저장되지 않습니다.</p>
+      <p>SharePoint 목록 + Power Apps 캔버스 앱 + Power Automate로 만들었을 때의 예상 화면입니다. <b>업무 단계 탭 5개</b>(일정 조율 → 방문 예정 → 결과·판정, 전체 업체, 통계)로 구성했습니다. 실제 Power Apps 화면이 아닌 HTML 재현이며, 가명 데이터이고 저장되지 않습니다.</p>
     </div>
     <div class="ctrls">
       <div class="seg" role="group" aria-label="레이아웃">
@@ -235,32 +271,53 @@ textarea.inp{resize:none;line-height:1.45}
         </div>
         <div class="notify" id="t-notify"></div>
         <div class="tb-body">
-          <nav class="nav" data-ctl="탐색 갤러리" aria-label="화면">
-            <button type="button" data-scr="home" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>홈</button>
-            <button type="button" data-scr="list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg>방문 목록</button>
-            <button type="button" data-scr="coord"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>일정 조율<span class="cnt" id="n-coord"></span></button>
-            <button type="button" data-scr="result"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>방문 결과<span class="cnt" id="n-result"></span></button>
-            <div class="foot">데이터: SharePoint 목록<br>알림: Power Automate</div>
-          </nav>
+          <div class="tabs" role="tablist" aria-label="업무 단계" data-ctl="단추 5개 · Navigate()">
+            <button type="button" data-scr="coord" class="on"><span class="no">1</span>일정 조율<span class="cnt" id="n-coord"></span></button>
+            <span class="arr" aria-hidden="true">›</span>
+            <button type="button" data-scr="plan"><span class="no">2</span>방문 예정<span class="cnt" id="n-plan"></span></button>
+            <span class="arr" aria-hidden="true">›</span>
+            <button type="button" data-scr="result"><span class="no">3</span>결과 · 판정<span class="cnt" id="n-result"></span></button>
+            <span class="div" aria-hidden="true"></span>
+            <button type="button" data-scr="list">전체 업체</button>
+            <button type="button" data-scr="stats">통계</button>
+            <span class="foot">데이터: SharePoint 목록 · 알림/리포트: Power Automate</span>
+          </div>
 
-          <!-- 홈 -->
-          <section class="scr on" id="t-home">
-            <div class="greet"><h3>안녕하세요, 김지훈 님</h3><span class="lbl" id="t-today"></span></div>
-            <div class="tiles" id="t-tiles"></div>
-            <div class="home-mid">
-              <div class="card" data-ctl="갤러리 · Filter(담당 = User())">
-                <div class="ch"><span class="h3">내가 처리할 업무</span></div>
-                <div class="gal" id="t-todo"></div>
+          <!-- 방문 예정 -->
+          <section class="scr" id="t-plan">
+            <div class="pl-main">
+              <div class="card" data-ctl="갤러리 · Sort(Filter(방문 확정, 오늘 이후))">
+                <div class="ch"><span class="h3">확정된 방문</span><span class="lbl">오늘 이후 · 가까운 순</span></div>
+                <div class="gal" id="t-pgal" style="flex:1"></div>
               </div>
-              <div class="card" data-ctl="갤러리 · 확정 방문">
-                <div class="ch"><span class="h3">다가오는 방문</span></div>
-                <div class="gal" id="t-up"></div>
-              </div>
+              <div class="card rp" id="t-pdetail" data-ctl="표시 양식 · 방문 준비 정보"></div>
             </div>
-            <div class="card" data-ctl="가로 갤러리 (14일)">
+            <div class="card" data-ctl="가로 갤러리 (14일)" style="flex:none">
               <div class="ch"><span class="h3">방문 확정 일정</span><span class="lbl" id="t-range"></span><span class="sp"></span>
                 <button class="btn sub" type="button" data-week="-1">‹ 이전</button><button class="btn sub" type="button" data-week="0">이번 주</button><button class="btn sub" type="button" data-week="1">다음 ›</button></div>
               <div class="strip" id="t-strip"></div>
+            </div>
+          </section>
+
+          <!-- 통계 -->
+          <section class="scr" id="t-stats">
+            <div class="tiles" id="t-tiles"></div>
+            <div class="st-mid">
+              <div class="card" data-ctl="세로 막대형 차트 · colMonthly">
+                <div class="ch"><span class="h3">월별 방문 완료 · 등록 완료</span><span class="lbl">최근 12개월</span><span class="sp"></span>
+                  <span class="legend"><span><i style="background:#2a78d6"></i>방문 완료</span><span><i style="background:#eb6834"></i>등록 완료</span></span></div>
+                <div class="chart" id="t-chart"><div class="ctip" id="t-ctip"></div></div>
+              </div>
+              <div class="card" data-ctl="빈 갤러리 · 단계별 CountRows()">
+                <div class="ch"><span class="h3">단계별 업체 수</span><span class="lbl">지금</span></div>
+                <div class="stg" id="t-stage"></div>
+                <div class="stg-tot" id="t-stot"></div>
+              </div>
+            </div>
+            <div class="card recent" data-ctl="갤러리 · FirstN(최근 방문, 20)">
+              <div class="ch" style="padding-bottom:8px"><span class="h3">최근 방문 내용</span><span class="lbl">최근 20건 · 줄을 누르면 전체 업체에서 상세</span></div>
+              <div class="gal" style="flex:1"><table class="rtbl"><colgroup><col style="width:120px"><col style="width:200px"><col style="width:170px"><col></colgroup>
+                <thead><tr><th>방문일</th><th>업체</th><th>판정 · 상태</th><th>방문 결과</th></tr></thead><tbody id="t-recent"></tbody></table></div>
             </div>
           </section>
 
@@ -280,7 +337,7 @@ textarea.inp{resize:none;line-height:1.45}
           </section>
 
           <!-- 일정 조율 -->
-          <section class="scr" id="t-coord">
+          <section class="scr on" id="t-coord">
             <div class="card co-top">
               <div data-ctl="드롭다운 · 조율 중 업체"><select class="dd" id="t-cosel"></select></div>
               <span class="meta" id="t-cometa"></span>
@@ -299,7 +356,7 @@ textarea.inp{resize:none;line-height:1.45}
           <!-- 방문 결과 -->
           <section class="scr" id="t-result">
             <div class="card lp">
-              <div class="lp-h"><span class="h3">결과 입력 대상</span><span class="lbl">방문일이 지났거나 판정·Capa 회신이 남은 건</span></div>
+              <div class="lp-h"><span class="h3">결과 · 판정 대상</span><span class="lbl">방문일이 지났거나 판정·Capa 회신이 남은 건</span></div>
               <div class="gal" id="t-rgal" data-ctl="갤러리 · Filter(결과 대상)"></div>
             </div>
             <div class="card rp" id="t-rform" data-ctl="편집 양식 · SubmitForm()"></div>
@@ -330,13 +387,14 @@ textarea.inp{resize:none;line-height:1.45}
   <!-- ===================== 구현 메모 ===================== -->
   <div class="memo">
     <div class="card">
-      <h4><span>데이터</span>SharePoint 목록 3개</h4>
+      <h4><span>데이터</span>SharePoint 목록 3개 · 라이브러리 1개</h4>
       <table>
         <thead><tr><th>목록</th><th>주요 열</th></tr></thead>
         <tbody>
-          <tr><td><b>방문처</b></td><td>업체명, 상태(선택), 구분, 소재지, 업체 담당자·연락처, 주담당(사용자), 선정주체·사유, 확정 방문일·시간, 참석자(사용자, 여러 명), 방문 결과, 판정, Capa 요청일</td></tr>
+          <tr><td><b>방문처</b></td><td>업체명, 상태(선택), 구분, 소재지, 업체 담당자·연락처, 주담당(사용자), 선정주체·사유, 확정 방문일·시간, 참석자(사용자, 여러 명), 방문 결과, Capa 요청일, <b>실제방문일 · 판정일</b>(통계용, 앱이 자동 기록), 일정발송 · 리포트발송(흐름용)</td></tr>
           <tr><td><b>방문후보일</b></td><td>방문처(조회), 후보일, 시간대, 업체·협력생산·품질보증 응답(가능/불가/조건부/미응답), 메모</td></tr>
           <tr><td><b>지역 이동시간</b></td><td>지역명, 거리(km), 소요시간(분) — 현재 웹앱의 지역 표를 그대로 옮김</td></tr>
+          <tr><td><b>방문 리포트</b></td><td>문서 라이브러리 — 판정이 나면 흐름 ④가 업체명_판정일.pdf로 저장</td></tr>
         </tbody>
       </table>
       <ul style="margin-top:10px">
@@ -345,13 +403,14 @@ textarea.inp{resize:none;line-height:1.45}
       </ul>
     </div>
     <div class="card">
-      <h4><span>자동화</span>Power Automate 흐름 3개</h4>
+      <h4><span>자동화</span>Power Automate 흐름 4개 (모두 표준 커넥터)</h4>
       <table>
         <thead><tr><th>시점</th><th>하는 일</th></tr></thead>
         <tbody>
           <tr><td>후보일 등록 시</td><td>응답이 필요한 부서 담당자에게 Teams 메시지</td></tr>
           <tr><td>방문 확정 시</td><td>참석자 Outlook 일정 생성 + 팀 채널 알림</td></tr>
           <tr><td>매일 아침</td><td>Capa 요청 후 7일 지난 건을 주담당에게 Teams로 알림</td></tr>
+          <tr><td>판정 저장 시</td><td>리포트 HTML → OneDrive 파일 변환으로 PDF → '방문 리포트'에 저장 + 채널 알림</td></tr>
         </tbody>
       </table>
     </div>
@@ -362,7 +421,8 @@ textarea.inp{resize:none;line-height:1.45}
         <li><b>공유:</b> 10명이 같은 데이터를 보고, 저장은 업체 한 건 단위로 되어 서로 덮어쓰지 않습니다.</li>
         <li><b>엑셀 업로드:</b> 앱 안 기능이 아니라 기존 정리 파일을 SharePoint 목록으로 한 번 옮깁니다 (엑셀에서 목록 만들기 또는 그리드 편집에 붙여넣기).</li>
         <li><b>이동시간:</b> 지역 이동시간 목록에서 찾아 계산합니다 (지금과 같은 추정치).</li>
-        <li><b>화면:</b> 디자인 자유도는 웹앱보다 낮지만, Teams 탭과 휴대폰 앱에서 바로 열립니다.</li>
+        <li><b>화면:</b> 업무 순서대로 놓인 탭 5개. 업체가 일정 조율 → 방문 예정 → 결과·판정으로 넘어가고, 탭의 숫자가 단계별 남은 건수입니다.</li>
+        <li><b>통계:</b> 실제방문일 · 판정일로 월별 방문 완료와 등록 완료를 세고, 최근 방문 내용을 한 표로 봅니다.</li>
       </ul>
     </div>
     <div class="card">
@@ -432,7 +492,38 @@ let VISITS=[
   {co:"마루바이오",st:"wait",kind:"ODM",addr:"전북 익산시 왕궁면",mgr:"임도윤 팀장",tel:"010-0000-1001",owner:"박도윤",picker:"품질보증팀",reason:"2차 벤더 확보",product:"마스크팩 신규",fix:D(wd(-8)),time:"10:00",att:["박도윤","정하늘"],res:"인쇄 4도 대응 가능, 합지 라인 노후",cq:D(wd(-3))},
   {co:"대한뷰티팜",st:"reg",kind:"ODM",addr:"경남 김해시 진례면",mgr:"남주원 대표",tel:"010-0000-2007",owner:"김지훈",picker:"협력생산팀",reason:"2차 벤더 확보",product:"선스틱 신규",fix:D(wd(-40)),time:"09:00",att:["김지훈","이수민"],res:"품질시스템 우수, 정식 거래처 등록 완료"},
   {co:"정도코스메딕",st:"ng",kind:"OEM",addr:"부산 강서구 녹산산단",mgr:"문지호 팀장",tel:"010-0000-2008",owner:"박도윤",picker:"품질보증팀",reason:"2차 벤더 확보",product:"립 제품",fix:D(wd(-35)),time:"13:00",att:["박도윤"],res:"GMP 미비로 등록 불가"}
-].map((v,i)=>Object.assign({id:"V"+String(i+1).padStart(2,"0"),fix:"",time:"",att:[],res:"",cq:"",vdone:"",cands:[]},v));
+].map((v,i)=>Object.assign({id:"V"+String(i+1).padStart(2,"0"),fix:"",time:"",att:[],res:"",cq:"",vdone:"",judged:"",cands:[]},v));
+/* 지난 방문 이력 (통계용 가명 데이터, 고정 난수) */
+VISITS.forEach(v=>{if(["done","wait","reg","ng"].includes(v.st)){v.vdone=v.fix;}
+  if(v.st==="reg"||v.st==="ng"){const d=new Date(v.fix+"T00:00:00");d.setDate(d.getDate()+12);v.judged=isoLocal(d)<T0?isoLocal(d):T0;}});
+(function(){
+  let seed=20261104; const rnd=()=>(seed=(seed*1103515245+12345)%2147483648)/2147483648, pick=a=>a[Math.floor(rnd()*a.length)];
+  const PRE=["새론","다온","가람","누리","이든","온새","보람","햇살","초록","미르","하람","소담","예담","청아","라움","도담","해든","별빛","단비","솔빛","한울","느루","아라","윤슬"];
+  const SUF=["코스","바이오","랩","팜","코스메틱","뷰티","케미칼","텍"];
+  const ADDR=["경기 화성시 팔탄면","충북 청주시 오창읍","충북 음성군 대소면","충남 아산시 음봉면","대전 유성구 테크노로","경북 구미시 산동읍","경남 김해시 한림면","전북 익산시 함열읍","경기 안산시 단원구","충남 천안시 서북구","세종 전동면","충북 진천군 광혜원면"];
+  const PROD=["앰플","세럼","크림","선크림","마스크팩","클렌징폼","립밤","샴푸","바디워시","토너"];
+  const GOOD=["설비 상태 양호, 위생 관리 우수","생산 캐파 충분, 소량 다품종 대응 가능","GMP 인증 보유, 이력 관리 양호","납기 관리 체계 우수, 단가는 추가 협의","충진 라인 신규 도입, 품질 문서 정비 완료","원료 입고 검사와 시험실 운영이 체계적"];
+  const BAD=["원료 입고 검사 체계 미흡","시험실 장비 부족, 외부 의뢰 비중 높음","포장 라인 노후, 개선 일정 불명확","품질 문서 관리 미비, 재방문 필요 없음 판단"];
+  const MAN=["김지훈","박도윤"], used=new Set(VISITS.map(v=>v.co));
+  const PLAN=[3,4,3,4,5,3,5,4,6,4,5,2];
+  PLAN.forEach((n,i)=>{
+    const m0=new Date(TODAY.getFullYear(),TODAY.getMonth()-11+i,1), dim=new Date(m0.getFullYear(),m0.getMonth()+1,0).getDate();
+    for(let k=0;k<n;k++){
+      let co; do{co=pick(PRE)+pick(SUF);}while(used.has(co)); used.add(co);
+      const d=new Date(m0); d.setDate(1+Math.floor(rnd()*dim)); while(d.getDay()===0||d.getDay()===6)d.setDate(d.getDate()+1);
+      if(d>=TODAY)d.setTime(addDays(wd(-1-k)).getTime());
+      const vd=isoLocal(d), r=rnd(), recent=i>=11;
+      let st=r<.52?"reg":r<.8?"ng":"done"; if(recent&&r>.6)st="wait";
+      const jd=new Date(d); jd.setDate(jd.getDate()+6+Math.floor(rnd()*14));
+      if((st==="reg"||st==="ng")&&isoLocal(jd)>=T0)st=rnd()<.5?"done":"wait";
+      const judged=(st==="reg"||st==="ng")?isoLocal(jd):"";
+      const owner=pick(MAN);
+      VISITS.push({id:"H"+String(VISITS.length+1).padStart(3,"0"),co,st,kind:pick(["OEM","ODM","OEM/ODM"]),addr:pick(ADDR),mgr:"담당 팀장",tel:"010-0000-3"+String(VISITS.length).padStart(3,"0"),owner,
+        picker:pick(["협력생산팀","품질보증팀"]),reason:pick(["2차 벤더 확보","기존 벤더 납기 지연","신규 카테고리 진입"]),product:pick(PROD)+" 신규",fix:vd,time:pick(["09:30","10:00","13:30","14:00"]),att:[owner],
+        res:st==="ng"?pick(BAD):pick(GOOD),cq:st==="wait"?(vd>D(-3)?vd:isoLocal(new Date(d.getTime()+3*864e5))):"",vdone:vd,judged,cands:[]});
+    }
+  });
+})();
 const byId=id=>VISITS.find(v=>v.id===id);
 
 /* ================= 판단 (Power Fx 수식으로 구현할 부분) ================= */
@@ -442,6 +533,7 @@ const commons=v=>v.cands.filter(isCommon).sort((a,b)=>a.d.localeCompare(b.d));
 const pending=v=>v.cands.some(c=>c.v==="미응답"||c.c==="미응답"||c.q==="미응답");
 const needResult=v=>(v.st==="plan"&&v.fix&&v.fix<T0)||v.st==="done"||v.st==="wait";
 const upcoming=v=>v.st==="plan"&&v.fix&&v.fix>=T0;
+const inMonth=(iso,y,m)=>!!iso&&+iso.slice(0,4)===y&&+iso.slice(5,7)===m;
 function coordInfo(v){
   const cm=commons(v);
   if(cm.length)return {k:"ok",t:"공통 가능일 "+cm.length+"일 — 확정할 수 있습니다"};
@@ -465,11 +557,11 @@ function myTodos(){
 }
 
 /* ================= 태블릿: 화면 전환 ================= */
-const SEL={list:"V01",coord:null,result:null};
+const SEL={list:"V01",coord:null,result:null,plan:null};
 let week=weekMonday(TODAY);
 function nav(scr,id){
   if(id)SEL[scr]=id;
-  $$("#tablet .nav [data-scr]").forEach(b=>b.classList.toggle("on",b.dataset.scr===scr));
+  $$("#tablet .tabs [data-scr]").forEach(b=>b.classList.toggle("on",b.dataset.scr===scr));
   $$("#tablet .scr").forEach(s=>s.classList.toggle("on",s.id==="t-"+scr));
   renderTablet();
 }
@@ -479,28 +571,80 @@ function notify(msg,kind,where){
 }
 function renderTablet(){
   $("#n-coord").textContent=VISITS.filter(v=>v.st==="nego").length;
-  const nr=VISITS.filter(needResult).length; $("#n-result").textContent=nr; $("#n-result").hidden=!nr;
-  renderHome(); renderList(); renderCoord(); renderResult();
+  $("#n-plan").textContent=VISITS.filter(upcoming).length;
+  $("#n-result").textContent=VISITS.filter(needResult).length;
+  renderPlan(); renderList(); renderCoord(); renderResult(); renderStats();
 }
 
-/* ---- 홈 ---- */
-function renderHome(){
-  $("#t-today").textContent=fd(T0)+" 기준";
-  const nego=VISITS.filter(v=>v.st==="nego"), up=VISITS.filter(upcoming), noRes=VISITS.filter(v=>needResult(v)&&!v.res), wait=VISITS.filter(v=>v.st==="wait");
-  const late=wait.filter(v=>since(v.cq)>=7).length, wait2=nego.filter(pending).length;
-  const tiles=[["일정 조율 중",nego.length,"응답 대기 "+wait2+"건","coord",""],["방문 확정",up.length,"3일 이내 "+up.filter(v=>daysUntil(v.fix)<=3).length+"건","list",""],
-    ["결과 미입력",noRes.length,"방문 후 결과 기록 필요","result",noRes.length?"bad":""],["Capa 회신 대기",wait.length,"7일 경과 "+late+"건","result",late?"bad":""]];
-  $("#t-tiles").innerHTML=tiles.map(t=>`<button class="card tile" type="button" data-go="${t[3]}" data-ctl="카드 · CountRows()"><div class="lbl">${t[0]}</div><div class="n">${t[1]}<small>건</small></div><div class="x ${t[4]}">${t[2]}</div></button>`).join("");
-  const td=myTodos();
-  $("#t-todo").innerHTML=td.length?td.slice(0,6).map(x=>`<div class="gi" data-go="${x.go}" data-id="${x.v.id}"><span class="ico l${x.lv}">${x.i}</span><div class="tx"><div class="t">${esc(x.v.co)} · ${esc(x.t)}</div><div class="s">${esc(x.s)}</div></div><span class="chev">›</span></div>`).join(""):`<p class="empty">처리할 업무가 없습니다.</p>`;
-  const ups=up.sort((a,b)=>(a.fix+a.time).localeCompare(b.fix+b.time));
-  $("#t-up").innerHTML=ups.length?ups.map(v=>{const t=trip(v.addr,v.time),n=daysUntil(v.fix);
-    return `<div class="gi" data-go="list" data-id="${v.id}"><div class="tx"><div class="t">${esc(v.co)}</div><div class="s">${fd(v.fix)} ${esc(v.time)}${t?" · "+t.out+" 출발":""} · ${esc(v.att.join(", "))}</div></div><span class="bdg" style="color:${n<=3?"var(--warn)":"var(--fg3)"}">D-${n}</span></div>`;}).join(""):`<p class="empty">확정된 방문이 없습니다.</p>`;
+/* ---- 방문 예정 ---- */
+function renderPlan(){
+  const ups=VISITS.filter(upcoming).sort((a,b)=>(a.fix+a.time).localeCompare(b.fix+b.time));
+  if(!ups.some(v=>v.id===SEL.plan))SEL.plan=ups[0]?ups[0].id:null;
+  $("#t-pgal").innerHTML=ups.length?ups.map(v=>{const t=trip(v.addr,v.time),n=daysUntil(v.fix);
+    return `<div class="gi${v.id===SEL.plan?" sel":""}" data-pick="plan" data-id="${v.id}"><div class="tx"><div class="t">${esc(v.co)}</div><div class="s">${fd(v.fix)} ${esc(v.time)} · ${esc(v.addr.split(" ").slice(0,2).join(" "))}${t?" · <b>"+t.out+" 출발</b>":""}</div></div><span class="dday${n===0?" today":n<=3?" near":""}">${n===0?"D-day":"D-"+n}</span><span class="chev">›</span></div>`;}).join(""):`<p class="empty">확정된 방문이 없습니다. 일정 조율 탭에서 방문을 확정하세요.</p>`;
+  const v=byId(SEL.plan), box=$("#t-pdetail");
+  if(!v){box.innerHTML=`<p class="empty">방문을 선택하세요.</p>`;}
+  else{const t=trip(v.addr,v.time);
+    const F=(l,val,cls)=>`<div class="fld${cls?" "+cls:""}"><span class="lbl">${l}</span><span class="v">${val||'<span style="color:var(--fg4)">—</span>'}</span></div>`;
+    box.innerHTML=`<div class="rp-h"><h3>${esc(v.co)}</h3>${badge(v.st)}<span class="sp"></span><button class="btn" type="button" data-go="list" data-id="${v.id}">상세 · 편집 →</button></div>
+      <div class="rp-b"><div class="g2">
+        ${F("방문 일시",fd(v.fix)+" "+esc(v.time))}${F("예상 출발",t?`<b>${t.out}</b> (약 ${t.km}km · ${t.min}분)`:"")}
+        ${F("소재지",esc(v.addr),"span2")}
+        ${F("업체 담당자",esc(v.mgr))}${F("연락처",esc(v.tel))}
+        ${F("참석자",v.att.map(a=>`<span class="chip"><span class="av">${esc(a[0])}</span>${esc(a)}</span>`).join(" "))}${F("주담당",esc(v.owner))}
+        ${F("의뢰 제품",esc(v.product))}${F("선정 사유",esc(v.reason))}
+      </div></div>`;}
   const days=Array.from({length:14},(_,i)=>{const d=new Date(week);d.setDate(d.getDate()+i);return d;});
   $("#t-range").textContent=`${days[0].getMonth()+1}/${days[0].getDate()} – ${days[13].getMonth()+1}/${days[13].getDate()}`;
   $("#t-strip").innerHTML=days.map(d=>{const k=isoLocal(d),w=d.getDay();
-    const ev=VISITS.filter(v=>v.fix===k&&v.st!=="cxl").map(v=>`<button class="ev${v.st==="plan"?"":" done"}" type="button" data-go="list" data-id="${v.id}" title="${esc(v.time+" "+v.co)}">${esc(v.co)}</button>`).join("");
+    const ev=VISITS.filter(v=>v.fix===k&&v.st!=="cxl").map(v=>`<button class="ev${v.st==="plan"?"":" done"}" type="button" ${upcoming(v)?"data-pick=\"plan\"":"data-go=\"list\""} data-id="${v.id}" title="${esc(v.time+" "+v.co)}">${esc(v.co)}</button>`).join("");
     return `<div class="dy${w===0||w===6?" we":""}${k===T0?" td":""}"><div class="d">${WD[w]}<b>${d.getDate()}</b></div>${ev}</div>`;}).join("");
+}
+
+/* ---- 통계 (대시보드) ---- */
+const C1="#2a78d6", C2="#eb6834";
+function monthly(){
+  return Array.from({length:12},(_,i)=>{const d=new Date(TODAY.getFullYear(),TODAY.getMonth()-11+i,1),y=d.getFullYear(),m=d.getMonth()+1;
+    return {y,m,v:VISITS.filter(x=>inMonth(x.vdone,y,m)).length,r:VISITS.filter(x=>x.st==="reg"&&inMonth(x.judged,y,m)).length};});
+}
+function renderStats(){
+  const M=monthly(), cur=M[11], prev=M[10], sv=M.reduce((a,b)=>a+b.v,0), sr=M.reduce((a,b)=>a+b.r,0);
+  const sign=x=>x>0?`<b class="up">▲ ${x}</b>`:x<0?`<b class="down">▼ ${-x}</b>`:"<b>— 0</b>";
+  const wait=VISITS.filter(v=>v.st==="wait"), late=wait.filter(v=>since(v.cq)>=7).length;
+  const T=[["이번 달 방문 완료",cur.v+"<small>건</small>",`지난달 ${prev.v}건 · ${sign(cur.v-prev.v)}`,""],
+           ["이번 달 등록 완료",cur.r+"<small>건</small>",`지난달 ${prev.r}건 · ${sign(cur.r-prev.r)}`,""],
+           ["최근 12개월 등록 전환율",(sv?Math.round(sr/sv*100):0)+"<small>%</small>",`방문 ${sv}건 → 등록 ${sr}건`,""],
+           ["Capa 회신 대기",wait.length+"<small>건</small>",`7일 경과 ${late}건`,late?"bad":""]];
+  $("#t-tiles").innerHTML=T.map(t=>`<div class="card tile" data-ctl="레이블 · colMonthly"><div class="lbl">${t[0]}</div><div class="n">${t[1]}</div><div class="x ${t[3]}">${t[2]}</div></div>`).join("");
+  drawChart(M);
+  const SG=[["nego","일정 조율 중"],["plan","방문 확정"],["done","방문 완료"],["wait","Capa 회신 대기"],["reg","등록 완료"],["ng","등록 불가"]];
+  const total=VISITS.length;
+  $("#t-stage").innerHTML=SG.map(g=>{const n=VISITS.filter(v=>v.st===g[0]).length;
+    return `<div class="sr"><span>${g[1]}</span><div class="bar" style="width:${n/Math.max(1,total)*100}%" title="${g[1]} ${n}곳"></div><span class="num">${n}</span></div>`;}).join("");
+  $("#t-stot").textContent=`전체 ${total}곳 중 비율로 막대 길이 표시`;
+  const rec=VISITS.filter(v=>v.vdone).sort((a,b)=>b.vdone.localeCompare(a.vdone)).slice(0,20);
+  $("#t-recent").innerHTML=rec.map(v=>`<tr data-go="list" data-id="${v.id}"><td>${fd(v.vdone)}</td><td><b>${esc(v.co)}</b></td><td>${badge(v.st)}${v.judged?` <span class="lbl" style="font-weight:400">${fd(v.judged).split(" ")[0]}</span>`:""}</td><td class="res" title="${esc(v.res)}">${esc(v.res)||'<span style="color:var(--fg4)">결과 미입력</span>'}</td></tr>`).join("");
+}
+function drawChart(M){
+  const box=$("#t-chart"), tip=$("#t-ctip");
+  const W=820, H=210, P={l:28,r:6,t:16,b:24}, iw=W-P.l-P.r, ih=H-P.t-P.b, band=iw/12, bw=Math.min(18,(band-12)/2), gap=2;
+  const top=Math.max(4,Math.ceil(Math.max(...M.map(x=>Math.max(x.v,x.r)))/2)*2), y=v=>P.t+ih-(v/top)*ih;
+  const bar=(x,v,col)=>{if(!v)return "";const t=y(v),h=P.t+ih-t,r=Math.min(4,h);
+    return `<path d="M${x},${P.t+ih} V${t+r} Q${x},${t} ${x+r},${t} H${x+bw-r} Q${x+bw},${t} ${x+bw},${t+r} V${P.t+ih} Z" fill="${col}"/>`;};
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="월별 방문 완료와 등록 완료 막대 차트">`;
+  for(let k=0;k<=4;k++){const v=top*k/4;s+=`<line x1="${P.l}" x2="${W-P.r}" y1="${y(v)}" y2="${y(v)}" stroke="${k?"#EDEDED":"#C8C8C8"}" stroke-width="1"/><text x="${P.l-8}" y="${y(v)+4}" text-anchor="end">${v}</text>`;}
+  M.forEach((o,i)=>{const gx=P.l+band*i+(band-(bw*2+gap))/2;
+    s+=bar(gx,o.v,C1)+bar(gx+bw+gap,o.r,C2);
+    if(i===11)s+=`<text class="val" x="${gx+bw/2}" y="${y(o.v)-5}" text-anchor="middle">${o.v}</text><text class="val" x="${gx+bw+gap+bw/2}" y="${y(o.r)-5}" text-anchor="middle">${o.r}</text>`;
+    s+=`<text x="${P.l+band*i+band/2}" y="${H-6}" text-anchor="middle">${o.m}월</text><rect class="hit" data-i="${i}" x="${P.l+band*i}" y="${P.t}" width="${band}" height="${ih}" fill="transparent"/>`;});
+  box.innerHTML=s+"</svg>"; box.appendChild(tip);
+  box.querySelectorAll(".hit").forEach(r=>{
+    const show=()=>{const o=M[+r.dataset.i], bx=box.getBoundingClientRect(), rb=r.getBoundingClientRect(), sc=bx.width/box.offsetWidth||1;
+      tip.innerHTML=`<b>${o.y}년 ${o.m}월</b><div><i style="background:${C1}"></i>방문 완료<span>${o.v}</span></div><div><i style="background:${C2}"></i>등록 완료<span>${o.r}</span></div>`;
+      let x=(rb.left-bx.left+rb.width/2)/sc-80; x=Math.max(0,Math.min(x,box.offsetWidth-170));
+      tip.style.left=x+"px"; tip.classList.add("on"); r.setAttribute("fill","rgba(0,0,0,.05)");};
+    const hide=()=>{tip.classList.remove("on"); r.setAttribute("fill","transparent");};
+    r.addEventListener("mouseenter",show); r.addEventListener("mouseleave",hide); r.addEventListener("click",show);});
 }
 
 /* ---- 방문 목록 ---- */
@@ -523,7 +667,7 @@ function renderList(){
       <div class="g3">${F("주담당",`<span class="chip"><span class="av">${esc(v.owner[0])}</span>${esc(v.owner)}</span>`)}${F("선정주체",esc(v.picker))}${F("선정 사유",esc(v.reason))}
         ${F("확정 방문일",v.fix?fd(v.fix)+" "+esc(v.time):"")}${F("예상 출발",t?`${t.out} 출발 (약 ${t.km}km · ${t.min}분)`:"")}${F("참석자",v.att.map(a=>`<span class="chip"><span class="av">${esc(a[0])}</span>${esc(a)}</span>`).join(" "))}</div>
       <div class="sect" style="margin-top:20px">결과</div>
-      <div class="g3">${F("방문 결과",esc(v.res),"span2")}${F("Capa 요청일",v.cq?fd(v.cq)+" ("+since(v.cq)+"일 경과)":"")}</div>
+      <div class="g3">${F("방문 결과",esc(v.res),"span2")}${F("Capa 요청일",v.cq?fd(v.cq)+(v.st==="wait"?" ("+since(v.cq)+"일 경과)":""):"")}${F("실제 방문일",v.vdone?fd(v.vdone):"")}${F("판정일",v.judged?fd(v.judged):"")}${F("리포트",v.judged?"📄 "+esc(v.co)+"_"+v.judged+".pdf":"")}</div>
     </div>`;
 }
 
@@ -560,7 +704,7 @@ function renderCoord(){
   $$("#t-cands [data-resp]").forEach(s=>s.addEventListener("change",()=>{v.cands[+s.dataset.resp].c=s.value;notify("응답을 저장했습니다 (Patch)");renderTablet();}));
   if(cm.length)$("#t-cfgo").onclick=()=>{
     v.fix=$("input[name=cfd]:checked").value; v.time=$("#t-cft").value; v.st="plan"; v.att=["김지훈","이수민"];
-    notify(`${v.co} · ${fd(v.fix)} ${v.time} 확정 — 참석자에게 Outlook 일정과 Teams 알림 발송`); renderTablet();
+    SEL.plan=v.id; notify(`${v.co} · ${fd(v.fix)} ${v.time} 확정 — 방문 예정 탭으로 이동, Outlook 일정 · Teams 알림 발송`); renderTablet();
   };
 }
 $("#t-cosel").addEventListener("change",e=>{SEL.coord=e.target.value;renderCoord();});
@@ -586,7 +730,7 @@ function renderResult(){
       <div class="fld"><span class="lbl">참석자</span><div class="chips" data-ctl="콤보 상자 · 사용자">${v.att.map(a=>`<span class="chip"><span class="av">${esc(a[0])}</span>${esc(a)}</span>`).join("")}</div></div>
       <div class="fld span2"><span class="lbl">주요 확인사항 · 종합 의견 *</span><div data-ctl="텍스트 입력 (여러 줄)"><textarea class="inp" id="r-res" rows="4" placeholder="설비, 생산능력, 품질 확인 내용과 판단 근거">${esc(v.res)}</textarea></div></div>
       <div class="fld"><span class="lbl">판정 *</span><div class="radio" id="r-st" data-ctl="라디오">
-        ${[["done","방문 완료 (판정 보류)"],["wait","Capa 회신 대기"],["reg","등록 완료"],["ng","등록 불가"]].map(o=>`<label><input type="radio" name="rst" value="${o[0]}"${o[0]===cur?" checked":""}> ${o[1]}</label>`).join("")}</div></div>
+        ${[["done","방문 완료 (판정 보류)"],["wait","Capa 회신 대기"],["reg","등록 완료 → 리포트 자동"],["ng","등록 불가 → 리포트 자동"]].map(o=>`<label><input type="radio" name="rst" value="${o[0]}"${o[0]===cur?" checked":""}> ${o[1]}</label>`).join("")}</div></div>
       <div class="fld" id="r-cqw"${cur==="wait"?"":" hidden"}><span class="lbl">Capa 요청일</span><div data-ctl="날짜 선택"><input class="inp" type="date" id="r-cq" value="${v.cq||T0}"></div><span class="lbl" style="font-weight:400">7일이 지나면 매일 아침 주담당에게 Teams 알림</span></div>
     </div></div>
     <div class="rp-f"><button class="btn" type="button" data-act="reset">취소</button><button class="btn pri" type="button" id="r-save" data-ctl="단추 · SubmitForm()">저장</button></div>`;
@@ -594,8 +738,9 @@ function renderResult(){
   $("#r-save").onclick=()=>{
     const res=$("#r-res").value.trim(); if(!res){notify("주요 확인사항을 입력하세요","info");$("#r-res").focus();return;}
     const st=$("input[name=rst]:checked").value;
-    v.res=res; v.vdone=$("#r-day").value; v.st=st; if(st==="wait")v.cq=$("#r-cq").value;
-    notify(`${v.co} · ${ST[st][0]}(으)로 저장했습니다`); renderTablet();
+    v.res=res; v.vdone=$("#r-day").value||v.fix; v.st=st; if(st==="wait")v.cq=$("#r-cq").value;
+    const fin=st==="reg"||st==="ng"; if(fin&&!v.judged)v.judged=T0;
+    notify(fin?`${v.co} · ${ST[st][0]} — 판정일 ${fd(v.judged)} 기록, 리포트 PDF를 '방문 리포트'에 저장합니다`:`${v.co} · ${ST[st][0]}(으)로 저장했습니다`); renderTablet();
   };
 }
 
@@ -640,7 +785,7 @@ function renderPhone(){
     $("#p-detail").innerHTML=h;
     $$("#p-detail [data-presp]").forEach(b=>b.onclick=()=>{v.cands[+b.dataset.presp].c=b.dataset.val;notify("응답을 저장했습니다","","#p");renderPhone();renderTablet();});
     const sv=$("#p-save"); if(sv)sv.onclick=()=>{const r=$("#p-res").value.trim();if(!r){notify("주요 확인사항을 입력하세요","info","#p");return;}
-      v.res=r;v.st=$("#p-st").value;if(v.st==="wait"&&!v.cq)v.cq=T0;notify("저장했습니다","","#p");renderPhone();renderTablet();};
+      v.res=r;v.st=$("#p-st").value;if(v.st==="wait"&&!v.cq)v.cq=T0;if(!v.vdone)v.vdone=v.fix;if((v.st==="reg"||v.st==="ng")&&!v.judged)v.judged=T0;notify("저장했습니다","","#p");renderPhone();renderTablet();};
   }
 }
 $("#p-back").onclick=()=>pgo("list");
@@ -655,7 +800,7 @@ document.addEventListener("click",e=>{
   if(d.scr){nav(d.scr);return;}
   if(d.go){nav(d.go,d.id);return;}
   if(d.pick){SEL[d.pick]=d.id;renderTablet();return;}
-  if(d.week!=null){const n=+d.week;if(n===0)week=weekMonday(TODAY);else{week=new Date(week);week.setDate(week.getDate()+n*7);}renderHome();return;}
+  if(d.week!=null){const n=+d.week;if(n===0)week=weekMonday(TODAY);else{week=new Date(week);week.setDate(week.getDate()+n*7);}renderPlan();return;}
   if(d.act==="edit"){notify("편집 양식으로 전환됩니다 (EditForm) — 목업에서는 생략","info");return;}
   if(d.act==="reset"){renderResult();return;}
   if(d.ptab){pgo(d.ptab);return;}
