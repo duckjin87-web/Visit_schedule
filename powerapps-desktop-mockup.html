@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="data:,">
+<title>방문예정처 — Power Apps 완성 예상 목업 (데스크톱 최종안)</title>
+<style>
+:root{
+  --brand:#0F6CBD; --brand-h:#115EA3; --brand-bg:#EBF3FC; --brand-bg2:#CFE4FA;
+  --bg1:#FFFFFF; --bg2:#FAFAFA; --bg3:#F5F5F5; --bg4:#F0F0F0; --page:#E9EAEC;
+  --fg1:#242424; --fg2:#424242; --fg3:#616161; --fg4:#8A8A8A;
+  --st1:#D1D1D1; --st2:#E0E0E0; --st3:#F0F0F0;
+  --ok:#0E7A3A; --ok-bg:#EDF7F0; --warn:#BC4B09; --warn-bg:#FFF6EE; --bad:#C42B1C; --bad-bg:#FDECEA; --pur:#5C2E91; --today:#FFF4CE;
+  --sh4:0 0 2px rgba(0,0,0,.12),0 2px 4px rgba(0,0,0,.14); --sh16:0 0 2px rgba(0,0,0,.12),0 8px 16px rgba(0,0,0,.14);
+  --font:"Segoe UI","Malgun Gothic","Apple SD Gothic Neo",-apple-system,system-ui,sans-serif; --anno:#8A3FFC;
+  --c1:#2a78d6; --c2:#eb6834;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--page);color:var(--fg1);font-family:var(--font);font-size:13px;line-height:1.4;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+[hidden]{display:none!important}
+.page{max-width:1400px;margin:0 auto;padding:20px 16px 48px}
+.intro{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px 20px;margin-bottom:12px}
+.intro h1{font-size:20px;font-weight:700}
+.intro p{font-size:13px;color:var(--fg3);margin-top:3px;max-width:880px}
+.intro a{color:var(--brand)}
+.ctrls{margin-left:auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.sw{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--fg2);cursor:pointer;user-select:none}
+.sw input{appearance:none;width:36px;height:20px;border-radius:10px;border:1px solid var(--fg4);background:var(--bg1);position:relative;cursor:pointer}
+.sw input::after{content:"";position:absolute;top:3px;left:3px;width:12px;height:12px;border-radius:50%;background:var(--fg3);transition:.15s}
+.sw input:checked{background:var(--anno);border-color:var(--anno)}
+.sw input:checked::after{left:19px;background:#fff}
+.frame-cap{font-size:12px;color:var(--fg3);margin:0 0 6px 2px}
+.wrap{position:relative;width:100%;overflow:hidden}
+.stage{position:absolute;top:0;left:0;width:1366px;height:768px;transform-origin:0 0;background:var(--bg3);box-shadow:var(--sh16);border-radius:8px;overflow:hidden}
+
+/* 앱 공통 */
+.app{position:absolute;inset:0;display:flex;flex-direction:column}
+.hdr{height:52px;flex:none;background:var(--brand);color:#fff;display:flex;align-items:center;gap:12px;padding:0 20px}
+.hdr h2{font-size:18px;font-weight:600}
+.hdr .who{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:12px}
+.hdr select{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.5);color:#fff;border-radius:4px;padding:3px 6px;font-size:12px}
+.hdr select option{color:#222}
+.tabs{height:44px;flex:none;background:var(--bg1);border-bottom:1px solid var(--st2);display:flex;padding:0 16px;position:relative}
+.tabs button{width:150px;border:0;background:none;font-size:13px;color:#424242;position:relative}
+.tabs button:hover{background:var(--bg3)}
+.tabs button.on{background:var(--brand-bg);color:var(--brand);font-weight:600}
+.tabs button.on::after{content:"";position:absolute;left:0;right:0;bottom:0;height:4px;background:var(--brand)}
+.tabs .gap{width:24px}
+.tabs .foot{margin-left:auto;align-self:center;font-size:11px;color:var(--fg4)}
+.notify{position:absolute;left:0;right:0;top:52px;z-index:30;background:var(--ok);color:#fff;font-size:13px;font-weight:600;padding:9px 20px;opacity:0;visibility:hidden;transform:translateY(-6px);transition:.18s}
+.notify.on{opacity:1;visibility:visible;transform:none}
+.notify.info{background:var(--brand)} .notify.warn{background:var(--warn)}
+.body{flex:1;position:relative;min-height:0}
+.scr{position:absolute;inset:0;padding:12px 16px;display:none}
+.scr.on{display:block}
+.card{background:var(--bg1);border-radius:6px;box-shadow:var(--sh4)}
+.lbl{font-size:11px;color:var(--fg3)}
+.h3{font-size:14px;font-weight:600}
+.btn{border:1px solid var(--st1);background:var(--bg1);border-radius:4px;padding:4px 12px;font-size:13px;font-weight:600;min-height:30px;white-space:nowrap}
+.btn:hover{background:var(--bg3)}
+.btn.pri{background:var(--brand);border-color:var(--brand);color:#fff} .btn.pri:hover{background:var(--brand-h)}
+.btn.ok{background:var(--ok);border-color:var(--ok);color:#fff} .btn.bad{background:var(--bad);border-color:var(--bad);color:#fff} .btn.warn{background:var(--warn);border-color:var(--warn);color:#fff}
+.btn:disabled{background:var(--bg4)!important;border-color:var(--st2)!important;color:#B5B5B5!important;cursor:default}
+.btn.sm{min-height:26px;padding:2px 9px;font-size:12px}
+.inp,.dd{border:1px solid var(--st1);border-bottom-color:var(--fg4);border-radius:4px;background:var(--bg1);padding:4px 8px;min-height:30px;font-size:13px;width:100%}
+.inp:focus,.dd:focus{outline:none;border-bottom:2px solid var(--brand)}
+textarea.inp{resize:none}
+.inp:disabled,.dd:disabled{background:var(--bg3);color:var(--fg4)}
+.fld{display:grid;gap:3px}
+.bdg{display:inline-flex;align-items:center;font-size:11px;font-weight:600;padding:0 7px;border-radius:999px;border:1px solid currentColor;white-space:nowrap;line-height:18px}
+.chip{display:inline-flex;align-items:center;gap:4px;background:var(--bg3);border-radius:4px;padding:1px 6px;font-size:12px;margin:1px 2px 1px 0}
+.chip i{font-style:normal;cursor:pointer;color:var(--fg4)}
+.gal{overflow:auto}
+.gi{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid var(--st3);cursor:pointer;position:relative;background:var(--bg1)}
+.gi:hover{background:var(--bg2)}
+.gi.sel{background:var(--brand-bg)}
+.gi.sel::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--brand)}
+.gi .t{font-size:13px;font-weight:600}
+.gi .s{font-size:11px;color:var(--fg3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gi .tx{flex:1;min-width:0}
+.empty{color:var(--fg3);font-size:13px;padding:20px;text-align:center}
+.sect{font-size:13px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.sect .sp{flex:1}
+.red{color:var(--bad)} .green{color:var(--ok)} .gray{color:var(--fg3)}
+table.t{width:100%;border-collapse:collapse}
+table.t th{font-size:11px;font-weight:600;color:var(--fg3);text-align:left;padding:5px 8px;background:var(--bg2);border-bottom:1px solid var(--st2);position:sticky;top:0;z-index:1;white-space:nowrap}
+table.t td{padding:5px 8px;border-bottom:1px solid var(--st3);font-size:12px;vertical-align:middle}
+table.t td.n,table.t th.n{text-align:right;font-variant-numeric:tabular-nums}
+table.t tr.mis td{background:var(--bad-bg)}
+table.t tr.tot td{background:var(--bg4);font-weight:700}
+table.t .inp{min-height:26px;padding:2px 6px;font-size:12px}
+
+/* 달력 */
+.cal .wk{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;font-size:10px;color:var(--fg3);text-align:center;margin-bottom:2px}
+.cal .grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.cal .grid button{border:1px solid var(--st2);background:var(--bg1);border-radius:3px;font-size:12px;color:#242424;padding:0}
+.cal .grid button.we{background:#F3F3F3}
+.cal .grid button.td{background:var(--today);font-weight:700}
+.cal .grid button.past{color:#C0C0C0;cursor:default}
+.cal .grid button.mk{border:2px solid var(--ok)}
+.cal .grid button.rs{background:var(--brand-bg2)}
+.cal .grid button.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+.cal .grid button:not(.past):hover{filter:brightness(.94)}
+.tgl{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--fg2);cursor:pointer;user-select:none}
+.tgl input{appearance:none;width:34px;height:18px;border-radius:9px;border:1px solid var(--fg4);position:relative;cursor:pointer;background:#fff}
+.tgl input::after{content:"";position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:var(--fg3);transition:.15s}
+.tgl input:checked{background:var(--brand);border-color:var(--brand)} .tgl input:checked::after{left:18px;background:#fff}
+
+/* 화면별 */
+.split{display:grid;gap:12px;height:100%}
+.col{display:flex;flex-direction:column;min-height:0;gap:8px}
+.scroll{overflow:auto;display:flex;flex-direction:column;gap:10px;padding-right:4px}
+.sec{background:var(--bg1);border:1px solid var(--st2);border-radius:6px;padding:12px 14px;flex:none}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px 14px}
+.kv .k{font-size:11px;color:var(--fg3)} .kv .v{font-size:13px;min-height:18px;white-space:pre-wrap;word-break:break-all}
+.boxes{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.boxes div{border:1px solid var(--st2);border-radius:4px;overflow:hidden;text-align:center;background:#fff}
+.boxes b{display:block;background:#FFF2CC;font-size:11px;padding:4px}
+.boxes span{display:flex;align-items:center;justify-content:center;min-height:56px;padding:4px 6px;font-size:13px;white-space:pre-line}
+.strip{display:grid;grid-template-columns:repeat(14,1fr);gap:4px}
+.dy{border:1px solid var(--st2);border-radius:4px;padding:4px 5px;min-height:88px;background:#fff}
+.dy.we{background:#F6F6F6} .dy.td{background:var(--today);border-color:#E3C44A}
+.dy .d{font-size:11px;font-weight:600;color:var(--fg2)}
+.ev{display:block;width:100%;text-align:left;border:0;margin-top:3px;background:var(--brand-bg);border-left:3px solid var(--brand);border-radius:2px;padding:1px 4px;font-size:11px;font-weight:600;color:var(--brand);overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.ev.done{background:var(--ok-bg);border-left-color:var(--ok);color:var(--ok)}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.tile{padding:10px 14px}
+.tile .n{font-size:24px;font-weight:700;line-height:1.25;font-variant-numeric:tabular-nums}
+.tile .n small{font-size:13px;color:var(--fg3);margin-left:2px}
+.tile .x{font-size:11px;color:var(--fg3)}
+.legend{display:flex;gap:12px;font-size:11px;color:var(--fg2)} .legend span{display:inline-flex;align-items:center;gap:5px} .legend i{width:10px;height:10px;border-radius:3px}
+.chart{position:relative}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart text{font-family:var(--font);fill:var(--fg3);font-size:11px} .chart text.val{fill:var(--fg1);font-weight:700}
+.ctip{position:absolute;top:0;pointer-events:none;background:#fff;border:1px solid var(--st1);border-radius:6px;box-shadow:var(--sh16);padding:7px 10px;font-size:12px;min-width:150px;opacity:0;transition:opacity .12s;z-index:5}
+.ctip.on{opacity:1} .ctip b{display:block;margin-bottom:3px} .ctip div{display:flex;gap:6px;align-items:center;color:var(--fg2)} .ctip div span{margin-left:auto;font-weight:700;color:var(--fg1)} .ctip i{width:8px;height:8px;border-radius:2px}
+.stg{display:grid;gap:8px}
+.stg .sr{display:grid;grid-template-columns:96px 1fr 30px;gap:8px;align-items:center;font-size:12px}
+.stg .bar{height:13px;border-radius:0 3px 3px 0;background:var(--brand);min-width:2px}
+.stg .num{text-align:right;font-weight:700}
+.seg{display:inline-flex;align-self:flex-start;border:1px solid var(--brand);border-radius:4px;overflow:hidden}
+.seg button{border:0;background:#fff;color:var(--brand);padding:5px 16px;font-weight:600;font-size:13px}
+.seg button.on{background:var(--brand);color:#fff}
+
+/* 구성 요소 표시 */
+.annot [data-ctl]{outline:1.5px dashed var(--anno);outline-offset:-1px;position:relative}
+.annot [data-ctl]::after{content:attr(data-ctl);position:absolute;top:1px;right:1px;z-index:40;background:var(--anno);color:#fff;font-size:10px;font-weight:600;line-height:1;padding:3px 5px;border-radius:3px;white-space:nowrap;pointer-events:none;font-family:var(--font)}
+.annot .cal .grid button[data-ctl]::after,.annot .gi[data-ctl]::after{display:none}
+
+/* 아래 영역 */
+.below{display:grid;grid-template-columns:1.2fr 1fr;gap:14px;margin-top:16px}
+.below .card{padding:14px 16px}
+.below h4{font-size:15px;font-weight:700;margin-bottom:8px;display:flex;gap:8px;align-items:center}
+.below h4 span{font-size:11px;color:#fff;background:var(--brand);border-radius:4px;padding:2px 6px}
+.log{max-height:260px;overflow:auto;display:grid;gap:6px}
+.log div{display:grid;grid-template-columns:40px 104px 1fr;gap:8px;font-size:12px;align-items:start;padding:6px 8px;background:var(--bg2);border-radius:4px}
+.log .f{font-weight:700;color:var(--pur)}
+.log .tm{color:var(--fg4)}
+.map td,.map th{font-size:12px;padding:5px 8px;border-bottom:1px solid var(--st3);text-align:left}
+.map{width:100%;border-collapse:collapse}
+.map a{color:var(--brand)}
+.map td:first-child,.map td:last-child,.map th{white-space:nowrap}
+.disc{font-size:12px;color:var(--fg3);margin-top:14px;line-height:1.6}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px}
+.modal .box{background:#fff;border-radius:8px;width:min(860px,100%);height:min(88vh,1000px);display:flex;flex-direction:column;overflow:hidden;box-shadow:var(--sh16)}
+.modal .mh{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--st2);font-weight:700}
+.modal .mh span{flex:1}
+.modal iframe{flex:1;border:0;width:100%}
+@media (max-width:900px){.below{grid-template-columns:1fr}.intro h1{font-size:18px}}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="intro">
+    <div>
+      <h1>방문예정처 — Power Apps 완성 예상 목업 (데스크톱 최종안)</h1>
+      <p><a href="powerapps-desktop-guide.html">데스크톱 최종안 따라하기 안내서</a>대로 모두 만들었을 때의 모습입니다. 탭 6개를 실제처럼 눌러 볼 수 있고, 흐름(Power Automate)이 할 일은 아래 <b>자동화 기록</b>에 표시됩니다. 실제 Power Apps가 아닌 HTML 재현이며, 가명 데이터이고 새로고침하면 처음으로 돌아갑니다.</p>
+    </div>
+    <div class="ctrls">
+      <label class="sw"><input type="checkbox" id="annot"> 구성 요소 이름 표시 (안내서 카드 이름)</label>
+    </div>
+  </div>
+  <p class="frame-cap" id="cap"></p>
+
+  <div class="wrap" id="wrap">
+    <div class="stage" id="stage">
+      <div class="app">
+        <div class="hdr" data-ctl="recHeader · lblAppTitle · lblUser">
+          <h2>방문예정처</h2>
+          <div class="who"><span>지금 사용자</span>
+            <select id="me" aria-label="지금 사용자 바꾸기"><option value="김지훈">김지훈 · 협력생산팀</option><option value="장인철">장인철 · 품질보증팀</option></select>
+          </div>
+        </div>
+        <div class="tabs" id="tabs" data-ctl="btnTab… 6개 · recTabLine">
+          <button type="button" data-tab="new">① 신규추가</button>
+          <button type="button" data-tab="coord">② 일정조율</button>
+          <button type="button" data-tab="plan">③ 방문예정</button>
+          <button type="button" data-tab="result">④ 방문결과</button>
+          <span class="gap"></span>
+          <button type="button" data-tab="list">전체업체</button>
+          <button type="button" data-tab="stats">통계</button>
+          <span class="foot">SharePoint 목록 · Power Automate</span>
+        </div>
+        <div class="notify" id="notify"></div>
+        <div class="body">
+          <section class="scr" id="s-new"></section>
+          <section class="scr" id="s-coord"></section>
+          <section class="scr" id="s-plan"></section>
+          <section class="scr" id="s-result"></section>
+          <section class="scr" id="s-list"></section>
+          <section class="scr" id="s-stats"></section>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="below">
+    <div class="card">
+      <h4><span>자동화</span>자동화 기록 (Power Automate 흐름이 하는 일)</h4>
+      <div class="log" id="log"></div>
+    </div>
+    <div class="card">
+      <h4><span>안내서</span>화면 ↔ 안내서 단계</h4>
+      <table class="map"><thead><tr><th>탭</th><th>이렇게 써 보세요</th><th>안내서</th></tr></thead><tbody>
+        <tr><td>① 신규추가</td><td>칸을 채우고 달력에서 날짜(구간 선택도) → 임시저장 / 일정조율 시작</td><td><a href="powerapps-desktop-guide.html#s6">6단계</a></td></tr>
+        <tr><td>② 일정조율</td><td>한결바이오: 1회차 빨간 줄 → 2회차 공통일 → 시간 넣고 방문 확정. 오른쪽 위에서 사용자를 장인철로 바꿔 품질보증 응답도 해 보세요</td><td><a href="powerapps-desktop-guide.html#s7">7단계</a></td></tr>
+        <tr><td>③ 방문예정</td><td>D-day · 출발시간 · 업체 정보 확인, 출발시간 직접 입력</td><td><a href="powerapps-desktop-guide.html#s8">8단계</a></td></tr>
+        <tr><td>④ 방문결과</td><td>CAPA 표에 줄 추가(일 · 월 자동 계산) → 점수 → 방문완료 → 리포트 미리보기</td><td><a href="powerapps-desktop-guide.html#s9">9단계</a></td></tr>
+        <tr><td>전체업체</td><td>상태별로 진행된 구역만 보이는지 비교 (임시저장 ↔ 등록완료)</td><td><a href="powerapps-desktop-guide.html#s10">10단계</a></td></tr>
+        <tr><td>통계</td><td>현황 ↔ CAPA 조회 전환, 설비명 "캡슐" 검색</td><td><a href="powerapps-desktop-guide.html#s11">11단계</a></td></tr>
+      </tbody></table>
+    </div>
+  </div>
+  <p class="disc">Power Apps 기본 컨트롤(갤러리, 양식, 콤보 상자, 토글, 세로 컨테이너, 세로 막대형 차트)로 만들었을 때의 모양과 흐름을 미리 보는 HTML 목업입니다. 업체 · 사람 · 일정 · 점수 · CAPA 수치는 모두 가명이거나 지어낸 값입니다.</p>
+</div>
+<div class="modal" id="modal" hidden><div class="box"><div class="mh"><span id="mtitle">리포트 미리보기</span><button class="btn sm" type="button" id="mclose">닫기</button></div><iframe id="mframe" title="리포트 미리보기"></iframe></div></div>
+
+<script>
+/* ================= 기본 ================= */
+const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const TODAY=new Date(); TODAY.setHours(0,0,0,0);
+const iso=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+const T0=iso(TODAY);
+const toD=s=>new Date(s+"T00:00:00");
+const add=(s,n)=>{const d=toD(s);d.setDate(d.getDate()+n);return iso(d);};
+const D=n=>add(T0,n);
+const wd=s=>{const g=toD(s).getDay();return g===0?7:g;};            /* 월=1 … 일=7 */
+const isWE=s=>wd(s)>5;
+const nextWD=(n,dir)=>{let s=D(n);while(isWE(s))s=add(s,dir||1);return s;};
+const mon=s=>add(s,-(wd(s)-1));
+const WK=["","월","화","수","목","금","토","일"];
+const fd=s=>{if(!s)return "—";const d=toD(s);return (d.getMonth()+1)+"/"+d.getDate()+" ("+WK[wd(s)]+")";};
+const md=s=>{const d=toD(s);return (d.getMonth()+1)+"/"+d.getDate();};
+const diff=(a,b)=>Math.round((toD(b)-toD(a))/864e5);
+const ddLbl=s=>{const n=diff(T0,s);return n===0?"D-day":n>0?"D-"+n:"D+"+(-n);};
+const num=n=>(+n||0).toLocaleString("ko-KR");
+const DL=a=>a&&a.length?a.slice().sort().map(md).join(", "):"";
+
+const ST={"임시저장":"#707070","일정조율":"#0F6CBD","방문예정":"#5C2E91","방문완료":"#0E7A3A","CAPA요청":"#BC4B09","등록완료":"#424242","등록취소":"#C42B1C"};
+const badge=s=>`<span class="bdg" style="color:${ST[s]}">${s}</span>`;
+const TRIP=[["안산",145,105],["수원",105,80],["화성",110,85],["평택",75,62],["인천",150,110],["청주",30,32],["음성",55,48],["천안",30,32],["아산",35,35],["대전",45,40],["구미",145,112],["김해",260,185],["익산",95,78],["부산",280,195],["진천",45,40],["세종",12,18],["경기",120,90],["충북",50,45],["충남",45,42],["경북",160,120],["경남",250,180],["전북",110,85]];
+const trip=a=>TRIP.find(t=>String(a||"").indexOf(t[0])>=0)||null;
+const depart=(addr,tm)=>{const t=trip(addr);if(!t||!/^\d{1,2}:\d{2}$/.test(tm||""))return "";const [h,m]=tm.split(":").map(Number);let x=h*60+m-t[2]-20;if(x<0)x+=1440;return String(Math.floor(x/60)).padStart(2,"0")+":"+String(x%60).padStart(2,"0");};
+const PEOPLE={co:["김지훈","장덕진","박도윤"],qa:["장인철","이수민","정하늘"]};
+
+/* ================= 가명 데이터 (SharePoint 목록 흉내) ================= */
+let VID=0,RID=0,EID=0;
+const V=[], R=[], MK=[], PR=[];
+function addV(o){const v=Object.assign({id:++VID,st:"임시저장",src:"내부",prod:"",addr:"",mgr:"",tel:"010-0000-0000",mail:"",reason:"",req:[],owner:"김지훈",fix:"",time:"",dep:"",coAtt:[],qaAtt:[],sCo:null,sQa:null,note:"",link:"",vdone:"",judged:"",capaReq:"",cancel:"",report:""},o);v.mail=v.mail||("contact"+v.id+"@example.com");V.push(v);return v;}
+const addR=o=>{const r=Object.assign({id:++RID,req:[],co:[],qa:[],com:[],coBy:"",qaBy:"",coTime:"",qaTime:"",time:""},o);R.push(r);return r;};
+const addM=o=>MK.push(Object.assign({id:++EID,kind:"",size:"",qty:1,sub:"—",note:""},o));
+const addP=o=>{const p=Object.assign({id:++EID,name:"",capa:0,qty:1,kol:0,note:""},o);p.day=p.capa*p.qty;p.mon=p.day*20;PR.push(p);return p;};
+const common=r=>r.co.length&&r.qa.length?r.co.filter(d=>r.qa.includes(d)&&r.req.includes(d)).sort():[];
+const wds=(a,n)=>{const out=[];let s=a;while(out.length<n){if(!isWE(s))out.push(s);s=add(s,1);}return out;};
+
+/* 진행 중 업체 */
+const W1=mon(D(7));                                  /* 다음 주 월요일 */
+addV({co:"소담바이오",src:"영업팀 요청",prod:"젤리 스틱",addr:"충북 진천군 광혜원면",mgr:"윤서아 과장",reason:"신규 제형 대응 가능 업체 탐색"});
+addV({co:"이든팜",src:"내부",prod:"분말 스틱",addr:"경기 평택시 포승읍",mgr:"오태민 차장",reason:"분말 충진 2차 벤더 확보"});
+{ const v=addV({co:"한결바이오",st:"일정조율",src:"내부",prod:"연질캡슐",addr:"충남 아산시 둔포면",mgr:"윤도현 팀장",reason:"연질캡슐 생산처 다변화",owner:"장덕진",coAtt:["장덕진"],qaAtt:["장인철"]});
+  const r1req=[W1,add(W1,1),add(W1,2),add(W1,4)]; v.req=r1req;
+  addR({vid:v.id,no:1,req:r1req,co:[add(W1,2),add(W1,4)],qa:[add(W1,3),add(W1,7)],coBy:"장덕진",qaBy:"장인철",coTime:"오후",qaTime:"종일"});
+  const r2=addR({vid:v.id,no:2,req:[add(W1,7),add(W1,8)],co:[add(W1,7),add(W1,8)],qa:[add(W1,8)],coBy:"장덕진",qaBy:"장인철",coTime:"오후 1시 이후",qaTime:"13시~"}); r2.com=common(r2);
+  R.forEach(r=>r.com=common(r)); }
+{ const v=addV({co:"노바코스",st:"일정조율",src:"영업팀 요청",prod:"앰플",addr:"경기 안산시 단원구 산단로 200",mgr:"한지민 이사",reason:"앰플 2차 벤더 확보"});
+  v.req=wds(add(W1,7),3); addR({vid:v.id,no:1,req:v.req.slice()}); }
+{ const v=addV({co:"블루오션코스메틱",st:"일정조율",src:"내부",prod:"크림",addr:"대전 대덕구 대덕대로 1600",mgr:"정예린 팀장",reason:"크림 리뉴얼 생산처",owner:"박도윤"});
+  v.req=wds(add(W1,1),4); addR({vid:v.id,no:1,req:v.req.slice(),co:v.req.slice(1,3),coBy:"박도윤",coTime:"오전"}); }
+const planV=(o,n,tm,co,qa)=>{const v=addV(Object.assign({st:"방문예정"},o));v.fix=nextWD(n,n<0?-1:1);v.time=tm;v.dep=depart(v.addr,tm);v.coAtt=co;v.qaAtt=qa;v.req=[v.fix];
+  addR({vid:v.id,no:1,req:[v.fix],co:[v.fix],qa:[v.fix],com:[v.fix],coBy:co[0],qaBy:qa[0],time:tm});return v;};
+planV({co:"유니크팩토리",src:"내부",prod:"스틱 파운데이션",addr:"경기 화성시 향남읍",mgr:"강민서 이사",reason:"2차 벤더 확보"},2,"10:30",["김지훈"],["이수민"]);
+planV({co:"캡슐원",src:"내부",prod:"캡슐(연질캡슐)",addr:"인천 서구 봉수대로 158",mgr:"김지예 부장",reason:"연질 캡슐 생산 가능처"},1,"13:30",["장덕진","김지훈"],["장인철"]);
+planV({co:"나린코스",src:"영업팀 요청",prod:"마스크팩",addr:"경북 구미시 산동읍",mgr:"신지우 팀장",reason:"마스크팩 신규"},6,"13:00",["박도윤"],["정하늘"]);
+const pastV=planV({co:"라온코스메틱",src:"내부",prod:"선크림",addr:"경남 김해시 주촌면",mgr:"문하은 팀장",reason:"선케어 라인 확장"},-1,"09:30",["김지훈"],["이수민"]);
+{ const v=planV({co:"초록케미칼",src:"내부",prod:"연질캡슐",addr:"충북 음성군 대소면",mgr:"백승호 팀장",reason:"연질캡슐 생산처 다변화"},-5,"09:30",["김지훈","장덕진"],["장인철"]);
+  Object.assign(v,{st:"방문완료",vdone:v.fix,sCo:84,sQa:80,note:"설비 상태 양호, 연질캡슐 성형 1라인 운영 중.\n건조 · 선별은 별도 공정, 블리스터 포장 2대 보유(현재 미가동).",link:"https://example.sharepoint.com/sites/visit/초록케미칼"});
+  addM({vid:v.id,kind:"피막제조탱크",size:"600kg",qty:1});addM({vid:v.id,kind:"피막서비스탱크",size:"250kg",qty:1});addM({vid:v.id,kind:"서비스탱크",size:"200kg",qty:1,note:"고점도 본 벌크 중탕전용"});
+  addP({vid:v.id,name:"연질캡슐성형기",capa:60000,qty:1,note:"건조 및 선별 별도"});addP({vid:v.id,name:"블리스터 포장기",capa:0,qty:2}); }
+{ const v=planV({co:"미래코스텍",src:"내부",prod:"마스크팩",addr:"전북 익산시 함열읍",mgr:"조하늘 팀장",reason:"대량 생산처"},-3,"11:00",["박도윤"],["정하늘"]);
+  Object.assign(v,{st:"방문완료",vdone:v.fix,sCo:76,sQa:null,note:"합지 라인 2기, 월 캐파 여유 있음"});
+  addP({vid:v.id,name:"마스크팩 충진기",capa:30000,qty:2}); }
+{ const v=planV({co:"세라젬코스",src:"영업팀 요청",prod:"바디로션",addr:"충북 음성군 금왕읍",mgr:"백승호 팀장",reason:"기존 벤더 납기 지연"},-12,"14:00",["김지훈"],["장인철"]);
+  Object.assign(v,{st:"CAPA요청",vdone:v.fix,sCo:72,sQa:70,capaReq:D(-4),note:"설비 여유 확인 후 월 캐파 회신 요청"});
+  addP({vid:v.id,name:"튜브충진기",capa:12000,qty:2,kol:0});addM({vid:v.id,kind:"유화탱크",size:"1,000kg",qty:2}); }
+{ const v=planV({co:"마루바이오",src:"내부",prod:"마스크팩",addr:"전북 익산시 왕궁면",mgr:"임도윤 팀장",reason:"2차 벤더 확보"},-8,"10:00",["박도윤"],["정하늘"]);
+  Object.assign(v,{st:"CAPA요청",vdone:v.fix,sCo:68,sQa:74,capaReq:D(-1),note:"인쇄 4도 대응 가능, 합지 라인 노후"});
+  addP({vid:v.id,name:"마스크팩 충진기",capa:25000,qty:1,kol:5000}); }
+
+/* 지난 1년 이력 (통계용, 고정 난수) */
+(function(){
+  let seed=20261105; const rnd=()=>(seed=(seed*1103515245+12345)%2147483648)/2147483648, pick=a=>a[Math.floor(rnd()*a.length)];
+  const PRE=["새론","다온","가람","누리","온새","보람","햇살","미르","하람","예담","청아","라움","도담","해든","별빛","단비","솔빛","한울","느루","아라","윤슬","나래","시온","가온"], SUF=["코스","바이오","랩","팜","코스메틱","뷰티","케미칼","텍"];
+  const ADDR=["경기 화성시 팔탄면","충북 청주시 오창읍","충북 음성군 대소면","충남 아산시 음봉면","대전 유성구 테크노로","경북 구미시 산동읍","경남 김해시 한림면","전북 익산시 함열읍","경기 안산시 단원구","충남 천안시 서북구","세종 전동면","충북 진천군 광혜원면"];
+  const PROD=["연질캡슐","정제","앰플","크림","선크림","마스크팩","젤리 스틱","분말 스틱","샴푸","토너"];
+  const GOOD=["설비 상태 양호, 위생 관리 우수","생산 캐파 충분, 소량 다품종 대응 가능","GMP 인증 보유, 이력 관리 양호","납기 관리 체계 우수, 단가는 추가 협의","원료 입고 검사와 시험실 운영이 체계적"], BAD=["원료 입고 검사 체계 미흡","시험실 장비 부족, 외부 의뢰 비중 높음","GMP 미보유","포장 라인 노후, 개선 일정 불명확"];
+  const EQP=[["연질캡슐성형기",60000],["정제타정기",120000],["캡슐충진기",80000],["스틱포장기",40000],["튜브충진기",12000],["앰플충진기",20000],["마스크팩 충진기",30000],["블리스터 포장기",50000]], EQM=[["피막제조탱크","600kg"],["유화탱크","1,000kg"],["서비스탱크","200kg"],["혼합기","500kg"],["건조기","—"]];
+  const used=new Set(V.map(v=>v.co)), PLAN=[3,4,3,4,5,3,5,4,6,4,5,1];
+  PLAN.forEach((n,i)=>{const m0=new Date(TODAY.getFullYear(),TODAY.getMonth()-11+i,1),dim=new Date(m0.getFullYear(),m0.getMonth()+1,0).getDate();
+    for(let k=0;k<n;k++){let co;do{co=pick(PRE)+pick(SUF);}while(used.has(co));used.add(co);
+      const dd=new Date(m0);dd.setDate(1+Math.floor(rnd()*dim));let s=iso(dd);while(isWE(s))s=add(s,1);if(s>=add(T0,-6))s=nextWD(-7-k,-1);
+      const r=rnd(),st=r<.58?"등록완료":"등록취소"; let jd=add(s,6+Math.floor(rnd()*14)); if(jd>=T0)jd=add(T0,-1);
+      const v=addV({co,st,src:pick(["내부","영업팀 요청","연구소 요청"]),prod:pick(PROD),addr:pick(ADDR),mgr:"담당 팀장",reason:"2차 벤더 확보",owner:pick(PEOPLE.co),
+        fix:s,time:pick(["09:30","10:00","13:30","14:00"]),coAtt:[pick(PEOPLE.co)],qaAtt:[pick(PEOPLE.qa)],vdone:s,judged:jd,sCo:60+Math.floor(rnd()*35),sQa:58+Math.floor(rnd()*37),
+        note:st==="등록취소"?pick(BAD):pick(GOOD),cancel:st==="등록취소"?pick(["GMP 미보유","품질시스템 미흡","캐파 부족"]):""});
+      v.dep=depart(v.addr,v.time);v.req=[s];
+      addR({vid:v.id,no:1,req:[s],co:[s],qa:[s],com:[s],coBy:v.coAtt[0],qaBy:v.qaAtt[0],time:v.time});
+      const e=pick(EQP);addP({vid:v.id,name:e[0],capa:e[1],qty:1+Math.floor(rnd()*3),kol:st==="등록완료"?Math.round(e[1]*20*rnd()*.5/1000)*1000:0});
+      if(rnd()>.4){const m=pick(EQM);addM({vid:v.id,kind:m[0],size:m[1],qty:1+Math.floor(rnd()*2)});}
+    }});
+})();
+
+/* ================= 상태 ================= */
+const S={tab:"new",me:"김지훈",newRec:null,coord:null,plan:null,res:null,all:null,stat:"현황",capaType:"생산",editA:false};
+const CAL={new:{start:mon(T0),sel:[],rs:null},req:{sel:[],rs:null},co:{sel:[],rs:null},qa:{sel:[],rs:null}};
+let coordStart=mon(T0), planWeek=mon(T0), TG={new:false,coord:false};
+const byId=id=>V.find(v=>v.id===id);
+const roundsOf=id=>R.filter(r=>r.vid===id).sort((a,b)=>a.no-b.no);
+const lastRound=id=>roundsOf(id).slice(-1)[0];
+const total=v=>v.sCo==null?null:Math.round(((+v.sCo||0)*.5+(+v.sQa||0)*.5)*10)/10;
+const isTodo=v=>(v.st==="방문예정"&&v.fix<=T0)||v.st==="방문완료"||v.st==="CAPA요청";
+const team=()=>S.me==="장인철"?"qa":"co";
+
+function notify(msg,kind){const n=$("#notify");n.className="notify on"+(kind?" "+kind:"");n.textContent=msg;clearTimeout(notify.t);notify.t=setTimeout(()=>n.classList.remove("on"),3600);}
+function flow(f,txt){const d=document.createElement("div");const now=new Date();d.innerHTML=`<span class="tm">${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}</span><span class="f">${esc(f)}</span><span>${txt}</span>`;$("#log").prepend(d);}
+
+/* ================= 달력 부품 ================= */
+function calHTML(key,start,ctlName,mark){
+  const c=CAL[key], days=Array.from({length:35},(_,i)=>add(start,i));
+  return `<div class="cal"><div class="wk">${WK.slice(1).map(w=>`<span>${w}</span>`).join("")}</div><div class="grid" data-ctl="${ctlName}" style="grid-auto-rows:${key==="new"?40:27}px">${days.map(d=>{
+    const cls=[c.sel.includes(d)?"on":"",c.rs===d?"rs":"",d===T0?"td":"",isWE(d)?"we":"",d<T0?"past":"",mark&&CAL.req.sel.includes(d)?"mk":""].filter(Boolean).join(" ");
+    return `<button type="button" class="${cls}" data-cal="${key}" data-d="${d}" title="${fd(d)}">${toD(d).getDate()===1||d===start?md(d):toD(d).getDate()}</button>`;}).join("")}</div></div>`;
+}
+function calClick(key,d){
+  if(d<T0)return; const c=CAL[key], tg=key==="new"?TG.new:TG.coord;
+  if(tg){ if(!c.rs){c.rs=d;} else {const a=c.rs<d?c.rs:d,b=c.rs<d?d:c.rs;for(let s=a;s<=b;s=add(s,1))if(!isWE(s)&&!c.sel.includes(s))c.sel.push(s);c.rs=null;} }
+  else { const i=c.sel.indexOf(d); i>=0?c.sel.splice(i,1):c.sel.push(d); }
+  c.sel.sort(); key==="new"?renderNew(newVals()):renderCoord();
+}
+
+/* ================= ① 신규추가 ================= */
+const NF=[["src","수배주체 *","예: 내부 / 영업팀 요청","txtNSrc"],["co","상호명 *","업체 상호명","txtNName"],["prod","의뢰예상제품 *","예: 연질캡슐","txtNProd"],["addr","소재지 *","예: 경기 화성시 향남읍","txtNAddr"],["mgr","담당자 성함 *","예: 김지예 부장","txtNMgr"],["tel","연락처 *","010-0000-0000","txtNTel"],["mail","E-MAIL *","name@company.co.kr","txtNMail"]];
+function newVals(){const o={};NF.forEach(f=>o[f[0]]=($("#n-"+f[0])||{}).value||"");o.reason=($("#n-reason")||{}).value||"";o.owner=($("#n-owner")||{}).value||S.me;return o;}
+const basicOK=o=>NF.every(f=>o[f[0]].trim())&&o.reason.trim();
+function renderNew(keep){
+  const v=S.newRec?byId(S.newRec):null, o=keep||(v?{src:v.src,co:v.co,prod:v.prod,addr:v.addr,mgr:v.mgr,tel:v.tel,mail:v.mail,reason:v.reason,owner:v.owner}:{owner:S.me});
+  const temps=V.filter(x=>x.st==="임시저장").sort((a,b)=>b.id-a.id), c=CAL.new;
+  $("#s-new").innerHTML=`<div class="split" style="grid-template-columns:660px 1fr">
+    <div class="col">
+      <div class="h3" data-ctl="lblNTitle">${v?"임시저장 이어 쓰기 · "+esc(v.co):"새 업체 등록"}</div>
+      <div class="g2">${NF.map(f=>`<div class="fld"><span class="lbl">${f[1]}</span><input class="inp" id="n-${f[0]}" data-ctl="${f[3]}" placeholder="${f[2]}" value="${esc(o[f[0]]||"")}"></div>`).join("")}
+        <div class="fld"><span class="lbl">협/생 담당자 (알림 받는 사람)</span><select class="dd" id="n-owner" data-ctl="cmbNOwner">${PEOPLE.co.map(p=>`<option${p===(o.owner||S.me)?" selected":""}>${p}</option>`).join("")}</select></div></div>
+      <div class="fld"><span class="lbl">수배사유 *</span><textarea class="inp" id="n-reason" rows="3" data-ctl="txtNReason" placeholder="왜 이 업체를 찾았는지">${esc(o.reason||"")}</textarea></div>
+      <div class="red" id="n-dup" style="font-size:11px;min-height:15px" data-ctl="lblNDup"></div>
+      <div class="card col" style="flex:1;min-height:0;gap:0"><div class="sect" style="padding:10px 12px 6px;margin:0">임시저장 목록 — 누르면 이어 쓰기</div>
+        <div class="gal" style="flex:1" data-ctl="galNTemp">${temps.length?temps.map(t=>`<div class="gi${t.id===S.newRec?" sel":""}" data-pick="new" data-id="${t.id}"><div class="tx"><div class="t">${esc(t.co)}</div><div class="s">${esc(t.src)} · ${esc(t.addr)} · 요청일 ${t.req.length}일</div></div>${badge("임시저장")}</div>`).join(""):`<p class="empty">임시저장한 업체가 없습니다</p>`}</div></div>
+    </div>
+    <div class="col">
+      <div class="h3" data-ctl="lblNReqTitle">방문요청일 * — 업체가 가능하다고 한 날을 모두 누르세요</div>
+      <div style="display:flex;align-items:center;gap:8px"><button class="btn sm" type="button" data-nav="new,-28" data-ctl="btnNPrev">◀ 이전</button><span style="width:170px;text-align:center" data-ctl="lblNRange">${toD(c.start).getFullYear()}.${md(c.start)} ~ ${md(add(c.start,34))}</span><button class="btn sm" type="button" data-nav="new,28" data-ctl="btnNNext">다음 ▶</button>
+        <label class="tgl" style="margin-left:auto" data-ctl="tglNRange"><input type="checkbox" id="tg-new"${TG.new?" checked":""}> ${TG.new?(c.rs?"구간: 끝일을 누르세요":"구간: 시작일을 누르세요"):"구간 선택 (꺼짐)"}</label></div>
+      ${calHTML("new",c.start,"galNCal · btnNDay",false)}
+      <div style="font-size:12px;min-height:34px" data-ctl="lblNPicked">고른 날 (${c.sel.length}일): ${c.sel.map(fd).join(", ")||"—"}</div>
+      <div><button class="btn sm" type="button" id="n-clear" data-ctl="btnNClearDates">날짜 모두 지우기</button></div>
+      <div style="margin-top:auto;font-size:12px" id="n-need" data-ctl="lblNNeed"></div>
+      <div style="display:flex;gap:10px"><button class="btn" type="button" id="n-reset" data-ctl="btnNReset" style="width:130px">새로 쓰기</button><button class="btn" type="button" id="n-save" data-ctl="btnNSave" style="width:180px">임시저장</button><button class="btn pri" type="button" id="n-coord" data-ctl="btnNCoord" style="flex:1">일정조율 시작 →</button></div>
+    </div></div>`;
+  newState();
+}
+function newState(){
+  const o=newVals(), ok=basicOK(o), dup=o.co.trim()&&V.some(x=>x.co===o.co.trim()&&x.id!==S.newRec);
+  $("#n-dup").textContent=dup?"⚠ 같은 상호명이 이미 등록되어 있습니다 (전체업체에서 확인하세요)":"";
+  $("#n-save").disabled=!ok; $("#n-coord").disabled=!(ok&&CAL.new.sel.length);
+  const n=$("#n-need"); n.className=ok?"green":"gray";
+  n.textContent=ok?(CAL.new.sel.length?"✓ 임시저장 · 일정조율 시작 모두 가능합니다":"✓ 임시저장할 수 있습니다 · 방문요청일을 고르면 일정조율도 켜집니다"):"* 표시 칸(수배주체 ~ 수배사유)을 모두 채우면 임시저장이 켜집니다";
+}
+function saveNew(st){
+  const o=newVals(); let v=S.newRec?byId(S.newRec):null;
+  const rec={src:o.src.trim(),co:o.co.trim(),prod:o.prod.trim(),addr:o.addr.trim(),mgr:o.mgr.trim(),tel:o.tel.trim(),mail:o.mail.trim(),reason:o.reason,owner:o.owner,req:CAL.new.sel.slice(),st};
+  if(v)Object.assign(v,rec); else v=addV(rec);
+  return v;
+}
+
+/* ================= ② 일정조율 ================= */
+function loadRound(){
+  const v=byId(S.coord); if(!v)return; let r=lastRound(v.id);
+  if(!r)r=addR({vid:v.id,no:1,req:v.req.slice()});
+  CAL.req.sel=r.req.slice();CAL.co.sel=r.co.slice();CAL.qa.sel=r.qa.slice();CAL.req.rs=CAL.co.rs=CAL.qa.rs=null;
+  coordStart=mon(CAL.req.sel.length?CAL.req.sel.slice().sort()[0]:T0);
+}
+function roundNote(r){return r.time?"방문 확정":!r.co.length||!r.qa.length?"응답 대기":!r.com.length?"일정 재조율 필요":"시간 확인 필요";}
+function renderCoord(){
+  const list=V.filter(x=>x.st==="일정조율").filter(x=>{const q=($("#co-q")||{}).value||"";return !q||(x.co+x.addr).includes(q);}).sort((a,b)=>a.co.localeCompare(b.co,"ko"));
+  const q=($("#co-q")||{}).value||"", v=byId(S.coord), r=v?lastRound(v.id):null;
+  const left=`<div class="col"><input class="inp" id="co-q" placeholder="업체명 · 지역 검색" value="${esc(q)}" data-ctl="txtCoSearch">
+    <div class="card gal" style="flex:1" data-ctl="galCoList">${list.length?list.map(x=>{const lr=lastRound(x.id);return `<div class="gi${x.id===S.coord?" sel":""}" data-pick="coord" data-id="${x.id}"><div class="tx"><div class="t">${esc(x.co)}</div><div class="s ${lr&&roundNote(lr)==="일정 재조율 필요"?"red":""}">${lr?lr.no+"회차 · "+roundNote(lr):"회차 없음"}</div></div></div>`;}).join(""):`<p class="empty">일정조율 중인 업체가 없습니다</p>`}</div></div>`;
+  if(!v){$("#s-coord").innerHTML=`<div class="split" style="grid-template-columns:300px 1fr">${left}<div class="gray" style="padding:6px">← 왼쪽에서 업체를 고르세요</div></div>`;return;}
+  const rows=roundsOf(v.id);
+  const mis=r.co.length&&r.qa.length&&!r.com.length;
+  const finalHead=!r.co.length||!r.qa.length?"④ 최종 확정 — 두 팀이 모두 저장하면 공통일을 계산합니다":mis?"④ 공통일 없음 → '다음 회차 만들기'로 업체에 날짜를 다시 받으세요 (협/생 담당자에게 Teams 알림이 갔습니다)":"④ 공통일 "+DL(r.com)+" — 날짜 · 방문시간을 넣고 방문 확정";
+  const colTitle=(t,by)=>`<div class="h3" style="font-size:12px">${t}${by?" · "+esc(by):""}</div>`;
+  const attSel=(k,arr)=>`<div style="display:flex;flex-wrap:wrap;align-items:center;gap:2px;border:1px solid var(--st1);border-radius:4px;padding:2px 4px;min-height:30px;background:#fff" data-ctl="${k==="co"?"cmbCoAtt":"cmbQaAtt"}">${arr.map(p=>`<span class="chip">${esc(p)} <i data-unatt="${k},${p}">✕</i></span>`).join("")}
+    <select class="dd" style="width:auto;min-height:24px;border:0;padding:0 18px 0 4px;font-size:12px" data-att="${k}"><option value="">+ ${k==="co"?"협/생":"품질보증"} 참석자</option>${PEOPLE[k].filter(p=>!arr.includes(p)).map(p=>`<option>${p}</option>`).join("")}</select></div>`;
+  $("#s-coord").innerHTML=`<div class="split" style="grid-template-columns:300px 1fr">${left}
+   <div class="col" style="gap:6px">
+    <div class="h3" style="font-size:15px" data-ctl="lblCoName">${esc(v.co)} <span class="gray" style="font-size:12px;font-weight:400">&nbsp; ${esc(v.addr)} · 수배주체 ${esc(v.src)} · 협/생 담당 ${esc(v.owner)}</span></div>
+    <div class="card gal" style="max-height:150px" data-ctl="galRounds (lblRHead1~7)"><table class="t"><thead><tr><th>회차</th><th>방문요청일</th><th>협/생 (담당 · 가능시간)</th><th>품질보증 (담당 · 가능시간)</th><th>공통</th><th>비고</th><th>시간대</th></tr></thead><tbody>
+      ${rows.map(x=>{const m=x.co.length&&x.qa.length&&!x.com.length;return `<tr class="${m?"mis":""}"><td>${x.no}회</td><td>${DL(x.req)||"—"}</td><td>${x.co.length?DL(x.co)+"<br><span class='gray'>"+esc(x.coBy)+(x.coTime?" · "+esc(x.coTime):"")+"</span>":"<span class='gray'>입력 대기</span>"}</td><td>${x.qa.length?DL(x.qa)+"<br><span class='gray'>"+esc(x.qaBy)+(x.qaTime?" · "+esc(x.qaTime):"")+"</span>":"<span class='gray'>입력 대기</span>"}</td><td><b>${!x.co.length||!x.qa.length?"—":x.com.length?DL(x.com):"X"}</b></td><td class="${m?"red":"gray"}">${roundNote(x)}</td><td>${esc(x.time)}</td></tr>`;}).join("")}</tbody></table></div>
+    <div style="display:flex;align-items:center;gap:8px"><button class="btn sm" type="button" data-nav="coord,-28" data-ctl="btnCalPrev">◀ 이전</button><span style="width:160px;text-align:center;font-size:12px" data-ctl="lblCalRange">${toD(coordStart).getFullYear()}.${md(coordStart)} ~ ${md(add(coordStart,34))}</span><button class="btn sm" type="button" data-nav="coord,28" data-ctl="btnCalNext">다음 ▶</button>
+      <label class="tgl" style="margin-left:16px" data-ctl="tglRange"><input type="checkbox" id="tg-coord"${TG.coord?" checked":""}> 구간 선택</label><span class="gray" style="font-size:11px">시작일 → 끝일만 눌러 사이 평일을 모두 고릅니다 · <b class="green">초록 테두리</b> = 업체 요청일 · 지금 사용자: <b>${S.me}</b></span></div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+      <div class="col" style="gap:4px">${colTitle("① 업체 방문요청일 ("+r.no+"회차)","")}${calHTML("req",coordStart,"galReq · btnReqDay",false)}
+        <div style="display:flex;gap:6px;align-items:center"><button class="btn sm" type="button" id="c-req" data-ctl="btnReqSave"${CAL.req.sel.length?"":" disabled"}>요청일 저장</button><span class="gray" style="font-size:11px">고른 날 ${CAL.req.sel.length}일 · 업체와 통화해서 받은 날짜</span></div></div>
+      <div class="col" style="gap:4px">${colTitle("② 협/생 가능일",r.coBy)}${calHTML("co",coordStart,"galCo · btnCoDay",true)}
+        <div style="display:flex;gap:6px"><input class="inp" id="c-cotime" placeholder="가능시간 (예: 오후 1시 이후)" value="${esc(r.coTime)}" data-ctl="txtCoTime"><button class="btn sm" type="button" id="c-co" data-ctl="btnCoSave"${CAL.co.sel.length?"":" disabled"}>협/생 저장</button></div>${attSel("co",v.coAtt)}</div>
+      <div class="col" style="gap:4px">${colTitle("③ 품질보증 가능일",r.qaBy)}${calHTML("qa",coordStart,"galQa · btnQaDay",true)}
+        <div style="display:flex;gap:6px"><input class="inp" id="c-qatime" placeholder="가능시간 (예: 오전)" value="${esc(r.qaTime)}" data-ctl="txtQaTime"><button class="btn sm" type="button" id="c-qa" data-ctl="btnQaSave"${CAL.qa.sel.length?"":" disabled"}>품보 저장</button></div>${attSel("qa",v.qaAtt)}</div>
+    </div>
+    <div class="${mis?"red":"green"}" style="font-weight:600;font-size:12px;margin-top:2px" data-ctl="lblFinalHead">${finalHead}</div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <select class="dd" id="c-date" style="width:170px" data-ctl="ddFinalDate"${r.com.length?"":" disabled"}>${r.com.map(d=>`<option value="${d}">${fd(d)}</option>`).join("")||"<option>공통일 없음</option>"}</select>
+      <input class="inp" id="c-time" placeholder="13:30" style="width:90px" data-ctl="txtFinalTime"${r.com.length?"":" disabled"}>
+      <input class="inp" id="c-dep" placeholder="출발" style="width:80px" data-ctl="txtDepart">
+      <span class="gray" style="font-size:11px;flex:1" id="c-depinfo" data-ctl="lblDepartInfo"></span>
+      <button class="btn pri" type="button" id="c-confirm" style="width:150px" data-ctl="btnConfirm" disabled>방문 확정</button>
+      <button class="btn warn" type="button" id="c-next" style="width:160px" data-ctl="btnNextRound"${mis?"":" hidden"}>다음 회차 만들기</button>
+    </div>
+   </div></div>`;
+  coordState();
+}
+function coordState(){
+  const v=byId(S.coord); if(!v||!$("#c-time"))return; const t=trip(v.addr), tm=$("#c-time").value.trim();
+  const auto=depart(v.addr,tm); if(!$("#c-dep").dataset.touched)$("#c-dep").value=auto;
+  $("#c-depinfo").textContent=t?`자동: 약 ${t[1]}km · ${t[2]}분 + 여유 20분`:"이동시간 정보 없음 → 출발시간 직접 입력";
+  $("#c-confirm").disabled=!(lastRound(v.id).com.length&&/^\d{1,2}:\d{2}$/.test(tm));
+}
+function saveTeam(k){
+  const v=byId(S.coord), r=lastRound(v.id);
+  if(k==="req"){r.req=CAL.req.sel.slice();}
+  else{ r[k]=CAL[k].sel.slice(); r[k+"By"]=S.me; r[k+"Time"]=$("#c-"+k+"time").value.trim(); }
+  const before=r.com.join(); r.com=common(r);
+  if(r.co.length&&r.qa.length&&!r.com.length){flow("흐름②",`<b>${esc(v.co)}</b> ${r.no}회차 공통일 없음 → 협/생 담당자 <b>${esc(v.owner)}</b>에게 Teams "일정 재조율 필요"`);notify(`${k==="req"?"요청일":k==="co"?"협/생 가능일":"품질보증 가능일"}을 저장했습니다 — 겹치는 날이 없어 재조율 알림을 보냈습니다`,"warn");}
+  else notify(`${k==="req"?"방문요청일":k==="co"?"협/생 가능일":"품질보증 가능일"}을 저장했습니다${r.com.length?" · 공통일 "+DL(r.com):""}`);
+  renderAll();
+}
+
+/* ================= ③ 방문예정 ================= */
+function renderPlan(){
+  const list=V.filter(x=>x.st==="방문예정").sort((a,b)=>(a.fix+a.time).localeCompare(b.fix+b.time));
+  if(!list.some(x=>x.id===S.plan))S.plan=list[0]?list[0].id:null; const v=byId(S.plan);
+  const days=Array.from({length:14},(_,i)=>add(planWeek,i));
+  const kv=(k,val)=>`<div class="kv"><div class="k">${k}</div><div class="v">${esc(val)||"—"}</div></div>`;
+  $("#s-plan").innerHTML=`<div class="col" style="height:100%">
+    <div style="display:flex;align-items:center;gap:6px"><span class="h3" data-ctl="lblPCalTitle">방문 확정 일정 (2주) · 오늘은 노란 칸</span><span style="flex:1"></span><button class="btn sm" type="button" data-pw="-7" data-ctl="btnPPrev">◀</button><button class="btn sm" type="button" data-pw="0" data-ctl="btnPThis">이번 주</button><button class="btn sm" type="button" data-pw="7" data-ctl="btnPNext">▶</button></div>
+    <div class="strip" data-ctl="galPCal">${days.map(d=>`<div class="dy${isWE(d)?" we":""}${d===T0?" td":""}"><div class="d">${md(d)} ${WK[wd(d)]}</div>${V.filter(x=>x.fix===d&&x.st!=="등록취소"&&x.st!=="임시저장"&&x.st!=="일정조율").map(x=>`<button class="ev${x.st==="방문예정"?"":" done"}" type="button" data-go="${x.st==="방문예정"?"plan":"list"}" data-id="${x.id}" title="${esc(x.time+" "+x.co)}">${esc(x.co)} ${esc(x.time)}</button>`).join("")}</div>`).join("")}</div>
+    <div class="split" style="grid-template-columns:420px 1fr;flex:1;min-height:0">
+      <div class="col"><span class="h3" data-ctl="lblPListTitle">방문예정 업체 (가까운 순)</span>
+        <div class="card gal" style="flex:1" data-ctl="galPlan">${list.length?list.map(x=>{const n=diff(T0,x.fix);return `<div class="gi${x.id===S.plan?" sel":""}" data-pick="plan" data-id="${x.id}" style="${x.id!==S.plan&&n<=2?"background:#FFF9EB":""}"><div class="tx"><div class="t">${esc(x.co)} &nbsp;<span class="${n<0?"red":n<=2?"":"gray"}" style="${n>=0&&n<=2?"color:var(--warn)":""}">${ddLbl(x.fix)}${n<0?" (결과 입력 필요)":""}</span></div><div class="s">${fd(x.fix)} ${esc(x.time)}${x.dep?" · <b>"+x.dep+" 출발</b>":""} · ${esc(x.addr)}</div></div></div>`;}).join(""):`<p class="empty">방문예정 업체가 없습니다</p>`}</div></div>
+      ${v?`<div class="col">
+        <div class="card" style="padding:12px 14px" data-ctl="frmPlan (표시 양식)"><div class="g3">${kv("수배주체",v.src)}${kv("상호명",v.co)}${kv("의뢰예상제품",v.prod)}${kv("소재지",v.addr)}${kv("업체담당자",v.mgr)}${kv("연락처",v.tel)}${kv("이메일",v.mail)}${kv("협생담당자",v.owner)}${kv("수배사유",v.reason)}</div></div>
+        <div class="boxes" data-ctl="lblPH1~5 · lblPV1~5"><div><b>방문요청일</b><span>${DL(v.req)}</span></div><div><b>협/생 참석</b><span>${esc(v.coAtt.join(", "))}</span></div><div><b>품질보증 참석</b><span>${esc(v.qaAtt.join(", "))}</span></div><div><b>방문(예정)일</b><span class="red" style="font-weight:700">${toD(v.fix).getMonth()+1}월 ${toD(v.fix).getDate()}일 (${WK[wd(v.fix)]})</span></div><div><b>시간 (출발)</b><span class="red" style="font-weight:700">${esc(v.time)}\n(${v.dep?v.dep+" 출발":"출발 미정"})</span></div></div>
+        <div style="display:flex;gap:8px;align-items:center"><span style="font-size:12px">출발시간 직접 입력</span><input class="inp" id="p-dep" style="width:90px" value="${esc(v.dep)}" placeholder="11:00" data-ctl="txtPDepart"><button class="btn sm" type="button" id="p-depsave" data-ctl="btnPDepSave">저장</button><span class="gray" style="font-size:11px">자동 계산이 안 된 업체(지역 정보 없음)는 협/생에서 적어 주세요</span></div>
+        <div style="display:flex;gap:8px;margin-top:auto"><button class="btn pri" type="button" data-go="result" data-id="${v.id}" data-ctl="btnPToResult">④ 방문결과 입력 →</button><button class="btn" type="button" id="p-back" data-ctl="btnPBack">일정 다시 조율 (② 탭으로)</button><button class="btn" type="button" data-go="list" data-id="${v.id}" data-ctl="btnPDetail">전체업체에서 보기</button></div>
+      </div>`:`<div class="gray">방문예정 업체가 없습니다</div>`}
+    </div></div>`;
+}
+
+/* ================= ④ 방문결과 ================= */
+function capaTables(v,editable){
+  const mk=MK.filter(m=>m.vid===v.id), pr=PR.filter(p=>p.vid===v.id), ro=editable?"":" disabled";
+  const ci=(set,id,f,val,w,numF)=>editable?`<input class="inp" style="width:${w}px${numF?";text-align:right":""}" value="${esc(val)}" data-ed="${set},${id},${f}">`:esc(numF?num(val):val);
+  const sum=k=>pr.reduce((a,p)=>a+(+p[k]||0),0);
+  return `<div class="sec" data-ctl="${editable?"secRMake · galMake":"galAMake (읽기 전용)"}"><div class="sect">제조 CAPA 현황 (설비 규격)<span class="sp"></span>${editable?`<button class="btn sm" type="button" data-addrow="mk" data-ctl="btnAddMake">+ 줄 추가</button>`:""}</div>
+    <table class="t"><thead><tr><th>종류</th><th>용량</th><th class="n">보유대수</th><th>보조가마</th><th>비고</th>${editable?"<th></th>":""}</tr></thead><tbody>${mk.map(m=>`<tr><td>${ci("mk",m.id,"kind",m.kind,200)}</td><td>${ci("mk",m.id,"size",m.size,110)}</td><td class="n">${ci("mk",m.id,"qty",m.qty,70,true)}</td><td>${ci("mk",m.id,"sub",m.sub,110)}</td><td>${ci("mk",m.id,"note",m.note,230)}</td>${editable?`<td><button class="btn sm bad" type="button" data-delrow="mk,${m.id}" aria-label="줄 삭제" data-ctl="icoMDel">🗑</button></td>`:""}</tr>`).join("")||`<tr><td colspan="6" class="gray">${editable?"+ 줄 추가로 설비를 넣으세요":"입력된 설비 없음"}</td></tr>`}</tbody></table></div>
+   <div class="sec" data-ctl="${editable?"secRProd · galProd · lblPTot…":"galAProd (읽기 전용)"}"><div class="sect">생산 CAPA 현황 <span class="gray" style="font-weight:400;font-size:11px">일CAPA = 설비CAPA × 보유대수, 월CAPA = 일CAPA × 20 (자동, 직접 고칠 수 있음)</span><span class="sp"></span>${editable?`<button class="btn sm" type="button" data-addrow="pr" data-ctl="btnAddProd">+ 줄 추가</button>`:""}</div>
+    <table class="t"><thead><tr><th>설비명</th><th class="n">설비CAPA</th><th class="n">보유대수</th><th class="n">일CAPA</th><th class="n">월CAPA(20일)</th><th class="n">콜마배정</th><th>비고</th>${editable?"<th></th>":""}</tr></thead><tbody>${pr.map(p=>`<tr><td>${ci("pr",p.id,"name",p.name,170)}</td><td class="n">${ci("pr",p.id,"capa",p.capa,90,true)}</td><td class="n">${ci("pr",p.id,"qty",p.qty,60,true)}</td><td class="n">${ci("pr",p.id,"day",p.day,95,true)}</td><td class="n">${ci("pr",p.id,"mon",p.mon,110,true)}</td><td class="n">${ci("pr",p.id,"kol",p.kol,90,true)}</td><td>${ci("pr",p.id,"note",p.note,130)}</td>${editable?`<td><button class="btn sm bad" type="button" data-delrow="pr,${p.id}" aria-label="줄 삭제" data-ctl="icoPDel">🗑</button></td>`:""}</tr>`).join("")||`<tr><td colspan="8" class="gray">${editable?"+ 줄 추가로 설비를 넣으세요":"입력된 설비 없음"}</td></tr>`}
+      <tr class="tot"><td>합계</td><td></td><td class="n">${pr.length}종</td><td class="n">${num(sum("day"))}</td><td class="n">${num(sum("mon"))}</td><td class="n">${num(sum("kol"))}</td><td colspan="${editable?2:1}"></td></tr></tbody></table></div>`;
+}
+let RB=false;
+function renderResult(){if(RB)return;RB=true;try{_renderResult();}finally{RB=false;}}
+function _renderResult(){
+  const list=V.filter(x=>["방문예정","방문완료","CAPA요청"].includes(x.st)).sort((a,b)=>a.fix.localeCompare(b.fix));
+  if(!list.some(x=>x.id===S.res))S.res=(list.find(isTodo)||list[0]||{}).id||null; const v=byId(S.res);
+  const sub=x=>x.st==="방문예정"?`방문 ${fd(x.fix)} · ${ddLbl(x.fix)}`:x.st==="방문완료"?"방문완료 · 등록 판단 대기":`CAPA 요청 D+${diff(x.capaReq,T0)}${diff(x.capaReq,T0)>=3?" ⚠ 회신 확인":""}`;
+  const left=`<div class="col"><span class="h3" data-ctl="lblRListTitle">방문결과 입력 · 판정 대상</span><div class="card gal" style="flex:1" data-ctl="galRes">${list.map(x=>`<div class="gi${x.id===S.res?" sel":""}" data-pick="res" data-id="${x.id}"><div class="tx"><div class="t">${esc(x.co)}</div><div class="s ${x.st==="CAPA요청"&&diff(x.capaReq,T0)>=3||x.st==="방문예정"&&x.fix<T0?"red":""}">${sub(x)}</div></div>${badge(x.st)}</div>`).join("")||`<p class="empty">대상이 없습니다</p>`}</div></div>`;
+  if(!v){$("#s-result").innerHTML=`<div class="split" style="grid-template-columns:320px 1fr">${left}<div class="gray">← 왼쪽에서 업체를 고르세요</div></div>`;return;}
+  $("#s-result").innerHTML=`<div class="split" style="grid-template-columns:320px 1fr">${left}
+    <div class="scroll" data-ctl="conRes (세로 컨테이너 · 스크롤)">
+      <div class="sec" data-ctl="secRInfo" style="display:flex;gap:16px;align-items:flex-start"><div style="flex:1"><div style="font-size:17px;font-weight:600">${esc(v.co)} &nbsp;${badge(v.st)}</div><div class="gray" style="font-size:12px;margin-top:4px">예정 ${fd(v.fix)} ${esc(v.time)} · ${esc(v.addr)}<br>참석: 협/생 ${esc(v.coAtt.join(", "))} / 품질보증 ${esc(v.qaAtt.join(", "))}</div></div>
+        <div class="fld" style="width:240px"><span class="lbl">실제 방문일 *</span><input class="inp" type="date" id="r-day" value="${v.vdone||v.fix}" data-ctl="dpActual"></div></div>
+      <div class="sec" data-ctl="secRScore"><div class="sect">방문 점수 및 특이사항</div>
+        <div style="display:grid;grid-template-columns:380px 1fr;gap:18px">
+          <table class="t"><thead><tr><th></th><th class="n">본점수</th><th class="n">환산 (50%)</th></tr></thead><tbody>
+            <tr><td>협/생 *</td><td class="n"><input class="inp" id="r-sco" type="number" min="0" max="100" style="width:90px;text-align:right" value="${v.sCo??""}" data-ctl="txtScoreCo"></td><td class="n" id="r-cco">—</td></tr>
+            <tr><td>품질보증</td><td class="n"><input class="inp" id="r-sqa" type="number" min="0" max="100" style="width:90px;text-align:right" value="${v.sQa??""}" data-ctl="txtScoreQa"></td><td class="n" id="r-cqa">—</td></tr>
+            <tr class="tot"><td>총점</td><td></td><td class="n" style="color:var(--brand);font-size:15px" id="r-tot" data-ctl="lblTot">—</td></tr></tbody></table>
+          <div class="col" style="gap:6px"><div class="fld"><span class="lbl">특이사항</span><textarea class="inp" id="r-note" rows="3" data-ctl="txtNote">${esc(v.note)}</textarea></div>
+            <div class="fld"><span class="lbl">방문자료 링크 (자료가 있는 SharePoint · OneDrive 주소)</span><div style="display:flex;gap:6px"><input class="inp" id="r-link" value="${esc(v.link)}" placeholder="https://회사-my.sharepoint.com/..." data-ctl="txtLink"><button class="btn sm" type="button" id="r-open" data-ctl="btnOpenLink">열기</button></div></div></div>
+        </div></div>
+      ${capaTables(v,true)}
+      <div class="sec" data-ctl="secRBtns"><div class="gray" style="font-size:11px;margin-bottom:6px">방문완료: 협/생 점수를 넣으면 켜짐 · CAPA요청 · 등록취소: 언제든 · 등록완료: 방문완료나 CAPA요청 뒤</div>
+        <div class="fld" style="width:440px;margin-bottom:8px"><span class="lbl">등록취소 사유 (업체 결격 등 · 등록취소 때만)</span><input class="inp" id="r-cancel" value="${esc(v.cancel)}" placeholder="예: GMP 미보유" data-ctl="txtCancelReason"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" type="button" id="b-reset" data-ctl="btnRReset">취소</button><button class="btn" type="button" id="b-save" data-ctl="btnRSave">저장</button><button class="btn bad" type="button" id="b-cancel" data-ctl="btnRCancelReg">등록취소</button><button class="btn warn" type="button" id="b-capa" data-ctl="btnRCapa">CAPA요청</button><button class="btn pri" type="button" id="b-done" data-ctl="btnRDone">방문완료</button><button class="btn ok" type="button" id="b-reg" data-ctl="btnRReg">등록완료</button><button class="btn sm" type="button" id="b-report" data-ctl="btnRReport">리포트 다시 만들기</button>${v.report?`<button class="btn sm" type="button" data-report="${v.id}">📄 리포트 미리보기</button>`:""}</div></div>
+    </div></div>`;
+  resState();
+}
+function resState(){
+  const v=byId(S.res); if(!v||!$("#r-sco"))return;
+  const a=$("#r-sco").value, b=$("#r-sqa").value, f=x=>x===""?"—":String(Math.round(+x*5)/10);
+  $("#r-cco").textContent=f(a); $("#r-cqa").textContent=f(b); $("#r-tot").textContent=Math.round(((+a||0)*.5+(+b||0)*.5)*10)/10+" / 100";
+  $("#b-done").disabled=!(v.st==="방문예정"&&a!==""&&$("#r-day").value);
+  $("#b-capa").disabled=!["방문예정","방문완료"].includes(v.st);
+  $("#b-reg").disabled=!["방문완료","CAPA요청"].includes(v.st);
+  $("#b-report").disabled=!["방문완료","CAPA요청"].includes(v.st);
+  $("#b-cancel").disabled=!$("#r-cancel").value.trim();
+  $("#r-open").disabled=!/^https?:/.test($("#r-link").value);
+}
+function resFields(v){v.vdone=$("#r-day").value||v.fix;v.sCo=$("#r-sco").value===""?null:+$("#r-sco").value;v.sQa=$("#r-sqa").value===""?null:+$("#r-sqa").value;v.note=$("#r-note").value;v.link=$("#r-link").value.trim();}
+function buildReport(v){
+  const mk=MK.filter(m=>m.vid===v.id), pr=PR.filter(p=>p.vid===v.id), s=k=>pr.reduce((a,p)=>a+(+p[k]||0),0), h=x=>esc(x);
+  return `<html><head><meta charset='utf-8'><style>body{font-family:'Malgun Gothic',sans-serif;font-size:10.5pt;margin:26px;color:#222}h1{font-size:17pt;margin:0 0 4px}h2{font-size:12.5pt;margin:18px 0 6px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #999;padding:5px 7px;text-align:left;vertical-align:top}th{background:#eef2f7;white-space:nowrap}.n{text-align:right}.box{white-space:pre-wrap;border:1px solid #999;padding:8px;min-height:50px}</style></head><body>
+  <h1>업체 방문 결과 리포트</h1><p>${h(v.co)} · 실제 방문일 ${v.vdone} · 총점 ${total(v)} / 100</p>
+  <h2>업체 기본 정보</h2><table><tr><th>수배주체</th><td>${h(v.src)}</td><th>의뢰예상제품</th><td>${h(v.prod)}</td></tr><tr><th>소재지</th><td colspan='3'>${h(v.addr)}</td></tr><tr><th>업체 담당자</th><td>${h(v.mgr)} · ${h(v.tel)}</td><th>E-MAIL</th><td>${h(v.mail)}</td></tr><tr><th>수배사유</th><td colspan='3'>${h(v.reason)}</td></tr><tr><th>방문 일정</th><td>${v.fix} ${h(v.time)}</td><th>참석자</th><td>${h(v.coAtt.join(", "))} / ${h(v.qaAtt.join(", "))}</td></tr></table>
+  <h2>방문 점수</h2><table><tr><th>구분</th><th class='n'>본점수</th><th class='n'>환산 (50%)</th></tr><tr><td>협/생</td><td class='n'>${v.sCo??""}</td><td class='n'>${v.sCo==null?"":v.sCo/2}</td></tr><tr><td>품질보증</td><td class='n'>${v.sQa??""}</td><td class='n'>${v.sQa==null?"":v.sQa/2}</td></tr><tr><th>총점</th><td></td><th class='n'>${total(v)} / 100</th></tr></table>
+  <h2>특이사항</h2><div class='box'>${h(v.note)}</div><p>방문자료 링크: ${h(v.link)}</p>
+  <h2>제조 CAPA 현황 (설비 규격)</h2><table><tr><th>종류</th><th>용량</th><th class='n'>보유대수</th><th>보조가마</th><th>비고</th></tr>${mk.map(m=>`<tr><td>${h(m.kind)}</td><td>${h(m.size)}</td><td class='n'>${m.qty}</td><td>${h(m.sub)}</td><td>${h(m.note)}</td></tr>`).join("")}</table>
+  <h2>생산 CAPA 현황</h2><table><tr><th>설비명</th><th class='n'>설비CAPA</th><th class='n'>보유대수</th><th class='n'>일CAPA</th><th class='n'>월CAPA(20일)</th><th class='n'>콜마배정</th><th>비고</th></tr>${pr.map(p=>`<tr><td>${h(p.name)}</td><td class='n'>${num(p.capa)}</td><td class='n'>${p.qty}</td><td class='n'>${num(p.day)}</td><td class='n'>${num(p.mon)}</td><td class='n'>${num(p.kol)}</td><td>${h(p.note)}</td></tr>`).join("")}<tr><th>합계</th><td></td><th class='n'>${pr.length}종</th><th class='n'>${num(s("day"))}</th><th class='n'>${num(s("mon"))}</th><th class='n'>${num(s("kol"))}</th><td></td></tr></table>
+  <p style='color:#777;font-size:9pt'>작성: ${h(S.me)} · ${T0}</p></body></html>`;
+}
+function makeReport(v){const tag=`${String(TODAY.getFullYear()).slice(2)}${String(TODAY.getMonth()+1).padStart(2,"0")}${String(TODAY.getDate()).padStart(2,"0")}-${String(new Date().getHours()).padStart(2,"0")}${String(new Date().getMinutes()).padStart(2,"0")}`;
+  v.report=`${v.co}_${tag}.pdf`; flow("흐름⑤",`<b>${esc(v.co)}</b> 리포트 HTML → OneDrive 변환 → '방문 리포트'에 <b>${esc(v.report)}</b> 저장 · 채널 알림 <a href="#" data-report="${v.id}">미리보기</a>`);}
+
+/* ================= 전체업체 ================= */
+function renderList(){
+  const q=($("#l-q")||{}).value||"", f=($("#l-st")||{}).value||"전체";
+  const list=V.filter(x=>(f==="전체"||x.st===f)&&(!q||(x.co+x.addr).includes(q))).sort((a,b)=>b.id-a.id);
+  if(S.all&&!byId(S.all))S.all=null; if(!S.all&&list[0])S.all=list[0].id; const v=byId(S.all);
+  const left=`<div class="col"><input class="inp" id="l-q" placeholder="업체명 · 지역 검색" value="${esc(q)}" data-ctl="txtLSearch">
+    <div style="display:flex;gap:6px"><select class="dd" id="l-st" data-ctl="ddLStatus">${["전체"].concat(Object.keys(ST)).map(s=>`<option${s===f?" selected":""}>${s}</option>`).join("")}</select><button class="btn pri" type="button" data-tab="new" id="l-new" style="width:100px" data-ctl="btnLNew">+ 신규</button></div>
+    <div class="card gal" style="flex:1" data-ctl="galAll">${list.map(x=>`<div class="gi${x.id===S.all?" sel":""}" data-pick="all" data-id="${x.id}"><div class="tx"><div class="t">${esc(x.co)}</div><div class="s">${x.fix?fd(x.fix):esc(x.addr)}</div></div>${badge(x.st)}</div>`).join("")||`<p class="empty">검색 결과가 없습니다</p>`}</div></div>`;
+  if(!v){$("#s-list").innerHTML=`<div class="split" style="grid-template-columns:320px 1fr">${left}<div class="gray">← 왼쪽에서 업체를 고르세요</div></div>`;return;}
+  const rows=roundsOf(v.id), go={"임시저장":"이어 쓰기 →","일정조율":"일정조율 열기 →","방문예정":"방문예정 열기 →","방문완료":"방문결과 열기 →","CAPA요청":"방문결과 열기 →"}[v.st];
+  const F=[["수배주체","src"],["상호명","co"],["의뢰예상제품","prod"],["소재지","addr"],["업체담당자","mgr"],["연락처","tel"],["이메일","mail"],["협생담당자","owner"],["수배사유","reason"]];
+  $("#s-list").innerHTML=`<div class="split" style="grid-template-columns:320px 1fr">${left}
+   <div class="scroll" data-ctl="conAll (진행된 구역만 보임)">
+    <div class="sec" data-ctl="secA · frmAll"><div class="sect"><span style="font-size:16px">${esc(v.co)}</span> ${badge(v.st)}<span class="sp"></span>
+      <button class="btn sm" type="button" id="a-go" data-ctl="btnAGo"${go?"":" disabled"}>${go||"진행 끝"}</button>
+      ${S.editA?`<button class="btn sm pri" type="button" id="a-save" data-ctl="btnASave">저장</button><button class="btn sm" type="button" id="a-cancel" data-ctl="btnACancel">취소</button>`:`<button class="btn sm" type="button" id="a-edit" data-ctl="btnAEdit">편집</button><button class="btn sm bad" type="button" id="a-del" data-ctl="btnADelete">삭제</button>`}</div>
+      <div class="g3">${F.map(x=>`<div class="kv"${x[1]==="reason"?' style="grid-column:span 3"':""}><div class="k">${x[0]}</div>${S.editA&&x[1]!=="owner"?`<input class="inp" data-af="${x[1]}" value="${esc(v[x[1]])}">`:`<div class="v">${esc(v[x[1]])||"—"}</div>`}</div>`).join("")}</div></div>
+    ${rows.length?`<div class="sec" data-ctl="secB · galARounds"><div class="sect">일정 조율 기록</div><table class="t"><thead><tr><th>회차</th><th>방문요청일</th><th>협/생</th><th>품질보증</th><th>공통</th><th>비고</th><th>시간대</th></tr></thead><tbody>${rows.map(x=>`<tr class="${x.co.length&&x.qa.length&&!x.com.length?"mis":""}"><td>${x.no}회</td><td>${DL(x.req)}</td><td>${DL(x.co)||"입력 대기"} <span class="gray">${esc(x.coBy)}</span></td><td>${DL(x.qa)||"입력 대기"} <span class="gray">${esc(x.qaBy)}</span></td><td>${!x.co.length||!x.qa.length?"—":x.com.length?DL(x.com):"X"}</td><td>${roundNote(x)}</td><td>${esc(x.time)}</td></tr>`).join("")}</tbody></table></div>`:""}
+    ${v.fix?`<div class="sec" data-ctl="secC"><div class="sect">방문 일정</div><div style="font-size:12px">방문일 ${fd(v.fix)} ${esc(v.time)} · 출발 ${esc(v.dep)||"미정"}<br>참석: 협/생 ${esc(v.coAtt.join(", "))} / 품질보증 ${esc(v.qaAtt.join(", "))}</div></div>`:""}
+    ${v.vdone?`<div class="sec" data-ctl="secD"><div class="sect">방문 결과</div><div style="font-size:12px;font-weight:600">실제 방문일 ${fd(v.vdone)} · 협/생 ${v.sCo??"—"}점 + 품질보증 ${v.sQa??"—"}점 → 총점 ${total(v)??"—"}</div><div style="font-size:12px;white-space:pre-wrap;margin-top:4px">특이사항: ${esc(v.note)||"—"}</div>${v.link?`<div style="font-size:12px;color:var(--brand)">방문자료 링크: ${esc(v.link)}</div>`:""}</div>${capaTables(v,false)}`:""}
+    ${["CAPA요청","등록완료","등록취소"].includes(v.st)?`<div class="sec" data-ctl="secE"><div class="sect">판정</div><div style="font-size:12px">${v.st==="CAPA요청"?`CAPA 요청일 ${fd(v.capaReq)} (D+${diff(v.capaReq,T0)})`:v.st==="등록완료"?`등록완료 · 판정일 ${fd(v.judged)}`:`등록취소 · 판정일 ${fd(v.judged)} · 사유: ${esc(v.cancel)}`} ${v.report?` · 리포트 <a href="#" data-report="${v.id}">${esc(v.report)}</a>`:""}</div></div>`:""}
+   </div></div>`;
+}
+
+/* ================= 통계 ================= */
+function monthly(){return Array.from({length:12},(_,i)=>{const d=new Date(TODAY.getFullYear(),TODAY.getMonth()-11+i,1),y=d.getFullYear(),m=d.getMonth()+1,pre=`${y}-${String(m).padStart(2,"0")}`;
+  return {y,m,v:V.filter(x=>x.vdone&&x.vdone.startsWith(pre)).length,r:V.filter(x=>x.st==="등록완료"&&x.judged&&x.judged.startsWith(pre)).length};});}
+function renderStats(){
+  const seg=`<div class="seg"><button type="button" data-stat="현황" class="${S.stat==="현황"?"on":""}" data-ctl="btnStView1">현황</button><button type="button" data-stat="CAPA" class="${S.stat==="CAPA"?"on":""}" data-ctl="btnStView2">CAPA 조회</button></div>`;
+  if(S.stat==="현황"){
+    const M=monthly(),c=M[11],p=M[10],sv=M.reduce((a,b)=>a+b.v,0),sr=M.reduce((a,b)=>a+b.r,0), capa=V.filter(x=>x.st==="CAPA요청"), late=capa.filter(x=>diff(x.capaReq,T0)>=3).length;
+    const T=[["이번 달 방문완료",c.v+"<small>건</small>","지난달 "+p.v+"건"],["이번 달 등록완료",c.r+"<small>건</small>","지난달 "+p.r+"건"],["최근 12개월 등록 전환율",(sv?Math.round(sr/sv*100):0)+"<small>%</small>","방문 "+sv+"건 → 등록 "+sr+"건"],["CAPA 요청 중",capa.length+"<small>건</small>","D+3 지난 건 "+late+"건"]];
+    const SG=Object.keys(ST), tot=V.length, rec=V.filter(x=>x.vdone).sort((a,b)=>b.vdone.localeCompare(a.vdone)).slice(0,20);
+    $("#s-stats").innerHTML=`<div class="col" style="height:100%;gap:10px">${seg}
+      <div class="tiles" data-ctl="recSt1~4 · lblSt…">${T.map(t=>`<div class="card tile"><div class="lbl">${t[0]}</div><div class="n">${t[1]}</div><div class="x ${t[0].startsWith("CAPA")&&late?"red":""}">${t[2]}</div></div>`).join("")}</div>
+      <div style="display:grid;grid-template-columns:1.65fr 1fr;gap:10px">
+        <div class="card" style="padding:10px 12px" data-ctl="chtMonthly (세로 막대형 차트)"><div style="display:flex;align-items:center"><span class="h3">월별 방문완료 · 등록완료 (최근 12개월)</span><span style="flex:1"></span><span class="legend"><span><i style="background:var(--c1)"></i>방문완료</span><span><i style="background:var(--c2)"></i>등록완료</span></span></div><div class="chart" id="chart"><div class="ctip" id="ctip"></div></div></div>
+        <div class="card" style="padding:10px 12px" data-ctl="galStage"><div class="h3" style="margin-bottom:8px">단계별 업체 수 (지금)</div><div class="stg">${SG.map(s=>{const n=V.filter(x=>x.st===s).length;return `<div class="sr"><span>${s}</span><div class="bar" style="width:${n/tot*100}%"></div><span class="num">${n}</span></div>`;}).join("")}</div><div class="gray" style="font-size:11px;margin-top:8px">전체 ${tot}곳 중 비율로 막대 길이 표시</div></div>
+      </div>
+      <div class="card col" style="flex:1;min-height:0;gap:0" data-ctl="galRecent"><div class="h3" style="padding:8px 12px 4px">최근 방문 내용 <span class="gray" style="font-weight:400;font-size:11px">최근 20건 · 줄을 누르면 전체업체에서 상세</span></div>
+        <div class="gal" style="flex:1"><table class="t"><thead><tr><th>방문일</th><th>상호명</th><th>상태</th><th class="n">총점</th><th>특이사항</th></tr></thead><tbody>${rec.map(x=>`<tr data-go="list" data-id="${x.id}" style="cursor:pointer"><td>${fd(x.vdone)}</td><td><b>${esc(x.co)}</b></td><td style="color:${ST[x.st]}">${x.st}</td><td class="n">${total(x)??"—"}</td><td class="gray" style="max-width:560px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc((x.note||"").replace(/\n/g," / "))}</td></tr>`).join("")}</tbody></table></div></div>
+    </div>`;
+    drawChart(M);
+  } else {
+    const q=($("#cp-q")||{}).value||"", qc=($("#cp-c")||{}).value||"", reg=!!($("#cp-r")||{}).checked, prod=S.capaType==="생산";
+    const okV=id=>{const v=byId(id);return v&&(!reg||v.st==="등록완료")&&(!qc||v.co.includes(qc));};
+    const rows=prod?PR.filter(p=>okV(p.vid)&&(!q||p.name.includes(q))).sort((a,b)=>b.mon-a.mon):MK.filter(m=>okV(m.vid)&&(!q||m.kind.includes(q))).sort((a,b)=>a.kind.localeCompare(b.kind,"ko"));
+    const cos=new Set(rows.map(r=>r.vid)).size, s=k=>rows.reduce((a,r)=>a+(+r[k]||0),0);
+    $("#s-stats").innerHTML=`<div class="col" style="height:100%;gap:10px">${seg}
+      <div style="display:flex;gap:10px;align-items:center"><div class="seg" data-ctl="rdCapaType"><button type="button" data-ct="생산" class="${prod?"on":""}">생산 CAPA</button><button type="button" data-ct="제조" class="${prod?"":"on"}">제조 설비</button></div>
+        <input class="inp" id="cp-q" style="width:260px" placeholder="설비명 · 종류 검색 (비우면 전체)" value="${esc(q)}" data-ctl="txtEquip"><input class="inp" id="cp-c" style="width:200px" placeholder="업체명 검색" value="${esc(qc)}" data-ctl="txtCapaCo">
+        <label class="tgl" data-ctl="chkRegOnly"><input type="checkbox" id="cp-r"${reg?" checked":""}> 등록완료 업체만</label></div>
+      <div style="font-weight:600;color:var(--brand)" data-ctl="lblCapaSum">검색 결과 ${rows.length}줄 · 업체 ${cos}곳 · ${prod?`월CAPA 합계 ${num(s("mon"))} · 콜마배정 ${num(s("kol"))} · 여유 ${num(s("mon")-s("kol"))}`:`보유대수 합계 ${s("qty")}`}</div>
+      <div class="card gal" style="flex:1" data-ctl="${prod?"galCapaP":"galCapaM"}"><table class="t"><thead><tr><th>상호명</th><th>상태</th>${prod?`<th>설비명</th><th class="n">설비CAPA</th><th class="n">보유대수</th><th class="n">일CAPA</th><th class="n">월CAPA(20일)</th><th class="n">콜마배정</th><th class="n">여유(월−배정)</th>`:`<th>종류</th><th>용량</th><th class="n">보유대수</th><th>보조가마</th><th>비고</th>`}</tr></thead><tbody>
+        ${rows.map(r=>{const v=byId(r.vid);return `<tr data-go="list" data-id="${v.id}" style="cursor:pointer"><td><b>${esc(v.co)}</b></td><td style="color:${ST[v.st]}">${v.st}</td>${prod?`<td>${esc(r.name)}</td><td class="n">${num(r.capa)}</td><td class="n">${r.qty}</td><td class="n">${num(r.day)}</td><td class="n"><b>${num(r.mon)}</b></td><td class="n">${num(r.kol)}</td><td class="n ${r.mon-r.kol>0?"green":"red"}">${num(r.mon-r.kol)}</td>`:`<td>${esc(r.kind)}</td><td>${esc(r.size)}</td><td class="n">${r.qty}</td><td>${esc(r.sub)}</td><td class="gray">${esc(r.note)}</td>`}</tr>`;}).join("")||`<tr><td colspan="9" class="gray">검색 결과가 없습니다</td></tr>`}</tbody></table></div>
+    </div>`;
+  }
+}
+function drawChart(M){
+  const box=$("#chart"),tip=$("#ctip"),W=820,H=230,P={l:26,r:6,t:16,b:22},iw=W-P.l-P.r,ih=H-P.t-P.b,band=iw/12,bw=Math.min(18,(band-12)/2),gap=2;
+  const top=Math.max(4,Math.ceil(Math.max(...M.map(x=>Math.max(x.v,x.r)))/4)*4),y=v=>P.t+ih-(v/top)*ih;
+  const bar=(x,v,c)=>{if(!v)return "";const t=y(v),h=P.t+ih-t,r=Math.min(4,h);return `<path d="M${x},${P.t+ih} V${t+r} Q${x},${t} ${x+r},${t} H${x+bw-r} Q${x+bw},${t} ${x+bw},${t+r} V${P.t+ih} Z" fill="${c}"/>`;};
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="월별 방문완료와 등록완료 막대 차트">`;
+  for(let k=0;k<=4;k++){const v=top*k/4;s+=`<line x1="${P.l}" x2="${W-P.r}" y1="${y(v)}" y2="${y(v)}" stroke="${k?"#EDEDED":"#C8C8C8"}"/><text x="${P.l-7}" y="${y(v)+4}" text-anchor="end">${v}</text>`;}
+  M.forEach((o,i)=>{const gx=P.l+band*i+(band-(bw*2+gap))/2;s+=bar(gx,o.v,"#2a78d6")+bar(gx+bw+gap,o.r,"#eb6834");
+    if(i===11)s+=`<text class="val" x="${gx+bw/2}" y="${y(o.v)-5}" text-anchor="middle">${o.v}</text><text class="val" x="${gx+bw+gap+bw/2}" y="${y(o.r)-5}" text-anchor="middle">${o.r}</text>`;
+    s+=`<text x="${P.l+band*i+band/2}" y="${H-5}" text-anchor="middle">${o.m}월</text><rect class="hit" data-i="${i}" x="${P.l+band*i}" y="${P.t}" width="${band}" height="${ih}" fill="transparent"/>`;});
+  box.innerHTML=s+"</svg>";box.appendChild(tip);
+  box.querySelectorAll(".hit").forEach(r=>{const show=()=>{const o=M[+r.dataset.i],bx=box.getBoundingClientRect(),rb=r.getBoundingClientRect(),sc=bx.width/box.offsetWidth||1;
+    tip.innerHTML=`<b>${o.y}년 ${o.m}월</b><div><i style="background:#2a78d6"></i>방문완료<span>${o.v}</span></div><div><i style="background:#eb6834"></i>등록완료<span>${o.r}</span></div>`;
+    let x=(rb.left-bx.left+rb.width/2)/sc-80;x=Math.max(0,Math.min(x,box.offsetWidth-170));tip.style.left=x+"px";tip.classList.add("on");r.setAttribute("fill","rgba(0,0,0,.05)");};
+    const hide=()=>{tip.classList.remove("on");r.setAttribute("fill","transparent");};r.addEventListener("mouseenter",show);r.addEventListener("mouseleave",hide);r.addEventListener("click",show);});
+}
+
+/* ================= 탭 · 전체 다시 그리기 ================= */
+function renderTabs(){
+  const n={coord:V.filter(x=>x.st==="일정조율").length,plan:V.filter(x=>x.st==="방문예정").length,result:V.filter(isTodo).length};
+  $$("#tabs [data-tab]").forEach(b=>{const k=b.dataset.tab,base={new:"① 신규추가",coord:"② 일정조율",plan:"③ 방문예정",result:"④ 방문결과",list:"전체업체",stats:"통계"}[k];
+    b.textContent=n[k]!=null?`${base} (${n[k]})`:base; b.classList.toggle("on",k===S.tab);});
+  $$(".scr").forEach(s=>s.classList.toggle("on",s.id==="s-"+S.tab));
+}
+const R_={new:()=>renderNew(),coord:renderCoord,plan:renderPlan,result:renderResult,list:renderList,stats:renderStats};
+function renderAll(){renderTabs();R_[S.tab]();}
+function go(tab){S.tab=tab;S.editA=false;renderAll();}
+
+/* ================= 이벤트 ================= */
+document.addEventListener("click",e=>{
+  const t=e.target.closest("button,[data-pick],[data-go],a[data-report],[data-unatt]"); if(!t||!t.closest("#stage,.below,.modal"))return;
+  const d=t.dataset;
+  if(d.report){e.preventDefault();const v=byId(+d.report);$("#mtitle").textContent="리포트 미리보기 · "+v.report;$("#mframe").srcdoc=buildReport(v);$("#modal").hidden=false;return;}
+  if(t.id==="mclose"){$("#modal").hidden=true;return;}
+  if(d.tab){if(t.id==="l-new"){S.newRec=null;CAL.new.sel=[];}go(d.tab);return;}
+  if(d.cal){calClick(d.cal,d.d);return;}
+  if(d.nav){const [k,n]=d.nav.split(",");if(k==="new")CAL.new.start=add(CAL.new.start,+n);else coordStart=add(coordStart,+n);k==="new"?renderNew(newVals()):renderCoord();return;}
+  if(d.pw!=null){planWeek=+d.pw===0?mon(T0):add(planWeek,+d.pw);renderPlan();return;}
+  if(d.unatt){const [k,p]=d.unatt.split(",");const v=byId(S.coord);v[k+"Att"]=v[k+"Att"].filter(x=>x!==p);renderCoord();return;}
+  if(d.pick){const id=+d.id;
+    if(d.pick==="new"){S.newRec=id;CAL.new.sel=byId(id).req.slice();renderNew();}
+    if(d.pick==="coord"){S.coord=id;loadRound();renderCoord();}
+    if(d.pick==="plan"){S.plan=id;renderPlan();}
+    if(d.pick==="res"){S.res=id;renderResult();}
+    if(d.pick==="all"){S.all=id;S.editA=false;renderList();}
+    return;}
+  if(d.go){const id=+d.id;if(d.go==="plan")S.plan=id;if(d.go==="result")S.res=id;if(d.go==="list"){S.all=id;if($("#l-st"))$("#l-st").value="전체";}go(d.go);return;}
+  if(d.stat){S.stat=d.stat;renderStats();return;}
+  if(d.ct){S.capaType=d.ct;renderStats();return;}
+  if(d.addrow){const v=byId(S.res);d.addrow==="mk"?addM({vid:v.id,kind:"",size:"",qty:1}):addP({vid:v.id,name:"",capa:0,qty:1});resFields(v);renderResult();return;}
+  if(d.delrow){const [k,id]=d.delrow.split(",");const arr=k==="mk"?MK:PR;arr.splice(arr.findIndex(x=>x.id===+id),1);resFields(byId(S.res));renderResult();return;}
+  const v=byId(S.tab==="coord"?S.coord:S.tab==="result"?S.res:S.tab==="list"?S.all:S.plan);
+  switch(t.id){
+    /* 신규추가 */
+    case "n-clear":CAL.new.sel=[];CAL.new.rs=null;renderNew(newVals());break;
+    case "n-reset":S.newRec=null;CAL.new.sel=[];CAL.new.rs=null;renderNew({owner:S.me});break;
+    case "n-save":{const nv=saveNew("임시저장");S.newRec=nv.id;notify("임시저장했습니다. 아래 임시저장 목록이나 전체업체에서 다시 열 수 있어요");renderAll();break;}
+    case "n-coord":{const nv=saveNew("일정조율");if(!lastRound(nv.id))addR({vid:nv.id,no:1,req:nv.req.slice()});
+      flow("(선택) 응답 요청",`<b>${esc(nv.co)}</b> 1회차 생성 → 채널 "② 일정조율에서 가능일을 골라 주세요"`);
+      S.newRec=null;CAL.new.sel=[];S.coord=nv.id;loadRound();notify(`${nv.co} — 일정조율 1회차를 만들었습니다`);go("coord");break;}
+    /* 일정조율 */
+    case "c-req":saveTeam("req");break;
+    case "c-co":saveTeam("co");break;
+    case "c-qa":saveTeam("qa");break;
+    case "c-confirm":{const r=lastRound(v.id),dd=$("#c-date").value,tm=$("#c-time").value.trim();const[h,m]=tm.split(":");const t2=String(h).padStart(2,"0")+":"+m;
+      Object.assign(v,{st:"방문예정",fix:dd,time:t2,dep:$("#c-dep").value.trim()});r.time=t2;S.plan=v.id;S.coord=null;
+      flow("흐름①",`<b>${esc(v.co)}</b> ${fd(dd)} ${t2} 방문 확정 → 참석자(${esc(v.coAtt.concat(v.qaAtt).join(", ")||"없음")}) Outlook 일정 + 채널 알림`);
+      notify(`${v.co} · ${md(dd)} ${t2} 방문 확정 → ③ 방문예정으로 넘어갔습니다`);renderAll();break;}
+    case "c-next":{const r=lastRound(v.id);addR({vid:v.id,no:r.no+1});loadRound();notify("새 회차를 만들었습니다. 업체에게 받은 새 날짜를 ① 달력에서 고르고 '요청일 저장'을 누르세요","info");flow("(선택) 응답 요청",`<b>${esc(v.co)}</b> ${r.no+1}회차 생성 → 채널 응답 요청`);renderCoord();break;}
+    /* 방문예정 */
+    case "p-depsave":v.dep=$("#p-dep").value.trim();notify("출발시간을 저장했습니다");renderPlan();break;
+    case "p-back":{const n=roundsOf(v.id).length;Object.assign(v,{st:"일정조율"});addR({vid:v.id,no:n+1});S.coord=v.id;loadRound();notify(`${v.co} — 새 회차로 ② 일정조율에 돌려보냈습니다 (보낸 Outlook 일정은 각자 삭제)`,"info");go("coord");break;}
+    /* 방문결과 */
+    case "b-reset":renderResult();break;
+    case "b-save":resFields(v);notify("저장했습니다 (상태는 그대로)");renderAll();break;
+    case "r-open":notify("새 창에서 링크가 열립니다 (Launch) — 목업에서는 생략","info");break;
+    case "b-cancel":v.note=$("#r-note").value;Object.assign(v,{st:"등록취소",judged:T0,cancel:$("#r-cancel").value.trim()});notify(`${v.co} 등록취소`,"warn");S.res=null;renderAll();break;
+    case "b-capa":resFields(v);Object.assign(v,{st:"CAPA요청",capaReq:T0});notify("CAPA 요청 — 오늘부터 경과일을 셉니다. D+3에 협/생 담당자에게 Teams 알림","warn");flow("흐름④ 예약",`<b>${esc(v.co)}</b> CAPA요청일 ${md(T0)} → <b>${md(add(T0,3))} 오전 8시</b>에 ${esc(v.owner)}에게 "회신 확인" 알림 예정`);renderAll();break;
+    case "b-done":resFields(v);v.st="방문완료";makeReport(v);notify(`${v.co} 방문완료 — 리포트 PDF가 '방문 리포트'에 저장됩니다`);renderAll();break;
+    case "b-reg":resFields(v);Object.assign(v,{st:"등록완료",judged:T0});notify(`${v.co} 등록완료`);S.res=null;renderAll();break;
+    case "b-report":resFields(v);makeReport(v);notify("리포트를 다시 만들었습니다 (새 PDF)","info");renderResult();break;
+    /* 전체업체 */
+    case "a-go":({"임시저장":()=>{S.newRec=v.id;CAL.new.sel=v.req.slice();go("new");},"일정조율":()=>{S.coord=v.id;loadRound();go("coord");},"방문예정":()=>{S.plan=v.id;go("plan");}}[v.st]||(()=>{S.res=v.id;go("result");}))();break;
+    case "a-edit":S.editA=true;renderList();break;
+    case "a-cancel":S.editA=false;renderList();break;
+    case "a-save":$$("[data-af]").forEach(i=>v[i.dataset.af]=i.value);S.editA=false;notify("저장했습니다");renderList();break;
+    case "a-del":if(confirm(`${v.co}을(를) 삭제할까요? 일정조율 기록과 설비 줄도 함께 지워집니다.`)){[R,MK,PR].forEach(a=>{for(let i=a.length-1;i>=0;i--)if(a[i].vid===v.id)a.splice(i,1);});V.splice(V.indexOf(v),1);S.all=null;notify("삭제했습니다 (SharePoint 휴지통에서 복원 가능)","warn");renderAll();}break;
+  }
+});
+document.addEventListener("input",e=>{const t=e.target;
+  if(t.closest("#s-new"))newState();
+  if(t.closest("#s-coord")){if(t.id==="c-dep")t.dataset.touched="1";if(t.id==="c-time")coordState();}
+  if(t.closest("#s-result")&&!t.dataset.ed)resState();
+  if(t.id==="co-q"){const pos=t.selectionStart;renderCoord();const n=$("#co-q");n.focus();n.setSelectionRange(pos,pos);}
+  if(t.id==="l-q"){const pos=t.selectionStart;renderList();const n=$("#l-q");n.focus();n.setSelectionRange(pos,pos);}
+  if(t.id==="cp-q"||t.id==="cp-c"){const id=t.id,pos=t.selectionStart;renderStats();const n=$("#"+id);n.focus();n.setSelectionRange(pos,pos);}
+});
+document.addEventListener("change",e=>{const t=e.target;
+  if(t.id==="tg-new"){TG.new=t.checked;CAL.new.rs=null;renderNew(newVals());}
+  if(t.id==="tg-coord"){TG.coord=t.checked;CAL.req.rs=CAL.co.rs=CAL.qa.rs=null;renderCoord();}
+  if(t.dataset.att&&t.value){const v=byId(S.coord);v[t.dataset.att+"Att"].push(t.value);renderCoord();}
+  if(t.id==="l-st"){S.all=null;renderList();}
+  if(t.id==="cp-r")renderStats();
+  if(t.id==="me"){S.me=t.value;notify(`지금 사용자: ${t.value} (${t.value==="장인철"?"품질보증팀":"협력생산팀"}) — 저장하면 이 이름이 응답자로 남습니다`,"info");renderAll();}
+  if(t.dataset.ed){const [set,id,f]=t.dataset.ed.split(","),arr=set==="mk"?MK:PR,row=arr.find(x=>x.id===+id),nf=["qty","capa","day","mon","kol"].includes(f);
+    row[f]=nf?(+String(t.value).replace(/,/g,"")||0):t.value;
+    if(set==="pr"){if(f==="capa"||f==="qty"){row.day=row.capa*row.qty;row.mon=row.day*20;}if(f==="day")row.mon=row.day*20;}
+    resFields(byId(S.res));renderResult();}
+  if(t.id==="r-day")resState();
+});
+$("#annot").addEventListener("change",e=>document.body.classList.toggle("annot",e.target.checked));
+$("#modal").addEventListener("click",e=>{if(e.target.id==="modal")$("#modal").hidden=true;});
+
+/* ================= 화면 맞춤 ================= */
+function fit(){const avail=$("#wrap").clientWidth,s=Math.min(1,avail/1366);$("#stage").style.transform=`scale(${s})`;$("#stage").style.left=Math.max(0,(avail-1366*s)/2)+"px";$("#wrap").style.height=Math.ceil(768*s)+"px";
+  $("#cap").textContent="데스크톱 레이아웃 1366×768 (Power Apps 태블릿 형식) · 화면 크기에 맞춰 "+Math.round(s*100)+"%로 표시";}
+window.addEventListener("resize",fit);
+
+/* 시작: 매일 아침 예약 흐름이 오늘 한 일 */
+(function(){
+  const soon=V.filter(x=>x.st==="방문예정"&&diff(T0,x.fix)>=1&&diff(T0,x.fix)<=2);
+  soon.forEach(x=>flow("흐름③ 08:00",`방문 ${ddLbl(x.fix)} <b>${esc(x.co)}</b> ${fd(x.fix)} ${esc(x.time)} → 참석자 ${esc(x.coAtt.concat(x.qaAtt).join(", "))}에게 Teams 알림`));
+  V.filter(x=>x.st==="CAPA요청"&&diff(x.capaReq,T0)===3).forEach(x=>flow("흐름④ 08:00",`<b>${esc(x.co)}</b> CAPA 요청 D+3 → ${esc(x.owner)}에게 "회신 확인"`));
+  if(!soon.length)flow("흐름③ 08:00","오늘은 D-2 · D-1 방문이 없습니다");
+})();
+S.coord=V.find(x=>x.co==="한결바이오").id; loadRound();
+renderAll(); fit();
+</script>
+</body>
+</html>
