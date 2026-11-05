@@ -1,0 +1,1323 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:,">
+<title>방문예정처 Power Apps 데스크톱 최종안 — 따라하기 안내서</title>
+<style>
+:root{
+  --bg:#F5F6F8; --surface:#FFFFFF; --sunk:#F3F4F6; --ink:#1B1D22; --ink2:#4B5160; --ink3:#868C99;
+  --line:#E2E4E9; --line2:#CDD1D9; --brand:#0F6CBD; --brand-weak:#EAF2FB; --brand-ink:#0B5AA0;
+  --ok:#0E7A3A; --ok-weak:#E8F6EE; --warn:#9A5B00; --warn-weak:#FDF4E3; --bad:#B42318; --bad-weak:#FDECEA;
+  --code:#F4F6FA; --code-ink:#1F2A44; --hl:#FFF3B0;
+  --font:"Segoe UI","Malgun Gothic","Apple SD Gothic Neo",-apple-system,system-ui,sans-serif;
+  --mono:Consolas,"D2Coding","Menlo","Malgun Gothic",monospace;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#111317; --surface:#1A1D23; --sunk:#20242B; --ink:#E9EBEF; --ink2:#B3B8C3; --ink3:#7F8592;
+  --line:#2B3038; --line2:#3A404A; --brand:#5AA2EA; --brand-weak:#162A40; --brand-ink:#8EC2F5;
+  --ok:#4CC28A; --ok-weak:#14291E; --warn:#E3A64B; --warn-weak:#2B2313; --bad:#EF7B70; --bad-weak:#2E1A18;
+  --code:#161A21; --code-ink:#D7DEEC; --hl:#4A4210;
+}}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-padding-top:70px}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.65;-webkit-font-smoothing:antialiased}
+button{font:inherit;cursor:pointer}
+a{color:var(--brand-ink)}
+b,strong{font-weight:700}
+small{font-size:12px;color:var(--ink3)}
+.en{font-size:12px;color:var(--ink3);font-weight:400}
+
+/* 상단 */
+.top{position:sticky;top:0;z-index:30;background:var(--surface);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;padding:10px 20px}
+.top h1{font-size:16px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prog{margin-left:auto;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;color:var(--ink2);white-space:nowrap}
+.bar{width:160px;height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ok);width:0;transition:width .25s}
+.reset{border:1px solid var(--line2);background:var(--surface);color:var(--ink2);border-radius:6px;padding:3px 9px;font-size:12px}
+
+/* 배치 */
+.layout{display:grid;grid-template-columns:250px 1fr;gap:28px;max-width:1240px;margin:0 auto;padding:24px 20px 80px}
+.toc{position:sticky;top:70px;align-self:start;max-height:calc(100vh - 90px);overflow:auto;font-size:13.5px}
+.toc a{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:6px;color:var(--ink2);text-decoration:none;border-left:3px solid transparent}
+.toc a:hover{background:var(--sunk)}
+.toc a.on{background:var(--brand-weak);color:var(--brand-ink);border-left-color:var(--brand);font-weight:600}
+.toc .n{font-size:11px;font-weight:700;min-width:22px;color:var(--ink3)}
+.toc .c{margin-left:auto;font-size:11px;color:var(--ink3)}
+.toc .c.done{color:var(--ok);font-weight:700}
+main{min-width:0}
+
+/* 섹션 */
+.hero{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:22px 24px;margin-bottom:22px}
+.hero h2{font-size:24px;font-weight:800;letter-spacing:-.02em;margin-bottom:6px}
+.hero p{color:var(--ink2)}
+.flow{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px}
+.flow div{background:var(--sunk);border:1px solid var(--line);border-radius:10px;padding:12px;font-size:13px;color:var(--ink2);position:relative}
+.flow div b{display:block;font-size:14px;color:var(--ink);margin-bottom:2px}
+.flow div:not(:last-child)::after{content:"→";position:absolute;right:-11px;top:50%;transform:translateY(-50%);color:var(--ink3);font-weight:700}
+section.part{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:22px 24px;margin-bottom:22px}
+section.part>h2{font-size:21px;font-weight:800;letter-spacing:-.015em;display:flex;align-items:center;gap:10px}
+section.part>h2 .no{font-size:13px;font-weight:800;background:var(--brand);color:#fff;border-radius:6px;padding:2px 8px}
+.goal{margin:10px 0 16px;padding:10px 14px;background:var(--sunk);border-radius:8px;font-size:14px;color:var(--ink2)}
+.goal b{color:var(--ink)}
+h3{font-size:17px;font-weight:700;margin:24px 0 10px;padding-top:12px;border-top:1px dashed var(--line)}
+h3:first-of-type{border-top:0;padding-top:0}
+p+p{margin-top:8px}
+
+/* 단계 */
+ol.steps{list-style:none;counter-reset:s;display:grid;gap:8px}
+ol.steps>li{counter-increment:s;position:relative;padding:10px 12px 10px 76px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+ol.steps>li::before{content:counter(s);position:absolute;left:44px;top:10px;font-size:13px;font-weight:800;color:var(--ink3);width:22px;text-align:center}
+ol.steps>li.done{background:var(--ok-weak);border-color:transparent}
+ol.steps>li.done::before{color:var(--ok)}
+.ck{position:absolute;left:12px;top:11px;width:22px;height:22px;accent-color:var(--ok);cursor:pointer}
+ol.steps ul{margin:6px 0 0 18px;font-size:14px;color:var(--ink2);display:grid;gap:3px}
+.path{display:inline;background:var(--brand-weak);color:var(--brand-ink);border-radius:5px;padding:1px 6px;font-weight:600;font-size:14px}
+
+/* 상자 */
+.tip,.warn,.err{border-radius:8px;padding:10px 14px;font-size:14px;margin:12px 0;border-left:4px solid}
+.rev{border:1px solid var(--ok);background:var(--ok-weak);border-radius:8px;padding:10px 14px;font-size:14px;margin:14px 0 12px}
+.rev>b:first-child{display:inline-block;background:var(--ok);color:#fff;border-radius:5px;padding:0 7px;margin-right:6px;font-size:12.5px}
+.tip{background:var(--brand-weak);border-color:var(--brand);color:var(--ink)}
+.warn{background:var(--warn-weak);border-color:var(--warn);color:var(--ink)}
+.err{background:var(--bad-weak);border-color:var(--bad);color:var(--ink)}
+.tip b:first-child,.warn b:first-child,.err b:first-child{margin-right:4px}
+
+/* 코드 · 복사 */
+.code{position:relative;background:var(--code);color:var(--code-ink);border:1px solid var(--line);border-radius:8px;padding:10px 64px 10px 12px;font-family:var(--mono);font-size:13.5px;line-height:1.55;white-space:pre-wrap;word-break:break-all;margin:6px 0}
+.cp{white-space:nowrap;position:absolute;top:6px;right:6px;border:1px solid var(--line2);background:var(--surface);color:var(--ink2);border-radius:6px;padding:2px 9px;font-size:12px;font-weight:600;font-family:var(--font)}
+.cp:hover{border-color:var(--brand);color:var(--brand-ink)}
+.cp.ok{background:var(--ok);border-color:var(--ok);color:#fff}
+.v{font-family:var(--mono);font-size:13px;background:var(--code);border:1px solid var(--line);border-radius:5px;padding:1px 6px;cursor:pointer;white-space:pre-wrap;word-break:keep-all;display:inline-block}
+.v:hover{border-color:var(--brand)}
+.v.ok{background:var(--ok);color:#fff;border-color:var(--ok)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+
+/* 표 */
+.tw{overflow-x:auto;margin:10px 0}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{border-bottom:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+th{background:var(--sunk);font-size:12.5px;font-weight:700;color:var(--ink2);white-space:nowrap}
+td.num{text-align:center;color:var(--ink3);font-weight:700;width:36px}
+
+/* 스튜디오 지도 */
+.studio{border:1px solid var(--line2);border-radius:10px;overflow:hidden;font-size:12px;margin:12px 0;background:var(--surface)}
+.s-cmd{display:flex;gap:6px;align-items:center;padding:6px 8px;background:var(--sunk);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.s-cmd span{border:1px solid var(--line2);border-radius:4px;padding:2px 6px;background:var(--surface)}
+.s-cmd .r{margin-left:auto}
+.s-fx{display:flex;gap:6px;padding:6px 8px;border-bottom:1px solid var(--line)}
+.s-fx .p{border:1px solid var(--line2);border-radius:4px;padding:2px 8px;min-width:90px;background:var(--surface)}
+.s-fx .f{flex:1;border:1px solid var(--line2);border-radius:4px;padding:2px 8px;font-family:var(--mono);background:var(--surface)}
+.s-main{display:grid;grid-template-columns:34px 150px 1fr 170px;min-height:200px}
+.s-rail{border-right:1px solid var(--line);background:var(--sunk);display:flex;flex-direction:column;align-items:center;gap:8px;padding:8px 0;font-size:14px}
+.s-tree{border-right:1px solid var(--line);padding:6px 8px;line-height:1.8}
+.s-canvas{background:repeating-linear-gradient(45deg,var(--sunk),var(--sunk) 6px,var(--surface) 6px,var(--surface) 12px);display:flex;align-items:center;justify-content:center;color:var(--ink3);font-weight:600}
+.s-prop{border-left:1px solid var(--line);padding:6px 8px;line-height:1.9}
+.mk{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:var(--bad);color:#fff;font-size:11px;font-weight:800;margin-right:3px;vertical-align:middle}
+
+/* 화면 배치도 */
+.wire{position:relative;width:100%;aspect-ratio:1366/768;background:#F5F5F5;border:1px solid var(--line2);border-radius:8px;overflow:hidden;margin:12px 0}
+@media (prefers-color-scheme:dark){.wire{background:#202329}}
+.wire .w{position:absolute;border:1px solid #9AA3B2;background:rgba(255,255,255,.85);font-size:clamp(7px,1vw,11px);color:#3A4150;overflow:hidden;padding:1px 3px;line-height:1.25;border-radius:2px}
+@media (prefers-color-scheme:dark){.wire .w{background:rgba(40,44,52,.9);color:#C9CFDA;border-color:#566070}}
+.wire .w b{display:inline-block;background:var(--bad);color:#fff;border-radius:3px;padding:0 3px;margin-right:2px;font-size:.95em}
+.wire .w.rect.hdr{background:#0F6CBD;border-color:#0F6CBD;color:#fff}
+.wire .w.btn{border-color:#0F6CBD;color:#0F6CBD}
+.wire .w.gal{border-style:dashed;background:rgba(234,242,251,.85)}
+.wire .w.form{border-color:#0E7A3A;background:rgba(232,246,238,.85)}
+.wire .w.inp{border-color:#6B7280}
+.wire-cap{font-size:12px;color:var(--ink3);margin-top:-6px}
+
+/* 컨트롤 카드 */
+.ctl{border:1px solid var(--line);border-radius:10px;margin:10px 0;overflow:hidden}
+.ctl.done{border-color:var(--ok)}
+.ctl-h{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--sunk)}
+.ctl.done .ctl-h{background:var(--ok-weak)}
+.ctl-h .ck{position:static;flex:none}
+.ctl-h .nb{background:var(--bad);color:#fff;font-weight:800;font-size:12px;border-radius:4px;padding:1px 6px}
+.ctl-h .nm{font-family:var(--mono);font-weight:700;font-size:14px}
+.ctl-h .ds{font-size:13px;color:var(--ink2)}
+.ctl-b{padding:10px 12px}
+.ctl-b .how{font-size:14px;margin-bottom:8px;color:var(--ink2)}
+.ctl-b table td:first-child{font-family:var(--mono);font-weight:700;white-space:nowrap;width:150px;color:var(--brand-ink)}
+.ctl-b table td:last-child{width:1%;white-space:nowrap;text-align:right}
+.ctl-b .cp{position:static}
+.ctl-b .note{font-size:13.5px;color:var(--ink2);margin-top:8px}
+.sub-ctl{margin-left:18px;border-left:3px solid var(--brand)}
+
+@media (max-width:980px){.layout{grid-template-columns:1fr}.toc{position:static;max-height:none;display:none}.flow{grid-template-columns:1fr 1fr}.flow div::after{display:none}}
+@media (max-width:640px){.top h1{font-size:14px}.bar{width:80px}section.part,.hero{padding:16px}ol.steps>li{padding-left:66px}ol.steps>li::before{left:38px}.s-main{grid-template-columns:30px 1fr}.s-tree,.s-prop{display:none}}
+@media print{.top,.toc,.cp,.reset{display:none}.layout{display:block}section.part{break-inside:avoid-page}}
+/* 데스크톱 최종안 추가 */
+.pill{display:inline-block;font-size:12px;font-weight:700;border-radius:999px;padding:1px 8px;white-space:nowrap;border:1px solid}
+.pill.ok{color:var(--ok);border-color:var(--ok);background:var(--ok-weak)}
+.pill.alt{color:var(--brand-ink);border-color:var(--brand);background:var(--brand-weak)}
+.pill.add{color:var(--warn);border-color:var(--warn);background:var(--warn-weak)}
+.pill.no{color:var(--ink3);border-color:var(--line2);background:var(--sunk)}
+.rvt td.tb{font-weight:700;white-space:nowrap;background:var(--sunk)}
+.rvt td.jd{white-space:nowrap}
+ul.plain{margin:6px 0 0 20px;display:grid;gap:6px;font-size:14.5px}
+.concept{border:1px solid var(--brand);background:var(--brand-weak);border-radius:10px;padding:12px 16px;margin:12px 0;font-size:14px}
+.concept ol{margin:8px 0 8px 20px;display:grid;gap:4px}
+.lbl-ck{display:flex;gap:8px;align-items:center;font-size:14px;margin-top:6px}
+.lbl-ck .ck{position:static}
+.wire .w.ghost{border-style:dashed;background:rgba(255,255,255,.55);color:#5B6474;font-style:italic}
+@media (prefers-color-scheme:dark){.wire .w.ghost{background:rgba(40,44,52,.6);color:#AEB6C4}}
+@media (max-width:640px){.ctl-b table td:first-child{white-space:normal;width:auto;min-width:72px;word-break:keep-all}}
+.v{overflow-wrap:anywhere;max-width:100%}
+ol.steps>li{min-width:0}
+code{font-family:var(--mono);font-size:.92em;background:var(--code);border:1px solid var(--line);border-radius:4px;padding:0 4px}
+</style>
+
+</head>
+<body>
+<header class="top">
+  <h1>방문예정처 Power Apps 만들기 — 데스크톱 최종안 따라하기</h1>
+  <div class="prog"><span id="pt">0 / 0</span><div class="bar"><i id="pb"></i></div><button class="reset" id="reset" type="button">체크 초기화</button></div>
+</header>
+
+<div class="layout">
+  <nav class="toc" id="toc" aria-label="목차"></nav>
+  <main id="main">
+
+    <div class="hero">
+      <h2>순서대로 따라 하면 앱이 완성됩니다</h2>
+      <p>11/5 요구사항 문서(신규추가 → 일정조율 → 방문예정 → 방문결과, 전체업체, 통계)를 검토하고 질문 8개로 확정한 내용을 <b>PC(데스크톱) 화면 기준</b>으로 만드는 안내서입니다. 데이터는 <b>SharePoint 목록</b>, 화면은 <b>Power Apps</b>, 알림과 리포트는 <b>Power Automate</b>(모두 표준 기능)로 만듭니다.</p>
+      <div class="flow">
+        <div><b>① 저장 공간</b>Teams 팀 = SharePoint 사이트</div>
+        <div><b>② 데이터 표</b>목록 5개 + 라이브러리 1개</div>
+        <div><b>③ 앱 화면</b>탭 6개 (1366 × 768)</div>
+        <div><b>④ 자동화</b>알림 흐름 4개 + 리포트 1개</div>
+      </div>
+      <div class="tip"><b>읽는 법</b> 단계마다 왼쪽 <b>체크박스</b>를 누르면 진행률이 저장됩니다(이 브라우저에만). <span class="path">파란 글씨</span>는 누를 메뉴, 괄호 안 <span class="en">(영어)</span>는 화면이 영어로 보일 때의 이름입니다. 회색 상자의 <b>복사</b>를 누르면 값이 복사되니 붙여 넣기(Ctrl+V)만 하세요. 카드의 빨간 번호는 <b>화면 배치도</b>의 번호와 같습니다.</div>
+      <div class="warn"><b>메뉴 이름</b> Microsoft 화면은 업데이트로 이름이나 위치가 조금씩 바뀝니다. 한국어 이름이 안 보이면 괄호 안 영어 이름을 찾으세요. Power Apps는 왼쪽 <b>삽입(+)</b> 창의 <b>검색칸</b>에 이름을 치면 거의 다 찾을 수 있습니다.</div>
+    </div>
+
+    <!-- ===================================================== 검토 -->
+    <section class="part" id="rv" data-no="✓" data-title="검토 결과 · 확정 사항">
+      <h2><span class="no">✓</span>요구사항 검토 결과와 확정 사항</h2>
+      <div class="goal">문서의 요구사항을 Power Apps 기능으로 하나씩 따져 본 결과입니다. <span class="pill ok">가능</span> 그대로 구현, <span class="pill alt">대안</span> 기본 기능에 없어 다른 방법으로 구현, <span class="pill add">보완</span> 그대로 하되 빠진 부분을 채움, <span class="pill no">제외</span> 이번 범위에서 뺌.</div>
+      <div class="tw"><table class="rvt">
+        <thead><tr><th>탭</th><th>요구사항</th><th>판단</th><th>이렇게 만듭니다</th></tr></thead>
+        <tbody>
+          <tr><td class="tb" rowspan="3">① 신규추가</td><td>업체 기본정보 입력 (수배주체 ~ 방문요청일)</td><td class="jd"><span class="pill ok">가능</span></td><td>입력칸 8개 + 방문요청일 달력. 같은 상호명이 있으면 빨간 경고(제안).</td></tr>
+          <tr><td>수배사유까지 → 임시저장, 방문요청일까지 → 일정조율 버튼</td><td class="jd"><span class="pill ok">가능</span></td><td>버튼의 DisplayMode 조건으로 켜고 끕니다.</td></tr>
+          <tr><td>임시저장 (단순 추가 용도)</td><td class="jd"><span class="pill add">보완</span></td><td>신규추가 화면 아래 <b>임시저장 목록</b>, 전체업체의 <b>이어 쓰기</b> 단추로 다시 불러와 마저 씁니다.</td></tr>
+          <tr><td class="tb" rowspan="6">② 일정조율</td><td>업체명 왼쪽 나열 · 검색, 선택하면 입력칸 열림</td><td class="jd"><span class="pill ok">가능</span></td><td>검색칸 + 업체 목록 갤러리.</td></tr>
+          <tr><td>협/생 · 품질보증 방문가능일 <b>다중 선택 · 구간 선택</b></td><td class="jd"><span class="pill alt">대안</span></td><td>Power Apps 날짜 선택은 하루만 고를 수 있어서, <b>5주 달력 칸을 눌러 켜고 끄는 방식</b>으로 만듭니다. <b>구간 선택</b>을 켜면 시작일 → 끝일 두 번만 눌러 사이 평일을 모두 고릅니다.</td></tr>
+          <tr><td>세 칸이 겹치는 날 = 공통, 안 겹치면 비고 "일정 재조율 필요" + 빨간색</td><td class="jd"><span class="pill ok">가능</span></td><td>업체 요청일 · 협/생 · 품질보증 <b>세 곳 모두에 있는 날</b>을 공통일로 계산(확정). 겹치는 날이 없으면 그 회차 줄이 빨간색.</td></tr>
+          <tr><td>협/생 담당자에게 Teams 통보, 예시1 → 2 → 3 반복</td><td class="jd"><span class="pill add">보완</span></td><td>회차마다 한 줄씩 쌓이는 <b>일정조율이력</b> 목록을 따로 둡니다. 알림 받을 <b>협/생 담당자</b> 칸을 신규추가에 추가(기본값: 등록한 사람). 입력한 사람 이름(장덕진 · 장인철)은 자동 기록.</td></tr>
+          <tr><td>팀별 가능시간 · 참석인원</td><td class="jd"><span class="pill ok">가능</span></td><td>팀마다 가능시간 글자칸 + 참석자 <b>사람 고르기</b>(확정). 고른 사람에게 Outlook 일정 · D-2 · D-1 알림이 갑니다.</td></tr>
+          <tr><td>최종 방문일 · 시간 입력 → 방문확정 → 방문예정</td><td class="jd"><span class="pill ok">가능</span></td><td>공통일이 생기면 날짜 · 시간 칸이 열리고, 둘 다 넣으면 방문 확정 단추가 켜집니다.</td></tr>
+          <tr><td class="tb" rowspan="3">③ 방문예정</td><td>달력 위쪽, 오늘 음영</td><td class="jd"><span class="pill ok">가능</span></td><td>2주 달력, 오늘은 연노랑.</td></tr>
+          <tr><td>D-2 · D-1 방문예정자에게 Teams 알림</td><td class="jd"><span class="pill ok">가능</span></td><td>매일 아침 8시에 도는 예약 흐름(흐름③).</td></tr>
+          <tr><td>출발예정시간 자동 (안 되면 협/생 수기)</td><td class="jd"><span class="pill ok">가능</span></td><td>지역 이동시간 표로 자동 계산하고, 칸에서 직접 고칠 수 있습니다. 신규추가 · 일정조율 내용도 함께 보입니다.</td></tr>
+          <tr><td class="tb" rowspan="5">④ 방문결과</td><td>방문예정 업체만 목록, 협/생 점수 입력 시 방문완료 버튼</td><td class="jd"><span class="pill ok">가능</span></td><td>목록은 방문예정 + 방문완료 + CAPA요청 업체(판정이 남은 업체). 점수는 <b>협/생 50% + 품질보증 50%</b> 합산(확정).</td></tr>
+          <tr><td>특이사항 · 방문자료 링크</td><td class="jd"><span class="pill ok">가능</span></td><td>여러 줄 칸 + 링크 칸 + <b>열기</b> 단추.</td></tr>
+          <tr><td>등록취소 · CAPA요청 즉시, CAPA D+3 알림</td><td class="jd"><span class="pill add">보완</span></td><td>CAPA요청은 누른 날부터 경과일 표시, D+3에 협/생 담당자 알림(흐름④). 등록취소는 <b>사유를 적어야 켜지게</b>(제안). 통계용 <b>등록완료</b> 단추 추가(확정).</td></tr>
+          <tr><td>제조 · 생산 CAPA 표 (수기 입력)</td><td class="jd"><span class="pill add">보완</span></td><td>업체마다 줄 수가 달라 <b>제조설비 · 생산설비 목록 2개</b>로 분리. 줄 추가 · 삭제, 일CAPA = 설비CAPA × 보유대수, 월CAPA = 일 × 20 <b>자동 계산</b>(직접 수정 가능), 합계 자동.</td></tr>
+          <tr><td>(그림의 vendor-scout · 현장 평가 시작 단추)</td><td class="jd"><span class="pill no">제외</span></td><td>vendor-scout는 별도 진행 결정에 따라 넣지 않습니다.</td></tr>
+          <tr><td class="tb">전체업체</td><td>신규추가 + 일정 + 결과가 진행된 내용까지만</td><td class="jd"><span class="pill ok">가능</span></td><td>세로 컨테이너의 구역 5개(기본 · 조율 기록 · 방문 일정 · 결과 · 판정)를 진행 단계에 따라 보이게.</td></tr>
+          <tr><td class="tb">통계</td><td>지금 통계 유지 + 제조/생산 CAPA별 조회</td><td class="jd"><span class="pill ok">가능</span></td><td><b>현황 / CAPA 조회</b> 단추로 전환. 설비명 · 업체 검색, 월CAPA · 콜마배정 · 여유 합계.</td></tr>
+        </tbody>
+      </table></div>
+      <h3>더 나은 방법으로 바꾼 것 (제안 반영)</h3>
+      <ul class="plain">
+        <li><b>리포트를 앱이 직접 만듭니다.</b> 방문완료를 누를 때 앱이 업체 정보 · 점수 · 특이사항 · CAPA 표 두 개를 리포트 내용(HTML)으로 만들어 저장하고, 흐름⑤는 PDF로 바꾸기만 합니다. 흐름에서 칸을 15곳씩 바꿔 넣는 작업이 없어져 훨씬 쉽습니다.</li>
+        <li><b>방문 연기</b>에 대비해 방문예정 화면에 <b>일정 다시 조율</b> 단추를 둡니다(새 회차로 ② 탭에 되돌림).</li>
+        <li>업체를 지울 때 그 업체의 일정조율 회차 · 설비 줄도 같이 지웁니다.</li>
+        <li>화면은 <b>1366 × 768</b>로 만들어 노트북 · Teams에서도 글자가 작아지지 않게 하고, 내용이 긴 ④ 방문결과 · 전체업체는 오른쪽만 <b>세로 스크롤</b>합니다(확정).</li>
+      </ul>
+      <h3>질문으로 확정한 8가지</h3>
+      <div class="tw"><table>
+        <thead><tr><th>질문</th><th>확정</th></tr></thead>
+        <tbody>
+          <tr><td>공통일 규칙 (예시1의 11/09)</td><td>요청일 · 협/생 · 품질보증 <b>세 곳 모두에 있는 날</b> = 공통 (예시1은 오타로 봄)</td></tr>
+          <tr><td>방문 점수 나머지 50%</td><td><b>협/생 50% + 품질보증 50%</b> 합산, 협/생 점수만 있어도 방문완료 가능</td></tr>
+          <tr><td>등록 완료 시점</td><td><b>등록완료 단추</b> 추가 (방문완료 · CAPA요청 뒤)</td></tr>
+          <tr><td>수배주체 값</td><td><b>직접 입력</b> (글자칸)</td></tr>
+          <tr><td>화면 크기</td><td><b>1366 × 768</b> + 긴 탭은 세로 스크롤</td></tr>
+          <tr><td>CAPA 계산</td><td><b>자동 계산</b> + 직접 수정 가능, 합계 자동</td></tr>
+          <tr><td>참석인원</td><td><b>사람 이름 고르기</b> (Outlook 일정 · D-2 · D-1 알림 대상)</td></tr>
+          <tr><td>리포트</td><td><b>방문완료 때</b> PDF 자동 저장 (CAPA 표 포함, 표준 방식)</td></tr>
+        </tbody>
+      </table></div>
+      <div class="tip"><b>상태 흐름</b> 임시저장 → 일정조율 → 방문예정 → 방문완료 → (CAPA요청) → <b>등록완료</b> 또는 <b>등록취소</b>. CAPA요청 · 등록취소는 방문결과 탭에서 언제든 누를 수 있습니다.</div>
+    </section>
+
+    <!-- ===================================================== 0 -->
+    <section class="part" id="s0" data-no="0" data-title="시작 전 준비">
+      <h2><span class="no">0</span>시작 전 준비</h2>
+      <div class="goal">이 단계가 끝나면: 만들 때 필요한 것이 모두 손에 있습니다.</div>
+      <ol class="steps">
+        <li data-k="s0-1"><b>PC</b>와 <b>Microsoft Edge</b> 또는 <b>Chrome</b>을 준비합니다. 모니터는 <b>가로 1366 픽셀 이상</b>이면 편합니다(대부분의 노트북 OK).</li>
+        <li data-k="s0-2"><b>회사 계정</b>으로 <a href="https://www.office.com" target="_blank" rel="noopener">office.com</a>에 로그인되는지 확인합니다.</li>
+        <li data-k="s0-3"><b>기존 정리 파일</b>(엑셀)을 PC에 받아 둡니다.</li>
+        <li data-k="s0-4">같이 쓸 <b>파트원 이름(또는 메일)</b>과, 협력생산 · 품질보증에서 일정 응답을 맡을 사람을 메모해 둡니다.</li>
+        <li data-k="s0-5">이 안내서를 <b>한쪽 화면</b>, 작업 화면을 <b>다른 쪽</b>에 띄웁니다. (창 클릭 후 <b>Windows 키 + ←</b>, 다른 창은 <b>Windows 키 + →</b>)</li>
+      </ol>
+    </section>
+
+    <!-- ===================================================== 1 -->
+    <section class="part" id="s1" data-no="1" data-title="팀과 SharePoint 사이트">
+      <h2><span class="no">1</span>Teams 팀 만들기 (= SharePoint 사이트)</h2>
+      <div class="goal">이 단계가 끝나면: 파트원이 모두 들어와 있는 <b>Teams 팀</b>이 생기고, 같이 만들어진 <b>SharePoint 사이트</b> 주소를 알게 됩니다. 팀 구성원은 자동으로 사이트의 데이터를 보고 고칠 수 있습니다.</div>
+      <div class="tip"><b>이미 쓰는 팀이 있다면</b> 그 팀을 그대로 써도 됩니다. 그 경우 4번 단계(사이트 열기)부터 하세요.</div>
+      <ol class="steps">
+        <li data-k="s1-1"><b>Teams</b> 앱(또는 <a href="https://teams.microsoft.com" target="_blank" rel="noopener">teams.microsoft.com</a>)을 엽니다. 왼쪽 세로 메뉴에서 <span class="path">팀 <span class="en">(Teams)</span></span>을 누릅니다.</li>
+        <li data-k="s1-2">팀 목록 위쪽의 <span class="path">+</span> (또는 <span class="path">팀 참가 또는 만들기 <span class="en">(Join or create a team)</span></span>) → <span class="path">팀 만들기 <span class="en">(Create team)</span></span>를 누릅니다.
+          <ul><li>팀 이름: <span class="v" data-c="방문업무">방문업무</span></li><li>공개 범위: <b>비공개</b> <span class="en">(Private)</span> → <span class="path">만들기</span></li></ul></li>
+        <li data-k="s1-3">구성원 추가 창이 뜨면 0단계에서 적어 둔 <b>파트원 이름을 하나씩 입력</b>하고 고른 뒤 <span class="path">추가 <span class="en">(Add)</span></span>를 누릅니다. (나중에 팀 이름 옆 <span class="path">⋯</span> → <span class="path">구성원 추가</span>로도 할 수 있어요.)</li>
+        <li data-k="s1-4">만든 팀의 <b>일반 <span class="en">(General)</span></b> 채널을 엽니다. 채널 위쪽 탭 중 <span class="path">파일 <span class="en">(Files)</span></span>(또는 <span class="path">공유됨 <span class="en">(Shared)</span></span>)을 누르고 → <span class="path">SharePoint에서 열기 <span class="en">(Open in SharePoint)</span></span>를 누릅니다. 안 보이면 채널 이름 옆 <span class="path">⋯</span> → <span class="path">SharePoint에서 열기</span>.</li>
+        <li data-k="s1-5">브라우저에 SharePoint 사이트가 열립니다. 주소창의 주소에서 <b>/sites/팀이름</b>까지를 복사해 메모장에 붙여 둡니다.
+          <div class="code">예) https://회사이름.sharepoint.com/sites/방문업무</div>
+          이 주소를 <b>사이트 주소</b>라고 부르겠습니다. 사이트 왼쪽 위 이름(방문업무)을 누르면 사이트 첫 화면(홈)으로 갑니다.</li>
+      </ol>
+    </section>
+
+
+    <!-- ===================================================== 2 -->
+    <section class="part" id="s2" data-no="2" data-title="SharePoint 목록 5개 · 라이브러리">
+      <h2><span class="no">2</span>SharePoint 목록 5개 · 문서 라이브러리 1개 만들기</h2>
+      <div class="goal">이 단계가 끝나면: 데이터를 담을 표(목록) 5개와 리포트 PDF가 쌓일 라이브러리가 생깁니다.
+        <br><b>방문처</b>(업체 한 곳 = 한 줄) · <b>일정조율이력</b>(조율 회차 하나 = 한 줄) · <b>제조설비</b> · <b>생산설비</b>(설비 하나 = 한 줄) · <b>지역이동시간</b> · <b>방문 리포트</b>(라이브러리)</div>
+      <div class="err"><b>꼭 지킬 것</b> 목록 이름과 열 이름은 <b>표에 적힌 글자 그대로, 띄어쓰기 없이</b> 만드세요(라이브러리 이름 '방문 리포트'만 띄어쓰기 있음). 앱 수식이 이 이름을 그대로 씁니다. 선택 항목(임시저장 등)도 글자 그대로. 헷갈리면 회색 글자를 눌러 복사해 붙여 넣으세요.</div>
+
+      <h3>2-1. 목록 만드는 방법 (다섯 목록 모두 같음)</h3>
+      <ol class="steps">
+        <li data-k="s2-a1">사이트 홈에서 위쪽 <span class="path">+ 새로 만들기 <span class="en">(+ New)</span></span> → <span class="path">목록 <span class="en">(List)</span></span>을 누릅니다.</li>
+        <li data-k="s2-a2"><span class="path">빈 목록 <span class="en">(Blank list)</span></span>을 누릅니다.</li>
+        <li data-k="s2-a3"><b>이름</b> 칸에 목록 이름을 넣고, <b>사이트 탐색에 표시</b>가 켜져 있는지 확인한 뒤 <span class="path">만들기 <span class="en">(Create)</span></span>.</li>
+        <li data-k="s2-a4">빈 표에 <b>제목 <span class="en">(Title)</span></b> 열 하나만 있습니다. <b>제목</b> 글자 → <span class="path">열 설정</span> → <span class="path">이름 바꾸기</span> → <span class="v" data-c="상호명">상호명</span> → <span class="path">저장</span>. (다섯 목록 모두 첫 열은 '상호명' 또는 '지역')</li>
+      </ol>
+      <h3>2-2. 열(칸) 추가하는 방법</h3>
+      <ol class="steps">
+        <li data-k="s2-b1">표 맨 오른쪽 머리글의 <span class="path">+ 열 추가 <span class="en">(+ Add column)</span></span>를 누릅니다.</li>
+        <li data-k="s2-b2">종류를 고르고 <span class="path">다음</span>: <b>한 줄 텍스트</b> <span class="en">(Single line of text)</span>, <b>여러 줄 텍스트</b> <span class="en">(Multiple lines of text)</span>, <b>선택</b> <span class="en">(Choice)</span>, <b>날짜 및 시간</b> <span class="en">(Date and time)</span>, <b>사용자</b> <span class="en">(Person)</span>, <b>숫자</b> <span class="en">(Number)</span>, <b>예/아니요</b> <span class="en">(Yes/No)</span></li>
+        <li data-k="s2-b3"><b>이름</b>을 넣고 표의 <b>설정</b>대로 고친 뒤 <span class="path">저장</span>.
+          <ul>
+            <li><b>선택</b>: 선택 항목을 칸마다 하나씩, 모자라면 <span class="path">+ 선택 항목 추가</span>. 기본값을 표대로, <b>사용자 지정 값 허용</b>은 끕니다.</li>
+            <li><b>날짜 및 시간</b>: <b>시간 포함</b>을 <b>끕니다</b>.</li>
+            <li><b>여러 줄 텍스트</b>: <span class="path">추가 옵션</span> → <b>서식 있는 텍스트 사용</b>을 <b>끕니다</b>.</li>
+            <li><b>사용자</b>: 참석자 두 열만 <span class="path">추가 옵션</span>에서 <b>여러 항목 선택 허용</b>을 켭니다.</li>
+            <li><b>숫자</b>: <span class="path">추가 옵션</span> → <b>소수 자릿수</b> <b>0</b>.</li>
+          </ul></li>
+        <li data-k="s2-b4"><b>표의 순서대로</b> 만드세요. 방문처 목록은 앞의 14개 열 순서가 3단계 엑셀 붙여 넣기 순서와 같아야 합니다.</li>
+      </ol>
+
+      <h3>2-3. 목록 ① 방문처 (27열)</h3>
+      <p>목록 이름: <span class="v" data-c="방문처">방문처</span> — 업체 한 곳이 한 줄. 앞 14개 열은 엑셀에서 옮겨 올 칸이고, 15번부터는 앱이 채우는 칸입니다.</p>
+      <div class="tw"><table><thead><tr><th>#</th><th>열 이름</th><th>종류</th><th>설정</th></tr></thead><tbody id="tblVisit"></tbody></table></div>
+      <label class="lbl-ck"><input type="checkbox" class="ck" data-k="s2-visit"> 방문처 목록과 열 27개를 모두 만들었습니다</label>
+      <div class="tip"><b>목록 보기 정리</b> 열이 많아 표가 넓습니다. 목록 위쪽 <span class="path">보기 편집</span>(또는 열 머리글 → <span class="path">열 표시/숨기기</span>)에서 <b>리포트HTML · 방문요청일</b>처럼 사람이 읽지 않는 칸은 숨기세요. 숨겨도 앱은 그대로 씁니다.</div>
+
+      <h3>2-4. 목록 ② 일정조율이력 (13열)</h3>
+      <p>목록 이름: <span class="v" data-c="일정조율이력">일정조율이력</span> — 문서의 예시1 · 예시2 · 예시3처럼 <b>조율 회차 하나가 한 줄</b>입니다. 날짜들은 앱이 <code>2026-11-09;2026-11-10</code> 모양 글자로 넣습니다.</p>
+      <div class="tw"><table><thead><tr><th>#</th><th>열 이름</th><th>종류</th><th>설정</th></tr></thead><tbody id="tblRound"></tbody></table></div>
+      <label class="lbl-ck"><input type="checkbox" class="ck" data-k="s2-round"> 일정조율이력 목록과 열 13개를 모두 만들었습니다</label>
+
+      <h3>2-5. 목록 ③ 제조설비 (7열) · 목록 ④ 생산설비 (9열)</h3>
+      <p>목록 이름: <span class="v" data-c="제조설비">제조설비</span> — 문서의 '제조 CAPA 현황(설비 규격)' 한 줄이 목록의 한 줄입니다.</p>
+      <div class="tw"><table><thead><tr><th>#</th><th>열 이름</th><th>종류</th><th>설정</th></tr></thead><tbody id="tblMake"></tbody></table></div>
+      <p style="margin-top:12px">목록 이름: <span class="v" data-c="생산설비">생산설비</span> — '생산 CAPA 현황' 한 줄이 목록의 한 줄입니다.</p>
+      <div class="tw"><table><thead><tr><th>#</th><th>열 이름</th><th>종류</th><th>설정</th></tr></thead><tbody id="tblProd"></tbody></table></div>
+      <label class="lbl-ck"><input type="checkbox" class="ck" data-k="s2-capa"> 제조설비 · 생산설비 목록을 모두 만들었습니다</label>
+
+      <h3>2-6. 목록 ⑤ 지역이동시간 (3열)</h3>
+      <p>목록 이름: <span class="v" data-c="지역이동시간">지역이동시간</span> — 세종 전의면에서 각 지역까지의 거리 · 시간(지금 웹앱과 같은 값). 첫 열 이름은 <b>지역</b>입니다.</p>
+      <div class="tw"><table><thead><tr><th>#</th><th>열 이름</th><th>종류</th><th>설정</th></tr></thead><tbody id="tblTrip"></tbody></table></div>
+      <label class="lbl-ck"><input type="checkbox" class="ck" data-k="s2-trip"> 지역이동시간 목록과 열 3개를 모두 만들었습니다</label>
+
+      <h3>2-7. 문서 라이브러리 방문 리포트</h3>
+      <ol class="steps">
+        <li data-k="s2-l1">사이트 홈 <span class="path">+ 새로 만들기</span> → <span class="path">문서 라이브러리 <span class="en">(Document library)</span></span> → <span class="path">빈 라이브러리</span>.</li>
+        <li data-k="s2-l2">이름 <span class="v" data-c="방문 리포트">방문 리포트</span>(가운데 띄어쓰기 한 칸) → <span class="path">만들기</span>. 방문완료 때마다 리포트 PDF가 여기에 쌓입니다.</li>
+      </ol>
+    </section>
+
+    <!-- ===================================================== 3 -->
+    <section class="part" id="s3" data-no="3" data-title="기존 데이터 옮기기">
+      <h2><span class="no">3</span>기존 데이터 옮기기</h2>
+      <div class="goal">이 단계가 끝나면: 지역 이동시간 54줄과 기존 정리 파일의 업체들이 목록에 들어갑니다. 방법은 <b>엑셀에서 복사 → 목록의 "그리드 보기"에 붙여 넣기</b>입니다.</div>
+      <h3>3-1. 지역이동시간 붙여 넣기 (먼저 연습)</h3>
+      <ol class="steps">
+        <li data-k="s3-1">아래 <b>지역 54줄 전체 복사</b>를 누릅니다. (시·군을 먼저, 도를 나중에 넣어야 자세한 지역이 먼저 찾아집니다.)
+          <div style="margin:8px 0"><button class="cp" style="position:static;padding:6px 12px;font-size:13px" type="button" id="cpTrip">지역 54줄 전체 복사</button> <small>— 머리글 없이 데이터만</small></div>
+          <details><summary style="cursor:pointer;font-size:13px;color:var(--ink2)">복사되는 내용 보기</summary><div class="tw"><table><thead><tr><th>지역</th><th>거리km</th><th>소요분</th></tr></thead><tbody id="tblTripData"></tbody></table></div></details></li>
+        <li data-k="s3-2"><b>지역이동시간</b> 목록 → 위쪽 <span class="path">그리드 보기에서 편집 <span class="en">(Edit in grid view)</span></span>.</li>
+        <li data-k="s3-3">맨 아래 빈 줄의 <b>지역</b> 칸을 한 번 클릭하고 <b>Ctrl+V</b>.</li>
+        <li data-k="s3-4"><span class="path">그리드 보기 종료</span>. 54줄이 저장됐는지 확인합니다.</li>
+      </ol>
+      <h3>3-2. 기존 정리 파일 준비 (엑셀)</h3>
+      <ol class="steps">
+        <li data-k="s3-5">기존 파일을 열고 <b>새 시트</b>를 만듭니다.</li>
+        <li data-k="s3-6">새 시트 <b>A1</b>을 클릭하고 아래 <b>복사</b> → 붙여 넣기. 14칸이 한 줄로 들어갑니다.
+          <div class="code" data-copy="상호명	상태	수배주체	의뢰예상제품	소재지	업체담당자	연락처	이메일	수배사유	확정방문일	방문시간	실제방문일	판정일	특이사항">상호명 | 상태 | 수배주체 | 의뢰예상제품 | 소재지 | 업체담당자 | 연락처 | 이메일 | 수배사유 | 확정방문일 | 방문시간 | 실제방문일 | 판정일 | 특이사항</div></li>
+        <li data-k="s3-7">기존 시트에서 열마다 복사해 같은 이름 열 아래에 붙여 넣습니다. 없는 정보는 비워 둡니다.</li>
+        <li data-k="s3-8"><b>상태</b> 값을 아래처럼 바꿉니다(엑셀 <b>Ctrl+H</b>).
+          <div class="tw"><table><thead><tr><th>기존 값</th><th>바꿀 값</th></tr></thead><tbody id="tblState"></tbody></table></div></li>
+        <li data-k="s3-9"><b>날짜</b>는 <b>2026-11-05</b> 모양, <b>방문시간</b>은 <b>09:30</b>처럼 두 자리로. 이미 다녀온 업체는 <b>실제방문일</b>을, 등록완료 · 등록취소로 끝난 업체는 <b>판정일</b>도 채워야 통계에 잡힙니다.</li>
+        <li data-k="s3-10"><b>소재지</b>에는 시·군 이름이 꼭 들어가게 합니다(예: 경기 화성시 향남읍).</li>
+      </ol>
+      <h3>3-3. 방문처에 붙여 넣기</h3>
+      <ol class="steps">
+        <li data-k="s3-11">새 시트에서 <b>머리글을 뺀 데이터</b>(A2 ~ N열 마지막 줄)를 선택, 한 번에 <b>100줄 이하</b>씩 <b>Ctrl+C</b>.</li>
+        <li data-k="s3-12"><b>방문처</b> → <span class="path">그리드 보기에서 편집</span> → 맨 아래 빈 줄의 <b>상호명</b> 칸 클릭 → <b>Ctrl+V</b>. 빨간 칸은 선택 항목과 다른 값이니 다시 고릅니다.</li>
+        <li data-k="s3-13"><span class="path">그리드 보기 종료</span>. 진행 중인 업체는 <b>협생담당자</b>(사용자 열)를 한 명씩 골라 둡니다. 붙여 넣기로는 안 들어가는 칸입니다.</li>
+      </ol>
+      <div class="tip"><b>일정조율 중이던 업체</b>는 회차 기록이 없지만 괜찮습니다. ② 일정조율 화면에서 그 업체를 누르면 앱이 1회차를 자동으로 만들고, 그때 요청일을 달력에서 골라 넣으면 됩니다. <b>CAPA요청</b>으로 옮긴 업체는 목록에서 <b>CAPA요청일</b>을 직접 채워 주세요.</div>
+      <div class="warn"><b>이관이 끝나면</b> 예전 웹앱이나 엑셀에는 더 이상 입력하지 마세요.</div>
+    </section>
+
+    <!-- ===================================================== 4 -->
+    <section class="part" id="s4" data-no="4" data-title="앱 만들기 · 데이터 연결 · 화면 6개">
+      <h2><span class="no">4</span>Power Apps 앱 만들기 · 데이터 연결 · 화면 6개</h2>
+      <div class="goal">이 단계가 끝나면: 1366 × 768 빈 앱이 열리고, 목록 5개가 연결되고, 탭 6개에 해당하는 화면 6개(이름만)가 준비됩니다.</div>
+      <h3>4-1. 빈 앱 만들기 (데스크톱용 크기)</h3>
+      <ol class="steps">
+        <li data-k="s4-1"><a href="https://make.powerapps.com" target="_blank" rel="noopener">make.powerapps.com</a> 접속. 오른쪽 위 <b>환경 <span class="en">(Environment)</span></b>이 회사 기본 환경인지 확인합니다.</li>
+        <li data-k="s4-2">왼쪽 <span class="path">+ 만들기 <span class="en">(Create)</span></span> → <span class="path">빈 앱 <span class="en">(Blank app)</span></span> → <b>빈 캔버스 앱</b>의 <span class="path">만들기</span>.</li>
+        <li data-k="s4-3">앱 이름 <span class="v" data-c="방문예정처">방문예정처</span>, 형식 <b>태블릿 <span class="en">(Tablet)</span></b> → <span class="path">만들기</span>. 태블릿 형식의 기본 크기가 <b>1366 × 768</b>로, PC · 노트북 · Teams에 딱 맞습니다. 환영 창은 <span class="path">건너뛰기</span>.</li>
+        <li data-k="s4-4">바로 <b>Ctrl+S</b>. 앞으로 <b>10분마다 Ctrl+S</b>.</li>
+      </ol>
+      <h3>4-2. 편집 화면(Power Apps Studio) 둘러보기</h3>
+      <div class="studio" aria-label="Power Apps Studio 화면 구성 그림">
+        <div class="s-cmd"><span class="mk">1</span><span>+ 삽입</span><span>데이터 추가</span><span>새 화면 ▾</span><span>⚙ 설정</span><span class="r"><span class="mk">7</span>▶ 미리 보기 · 💾 저장 · ⬆ 게시</span></div>
+        <div class="s-fx"><span class="mk">2</span><span class="p">Text ▾</span><span class="f">fx&nbsp;&nbsp;"방문예정처"</span></div>
+        <div class="s-main">
+          <div class="s-rail"><span class="mk">3</span><span title="트리 뷰">≡</span><span title="삽입">+</span><span title="데이터">⛁</span></div>
+          <div class="s-tree"><span class="mk">4</span><b>트리 뷰</b><br>▾ App<br>&nbsp;▾ NewScreen<br>&nbsp;&nbsp;&nbsp;lblAppTitle<br>&nbsp;&nbsp;CoordScreen</div>
+          <div class="s-canvas"><span class="mk">5</span>&nbsp;캔버스 (화면을 그리는 곳)</div>
+          <div class="s-prop"><span class="mk">6</span><b>속성 창</b><br>위치 X [20] Y [8]<br>크기 W [400] H [36]<br>색 · 글꼴 …</div>
+        </div>
+      </div>
+      <div class="tw"><table>
+        <thead><tr><th>번호</th><th>이름</th><th>하는 일</th></tr></thead>
+        <tbody>
+          <tr><td class="num">1</td><td><b>명령 모음</b></td><td><b>+ 삽입</b>, <b>데이터 추가</b>, <b>새 화면</b>, <b>설정</b>.</td></tr>
+          <tr><td class="num">2</td><td><b>수식 입력줄</b></td><td>왼쪽 칸에서 <b>속성 이름</b>(Text, X, Items, OnSelect…)을 고르고, 오른쪽 <b>fx</b> 칸에 값을 넣습니다. <b>이 안내서의 표는 모두 여기에 넣는 값</b>입니다.</td></tr>
+          <tr><td class="num">3</td><td><b>왼쪽 아이콘 줄</b></td><td>≡ 트리 뷰, + 삽입, ⛁ 데이터.</td></tr>
+          <tr><td class="num">4</td><td><b>트리 뷰</b></td><td>화면과 컨트롤 목록. <b>이름을 더블클릭</b>해서 바꿉니다. 컨테이너 · 갤러리 안의 컨트롤은 들여쓰기로 보입니다.</td></tr>
+          <tr><td class="num">5</td><td><b>캔버스</b></td><td>화면 모양이 보이는 곳.</td></tr>
+          <tr><td class="num">6</td><td><b>속성 창</b></td><td>위치 · 크기 · 색을 칸에 숫자로 넣어도 됩니다.</td></tr>
+          <tr><td class="num">7</td><td><b>미리 보기 · 저장 · 게시</b></td><td>▶(또는 <b>F5</b>)로 눌러 보기, 끝낼 땐 <b>Esc</b>. 게시는 12단계.</td></tr>
+        </tbody>
+      </table></div>
+      <div class="tip"><b>값 넣는 법 (가장 중요)</b> ① 컨트롤을 클릭 → ② 수식 입력줄 왼쪽 칸에서 속성(예: <b>Text</b>)을 고름 → ③ 오른쪽 fx 칸을 지우고 안내서의 <b>복사</b>로 붙여 넣기 → ④ Enter. 글자는 "큰따옴표" 안, 숫자는 그냥.</div>
+      <h3>4-3. 설정 바꾸기</h3>
+      <ol class="steps">
+        <li data-k="s4-5">명령 모음 <span class="path">⚙ 설정</span> → <span class="path">일반</span> → <b>데이터 행 제한</b>을 <span class="v" data-c="2000">2000</span>으로.</li>
+        <li data-k="s4-6">같은 창 <span class="path">표시 <span class="en">(Display)</span></span>에서 <b>크기에 맞게 조정 <span class="en">(Scale to fit)</span></b>과 <b>가로 세로 비율 고정</b>이 <b>켜져</b> 있는지 확인합니다(기본값). 창 크기가 달라도 화면 전체가 알맞게 줄거나 늘어납니다. 창을 닫습니다.</li>
+      </ol>
+      <h3>4-4. 데이터 연결</h3>
+      <ol class="steps">
+        <li data-k="s4-7">왼쪽 <span class="path">⛁ 데이터</span> → <span class="path">+ 데이터 추가</span> → 검색 <span class="v" data-c="SharePoint">SharePoint</span> → <b>SharePoint</b> (연결이 없으면 <span class="path">직접 연결</span>).</li>
+        <li data-k="s4-8">사이트 <b>방문업무</b>를 고르고(없으면 사이트 주소 붙여 넣기) <b>방문처, 일정조율이력, 제조설비, 생산설비, 지역이동시간</b> 다섯 개에 체크 → <span class="path">연결</span>.</li>
+      </ol>
+      <div class="tip"><b>목록에 열을 나중에 추가했다면</b> 데이터 창에서 목록 이름 옆 <span class="path">⋯</span> → <span class="path">새로 고침</span>.</div>
+      <h3>4-5. 화면 6개 준비 (탭 순서대로)</h3>
+      <ol class="steps">
+        <li data-k="s4-9">트리 뷰에서 <b>Screen1</b>을 더블클릭 → <span class="v" data-c="NewScreen">NewScreen</span> (첫 탭 = 신규추가).</li>
+        <li data-k="s4-10"><span class="path">새 화면</span> → <span class="path">빈 화면</span>을 <b>5번</b> 눌러 이름을 차례로 바꿉니다:
+          <div class="chips"><span class="v" data-c="CoordScreen">CoordScreen</span><span class="v" data-c="PlanScreen">PlanScreen</span><span class="v" data-c="ResultScreen">ResultScreen</span><span class="v" data-c="ListScreen">ListScreen</span><span class="v" data-c="StatsScreen">StatsScreen</span></div>
+          <small>트리 뷰에서 끌어서 이 순서로 정리합니다. <b>맨 위 화면(NewScreen)이 앱을 열면 처음 보이는 화면</b>입니다.</small></li>
+        <li data-k="s4-11">여섯 화면 각각의 <b>Fill</b>에 <span class="v" data-c="RGBA(245, 245, 245, 1)">RGBA(245, 245, 245, 1)</span>. Ctrl+S.</li>
+      </ol>
+    </section>
+
+    <!-- ===================================================== 5 -->
+    <section class="part" id="s5" data-no="5" data-title="머리글 · 탭 6개">
+      <h2><span class="no">5</span>머리글과 탭 6개 (NewScreen에서 만들고 복사)</h2>
+      <div class="goal">이 단계가 끝나면: 파란 머리글, 그 아래 <b>탭 6개</b>(① 신규추가 · ② 일정조율 · ③ 방문예정 · ④ 방문결과 | 전체업체 · 통계)와 지금 탭을 표시하는 밑줄이 생기고, 다른 5개 화면에도 복사됩니다.</div>
+      <div class="tip"><b>컨트롤 넣는 공통 방법</b> 왼쪽 <b>+ 삽입</b> → <b>검색칸</b>에 이름 → 목록에서 누르기. 같은 이름이 두 개면 <b>"클래식(Classic)"</b>을 고르세요(이 안내서는 클래식 기준). 넣은 뒤 <b>트리 뷰에서 이름을 바꾸세요</b>(카드의 굵은 영어 이름).</div>
+      <div data-wire="hdr"></div>
+      <div data-ctls="hdr"></div>
+      <h3>5-1. 다른 화면에 복사</h3>
+      <ol class="steps">
+        <li data-k="s5-c1">트리 뷰에서 <b>recHeader</b> 클릭 → <b>Ctrl</b>을 누른 채 lblAppTitle, lblUser, recTabs, 탭 단추 6개, recTabLine을 차례로 클릭(11개) → <b>Ctrl+C</b>.</li>
+        <li data-k="s5-c2"><b>CoordScreen</b> 클릭 → <b>Ctrl+V</b>. 같은 자리에 붙습니다(이름 끝 _1은 괜찮아요).</li>
+        <li data-k="s5-c3"><b>PlanScreen, ResultScreen, ListScreen, StatsScreen</b>에도 Ctrl+V.</li>
+        <li data-k="s5-c4"><b>F5</b>로 탭을 눌러 화면이 바뀌고 밑줄이 따라오는지 확인 → Esc → Ctrl+S.</li>
+      </ol>
+      <div class="tip"><b>파란 물결 밑줄</b>(위임 경고)은 데이터 2,000건 이하면 그대로 두어도 됩니다. <b>빨간</b> 밑줄만 고치면 됩니다(19단계).</div>
+    </section>
+
+    <!-- ===================================================== 6 -->
+    <section class="part" id="s6" data-no="6" data-title="탭 ① 신규추가">
+      <h2><span class="no">6</span>탭 ① 신규추가 (NewScreen)</h2>
+      <div class="goal">이 단계가 끝나면: 업체 정보를 쓰고 방문요청일을 달력에서 고르면 <b>임시저장</b> · <b>일정조율 시작</b> 단추가 조건에 따라 켜지고, 임시저장한 업체를 다시 불러와 이어 쓸 수 있습니다.</div>
+      <div class="concept"><b>달력 부품 이해하기 (이 앱의 핵심)</b> Power Apps 날짜 선택은 하루만 고를 수 있어서, 여러 날을 고르는 달력을 직접 만듭니다. 부품은 세 개입니다.
+        <ol>
+          <li><b>요일 머리글</b> — 월~일 글자 7개를 가로로 늘어놓은 작은 갤러리 (galNWeek)</li>
+          <li><b>날짜 갤러리</b> — 날짜 35개(5주)를 <b>한 줄에 7칸씩</b>(WrapCount 7) 늘어놓은 갤러리 (galNCal)</li>
+          <li><b>날짜 칸 단추</b> — 갤러리 안의 단추 하나. 누르면 그 날짜를 <b>colNReq</b>라는 임시 목록에 넣거나 뺍니다. 갤러리라서 35칸 모두에 똑같이 생깁니다 (btnNDay)</li>
+        </ol>
+        여기서 한 번 만들면, ② 일정조율의 달력 3개는 <b>복사해서 이름만 바꿔</b> 씁니다.</div>
+      <div data-wire="new"></div>
+      <div data-ctls="new"></div>
+      <ol class="steps" style="margin-top:12px">
+        <li data-k="s6-t1">F5로 수배사유까지 채우면 <b>임시저장</b>이, 달력에서 날짜를 고르면 <b>일정조율 시작</b>이 켜지는지 확인합니다.</li>
+        <li data-k="s6-t2"><b>구간 선택</b>을 켜고 시작일 → 끝일을 눌러 사이 평일이 모두 파래지는지 확인합니다.</li>
+        <li data-k="s6-t3">임시저장 → 아래 목록에 생기는지, 눌렀을 때 다시 채워지는지 확인합니다. Ctrl+S.</li>
+      </ol>
+    </section>
+
+    <!-- ===================================================== 7 -->
+    <section class="part" id="s7" data-no="7" data-title="탭 ② 일정조율">
+      <h2><span class="no">7</span>탭 ② 일정조율 (CoordScreen)</h2>
+      <div class="goal">이 단계가 끝나면: 업체를 고르면 회차 기록(예시1·2·3)이 위에 보이고, 아래 달력 3개에서 <b>업체 요청일 · 협/생 · 품질보증</b>이 각자 날짜를 골라 저장하면 공통일이 계산되고, 공통일이 없으면 빨간 줄 + Teams 알림 → <b>다음 회차</b>, 있으면 날짜 · 시간을 넣고 <b>방문 확정</b>합니다.</div>
+      <div class="tip"><b>달력 3개 빨리 만들기</b> ① NewScreen에서 <b>galNWeek</b>와 <b>galNCal</b>을 함께 복사 → CoordScreen에 3번 붙여 넣고 위치 · 이름 · 수식을 아래 카드대로 바꿉니다. 날짜 칸 단추는 카드의 Fill · OnSelect를 통째로 붙여 넣으면 됩니다(colReq / colCo / colQa만 다름).</div>
+      <div data-wire="coord"></div>
+      <div data-ctls="coord"></div>
+      <ol class="steps" style="margin-top:12px">
+        <li data-k="s7-t1">F5 → 업체 고르기 → ① 요청일 달력에서 날짜를 고르고 <b>요청일 저장</b>.</li>
+        <li data-k="s7-t2">② 협/생 달력에서 날짜 · 가능시간 · 참석자 → <b>협/생 저장</b>. ③ 품질보증도 같은 방법으로 → 위 회차 표에 공통일이 나오는지 확인합니다.</li>
+        <li data-k="s7-t3">일부러 겹치지 않게 저장해서 줄이 <b>빨간색</b>이 되고 <b>다음 회차 만들기</b>가 보이는지 확인합니다.</li>
+        <li data-k="s7-t4">공통일 · 방문시간(13:30) → <b>방문 확정</b> → 업체가 목록에서 빠지고 ③ 탭 숫자가 늘어나면 성공. Ctrl+S.</li>
+      </ol>
+    </section>
+
+    <!-- ===================================================== 8 -->
+    <section class="part" id="s8" data-no="8" data-title="탭 ③ 방문예정">
+      <h2><span class="no">8</span>탭 ③ 방문예정 (PlanScreen)</h2>
+      <div class="goal">이 단계가 끝나면: 위에 2주 달력(오늘 음영), 왼쪽에 방문예정 업체(D-day), 오른쪽에 <b>신규추가 정보</b>와 <b>일정조율 결과</b>(요청일 · 참석자 · 방문일 · 시간 · 출발)가 보이고, 출발시간을 직접 고칠 수 있습니다.</div>
+      <div data-wire="plan"></div>
+      <div data-ctls="plan"></div>
+      <h3>8-1. 표시 양식 칸 고르기 (frmPlan)</h3>
+      <ol class="steps">
+        <li data-k="s8-f1"><b>frmPlan</b> 클릭 → 속성 창 <span class="path">필드 편집</span> → 기본으로 들어온 칸을 모두 <span class="path">⋯ → 제거</span>.</li>
+        <li data-k="s8-f2"><span class="path">+ 필드 추가</span> → 수배주체, 상호명, 의뢰예상제품, 소재지, 업체담당자, 연락처, 이메일, 협생담당자, 수배사유 → <span class="path">추가</span>.</li>
+        <li data-k="s8-f3">속성 창 <b>열 <span class="en">(Columns)</span></b>을 <b>3</b>으로. 수배사유 칸은 클릭해서 <b>너비 맞춤</b>을 켜면 한 줄을 다 씁니다.</li>
+      </ol>
+    </section>
+
+    <!-- ===================================================== 9 -->
+    <section class="part" id="s9" data-no="9" data-title="탭 ④ 방문결과">
+      <h2><span class="no">9</span>탭 ④ 방문결과 (ResultScreen)</h2>
+      <div class="goal">이 단계가 끝나면: 왼쪽에서 업체를 고르면 오른쪽 스크롤 영역에 <b>실제 방문일 · 점수(협/생 + 품질보증) · 특이사항 · 자료 링크 · 제조 CAPA · 생산 CAPA · 버튼</b>이 보이고, 방문완료 · CAPA요청 · 등록취소 · 등록완료를 처리합니다.</div>
+      <h3>9-0. 세로 스크롤 영역 만드는 법 (먼저 읽기)</h3>
+      <ol class="steps">
+        <li data-k="s9-c1">ResultScreen 클릭 → <b>+ 삽입</b> → 위쪽 분류 <span class="path">레이아웃 <span class="en">(Layout)</span></span> → <span class="path">세로 컨테이너 <span class="en">(Vertical container)</span></span>. 이름 <b>conRes</b>, 위치 · 크기는 카드대로.</li>
+        <li data-k="s9-c2">트리 뷰에서 <b>conRes를 클릭해 선택한 상태</b>로 <b>+ 삽입 → 레이아웃 → 컨테이너 <span class="en">(Container)</span></b>. conRes 안으로 들어갑니다. 이름 <b>secRInfo</b>.</li>
+        <li data-k="s9-c3">secRInfo 속성 창에서 <b>유연한 높이 <span class="en">(Flexible height)</span></b>를 <b>끄고</b> 높이를 카드대로 넣습니다. 가로는 자동으로 꽉 찹니다(안 차면 <b>컨테이너에서 맞춤</b> <span class="en">(Align in container)</span> → <b>늘이기</b>).</li>
+        <li data-k="s9-c4">같은 방법으로 secRScore, secRMake, secRProd, secRBtns를 만듭니다. <b>트리 뷰 순서 = 화면의 위 → 아래 순서</b>입니다(순서가 틀리면 트리 뷰에서 끌어서 바꿉니다).</li>
+        <li data-k="s9-c5">구역(예: secRScore)을 <b>클릭한 상태에서</b> 컨트롤을 넣으면 그 구역 안으로 들어가고, 카드의 X · Y는 <b>구역 왼쪽 위 기준</b>입니다.</li>
+      </ol>
+      <div data-wire="result"></div>
+      <div data-ctls="result"></div>
+      <ol class="steps" style="margin-top:12px">
+        <li data-k="s9-t1">F5 → 업체 고르기 → CAPA 표에 <b>+ 줄 추가</b> → 설비CAPA 60000, 보유대수 1을 넣고 다른 칸을 누르면 일 60,000 · 월 1,200,000이 자동으로 채워지는지 확인합니다.</li>
+        <li data-k="s9-t2">협/생 점수 84 → 환산 42 · 총점이 보이고 <b>방문완료</b>가 켜지는지 확인합니다.</li>
+        <li data-k="s9-t3">CAPA요청 → 왼쪽 목록에 <b>D+0</b>이 보이는지, 등록완료 → 목록에서 빠지는지 확인합니다. Ctrl+S.</li>
+      </ol>
+    </section>
+
+    <!-- ===================================================== 10 -->
+    <section class="part" id="s10" data-no="10" data-title="전체업체">
+      <h2><span class="no">10</span>전체업체 (ListScreen)</h2>
+      <div class="goal">이 단계가 끝나면: 모든 업체(임시저장 포함)를 검색 · 상태별로 보고, 오른쪽에 <b>진행된 단계까지만</b> 기본 정보 → 조율 기록 → 방문 일정 → 결과 · CAPA → 판정이 차례로 보입니다.</div>
+      <div class="tip">오른쪽 스크롤 영역은 9-0과 같은 방법으로 만듭니다(세로 컨테이너 conAll 안에 구역 secA ~ secE).</div>
+      <div data-wire="list"></div>
+      <div data-ctls="list"></div>
+      <h3>10-1. 기본 정보 양식 칸 고르기 (frmAll)</h3>
+      <ol class="steps">
+        <li data-k="s10-f1"><b>frmAll</b> 클릭 → <span class="path">필드 편집</span> → 기본 칸을 모두 제거 → <span class="path">+ 필드 추가</span> → 수배주체, 상호명, 의뢰예상제품, 소재지, 업체담당자, 연락처, 이메일, 협생담당자, 수배사유.</li>
+        <li data-k="s10-f2">열 <b>3</b>. F5로 <b>편집 → 저장</b>이 되는지 확인합니다.</li>
+      </ol>
+    </section>
+
+    <!-- ===================================================== 11 -->
+    <section class="part" id="s11" data-no="11" data-title="통계 (현황 · CAPA 조회)">
+      <h2><span class="no">11</span>통계 (StatsScreen) — 현황 + CAPA 조회</h2>
+      <div class="goal">이 단계가 끝나면: <b>현황</b>에서는 지금까지처럼 숫자 4칸 · 월별 막대 · 단계별 업체 수 · 최근 방문 내용을, <b>CAPA 조회</b>에서는 설비명 · 업체로 생산 CAPA(월CAPA · 콜마배정 · 여유)와 제조 설비를 찾아봅니다.</div>
+      <div class="tip"><b>무엇으로 세나요?</b> 방문완료 = <b>실제방문일</b>이 그달인 업체, 등록완료 = 상태가 등록완료이고 <b>판정일</b>이 그달인 업체입니다.</div>
+      <div data-wire="stats"></div>
+      <div data-ctls="stats"></div>
+      <ol class="steps" style="margin-top:12px">
+        <li data-k="s11-t1">다른 탭에 갔다가 <b>통계</b>를 눌러(F5) 숫자와 막대가 채워지는지 확인합니다.</li>
+        <li data-k="s11-t2"><b>CAPA 조회</b> → 설비명에 "캡슐"을 넣어 해당 설비를 가진 업체와 월CAPA 합계가 나오는지 확인합니다. Ctrl+S.</li>
+      </ol>
+    </section>
+
+    <!-- ===================================================== 12 -->
+    <section class="part" id="s12" data-no="12" data-title="게시 · 공유 · Teams">
+      <h2><span class="no">12</span>게시하고 파트원과 공유하기</h2>
+      <div class="goal">이 단계가 끝나면: 파트원이 Teams 탭과 브라우저에서 앱을 엽니다.</div>
+      <ol class="steps">
+        <li data-k="s12-1"><b>Ctrl+S</b> → 오른쪽 위 <span class="path">⬆ 게시</span> → <span class="path">이 버전 게시</span>. <b>고칠 때마다 게시</b>해야 파트원에게 반영됩니다.</li>
+        <li data-k="s12-2"><a href="https://make.powerapps.com" target="_blank" rel="noopener">make.powerapps.com</a> → <span class="path">앱</span> → <b>방문예정처</b>의 <span class="path">⋯</span> → <span class="path">공유</span>.</li>
+        <li data-k="s12-3">이름 칸에 <b>방문업무</b>(팀 이름)를 쳐서 팀 전체를 고르고, 관리할 사람 1명은 <b>공동 소유자</b>에 체크 → <span class="path">공유</span>.</li>
+        <li data-k="s12-4">Teams <b>방문업무 → 일반</b> 채널 탭 줄 끝 <span class="path">+</span> → <span class="v" data-c="Power Apps">Power Apps</span> → <b>방문예정처</b> → <span class="path">저장</span>.</li>
+        <li data-k="s12-5">PC 브라우저로 바로 열려면 앱의 <span class="path">⋯ → 세부 정보</span>에 있는 <b>웹 링크</b>를 즐겨찾기에 넣어 두게 안내합니다.</li>
+      </ol>
+      <div class="warn"><b>"데이터에 접근할 수 없음"</b>이 보이면 그 사람이 <b>방문업무 팀 구성원</b>인지 확인하세요.</div>
+    </section>
+
+    <!-- ===================================================== 13 -->
+    <section class="part" id="s13" data-no="13" data-title="흐름 ① 방문 확정 → 일정 · 알림">
+      <h2><span class="no">13</span>Power Automate 흐름 ① 방문 확정 → Outlook 일정 + Teams 알림</h2>
+      <div class="goal">이 단계가 끝나면: ② 탭에서 <b>방문 확정</b>을 누르면 협/생 · 품질보증 참석자 일정표에 방문이 잡히고 팀 채널에 알림이 올라갑니다.</div>
+      <div class="tip"><b>Power Automate에서 값 넣는 두 가지</b> 칸을 클릭하면 아이콘이 나옵니다. <b>⚡ 번개</b> = 동적 콘텐츠(목록의 칸 값), <b>fx</b> = 식.</div>
+      <ol class="steps">
+        <li data-k="s13-1"><a href="https://make.powerautomate.com" target="_blank" rel="noopener">make.powerautomate.com</a> → <span class="path">+ 만들기</span> → <span class="path">자동화된 클라우드 흐름</span>.</li>
+        <li data-k="s13-2">이름 <span class="v" data-c="방문 확정 알림">방문 확정 알림</span>, 트리거 <span class="v" data-c="항목을 만들거나 수정한 경우">항목을 만들거나 수정한 경우</span> (SharePoint) → <span class="path">만들기</span>. 사이트 <b>방문업무</b>, 목록 <b>방문처</b>.</li>
+        <li data-k="s13-3"><span class="path">+</span> → <b>조건</b>: 첫 줄 ⚡ <b>상태 Value</b> / 같음 / <span class="v" data-c="방문예정">방문예정</span>, 둘째 줄 ⚡ <b>일정발송</b> / 같음 / fx <span class="v" data-c="false">false</span>. 묶는 글자 <b>And</b>.</li>
+        <li data-k="s13-4"><b>True</b> 칸 → <b>선택 <span class="en">(Select)</span></b>: 시작 ⚡ <b>협생참석자</b>, 맵은 <span class="path">텍스트 모드로 전환</span> 후 ⚡ <b>협생참석자 Email</b>. 그 아래 <b>조인 <span class="en">(Join)</span></b>: 시작 = (선택의) 출력, 조인 문자 <span class="v" data-c=";">;</span>.</li>
+        <li data-k="s13-5">같은 방법으로 <b>선택 2</b>(⚡ 품보참석자 → 품보참석자 Email) · <b>조인 2</b>를 하나 더 만듭니다.</li>
+        <li data-k="s13-6"><b>이벤트 만들기 (V4)</b> (Office 365 Outlook):
+          <ul>
+            <li>일정표 ID: <b>일정표</b> · 제목: <span class="v" data-c="[방문] ">[방문] </span> + ⚡ 상호명</li>
+            <li>시작 시간: fx → <span class="v" data-c="concat(formatDateTime(">concat(formatDateTime(</span> → (동적 콘텐츠) <b>확정방문일</b> → <span class="v" data-c=", 'yyyy-MM-dd'), 'T', ">, 'yyyy-MM-dd'), 'T', </span> → <b>방문시간</b> → <span class="v" data-c=", ':00')">, ':00')</span></li>
+            <li>종료 시간: 같은 방법, 맨 앞 <span class="v" data-c="addHours(concat(formatDateTime(">addHours(concat(formatDateTime(</span>, 맨 끝 <span class="v" data-c=", ':00'), 2)">, ':00'), 2)</span> (방문 2시간)</li>
+            <li>표준 시간대: <b>(UTC+09:00) 서울</b></li>
+            <li><span class="path">고급 매개 변수</span> → 필수 참석자: (조인1) 출력 → <span class="v" data-c=";">;</span> → (조인2) 출력 · 위치: ⚡ 소재지 · 본문: <span class="v" data-c="출발 예정 ">출발 예정 </span> + ⚡ 출발예정시간</li>
+          </ul></li>
+        <li data-k="s13-7"><b>채팅 또는 채널에서 메시지 게시</b> (Teams): 흐름 봇 / 채널 / 방문업무 / 일반. 메시지: <span class="v" data-c="[방문 확정] ">[방문 확정] </span> ⚡ 상호명 · ⚡ 확정방문일 · ⚡ 방문시간 · ⚡ 소재지.</li>
+        <li data-k="s13-8"><b>SharePoint 항목 업데이트</b>: 사이트 · 목록 방문처 · ID ⚡ ID · 상호명 ⚡ 상호명 · <b>일정발송 = 예</b>. (같은 방문에 일정이 두 번 생기지 않게)</li>
+        <li data-k="s13-9"><span class="path">저장</span> → <span class="path">테스트</span> → 수동 → 앱에서 방문 확정. 몇 분 안에 내 Outlook과 채널에 생기면 성공.</li>
+      </ol>
+    </section>
+
+    <!-- ===================================================== 14 -->
+    <section class="part" id="s14" data-no="14" data-title="흐름 ② 일정 재조율 알림">
+      <h2><span class="no">14</span>흐름 ② 공통일 없음 → 협/생 담당자에게 재조율 알림</h2>
+      <div class="goal">이 단계가 끝나면: 두 팀이 모두 저장했는데 겹치는 날이 없으면(빨간 줄), 그 업체의 <b>협/생 담당자</b>에게 Teams로 "일정 재조율 필요"가 갑니다.</div>
+      <ol class="steps">
+        <li data-k="s14-1"><span class="path">+ 만들기 → 자동화된 클라우드 흐름</span>. 이름 <span class="v" data-c="일정 재조율 알림">일정 재조율 알림</span>, 트리거 <b>항목을 만들거나 수정한 경우</b>, 목록 <b>일정조율이력</b>.</li>
+        <li data-k="s14-2"><b>조건</b>을 4줄로 만듭니다(묶는 글자 And). 1~3줄 왼쪽은 fx로 <span class="v" data-c="empty(">empty(</span> → 동적 콘텐츠 → <span class="v" data-c=")">)</span> 순서로 넣습니다.
+          <div class="tw"><table><thead><tr><th>줄</th><th>왼쪽</th><th>가운데</th><th>오른쪽 (fx)</th></tr></thead><tbody>
+            <tr><td>1</td><td>empty( <b>협생가능일</b> )</td><td>같음</td><td><span class="v" data-c="false">false</span></td></tr>
+            <tr><td>2</td><td>empty( <b>품보가능일</b> )</td><td>같음</td><td><span class="v" data-c="false">false</span></td></tr>
+            <tr><td>3</td><td>empty( <b>공통일</b> )</td><td>같음</td><td><span class="v" data-c="true">true</span></td></tr>
+            <tr><td>4</td><td>⚡ <b>재조율알림</b></td><td>같음</td><td><span class="v" data-c="false">false</span></td></tr>
+          </tbody></table></div></li>
+        <li data-k="s14-3"><b>True</b> → <b>항목 가져오기 <span class="en">(Get item, 하나)</span></b> (SharePoint): 목록 <b>방문처</b>, ID: ⚡ <b>방문처ID</b>.</li>
+        <li data-k="s14-4"><b>채팅 또는 채널에서 메시지 게시</b>: 흐름 봇 / <b>흐름 봇과 채팅</b> / 받는 사람: ⚡ (항목 가져오기의) <b>협생담당자 Email</b>.
+          <ul><li>메시지: <span class="v" data-c="[일정 재조율 필요] ">[일정 재조율 필요] </span> ⚡ 상호명 ⚡ 회차 <span class="v" data-c="회차 — 겹치는 날이 없습니다. 업체에 새 날짜를 받아 앱 ② 일정조율에서 '다음 회차 만들기'를 해 주세요.">회차 — 겹치는 날이 없습니다. 업체에 새 날짜를 받아 앱 ② 일정조율에서 '다음 회차 만들기'를 해 주세요.</span></li></ul></li>
+        <li data-k="s14-5"><b>항목 업데이트</b>: 목록 <b>일정조율이력</b>, ID ⚡ ID, 상호명 ⚡ 상호명, <b>재조율알림 = 예</b>. 저장 → 테스트.</li>
+      </ol>
+      <div class="tip"><b>(선택) 응답 요청 알림</b> 같은 방법으로 트리거 <b>항목을 만든 경우</b>(일정조율이력) → 채널 메시지 "[응답 요청] 상호명 회차 — ② 일정조율에서 가능일을 골라 주세요" 흐름을 하나 더 만들면, 새 회차가 생길 때 두 팀에 알릴 수 있습니다.</div>
+    </section>
+
+    <!-- ===================================================== 15 -->
+    <section class="part" id="s15" data-no="15" data-title="흐름 ③ 방문 D-2 · D-1 알림">
+      <h2><span class="no">15</span>흐름 ③ 방문 D-2 · D-1 → 참석자에게 Teams 알림</h2>
+      <div class="goal">이 단계가 끝나면: 매일 아침 8시, 방문이 <b>내일 또는 모레</b>인 업체의 참석자 모두에게 Teams 메시지가 갑니다.</div>
+      <ol class="steps">
+        <li data-k="s15-1"><span class="path">+ 만들기 → 예약된 클라우드 흐름</span>. 이름 <span class="v" data-c="방문 D-2 D-1 알림">방문 D-2 D-1 알림</span>, 시작 내일 <b>오전 8:00</b>, 반복 <b>1 일</b>. 되풀이 카드 고급에서 표준 시간대 <b>(UTC+09:00) 서울</b>.</li>
+        <li data-k="s15-2"><b>항목 가져오기 <span class="en">(Get items)</span></b>: 목록 방문처, 고급 → 상위 개수 <span class="v" data-c="1000">1000</span>.</li>
+        <li data-k="s15-3"><b>조건</b> 3줄 (And). 넣으면 자동으로 <b>각각에 적용</b> 상자가 생깁니다(정상).
+          <div class="tw"><table><thead><tr><th>줄</th><th>왼쪽</th><th>가운데</th><th>오른쪽</th></tr></thead><tbody>
+            <tr><td>1</td><td>⚡ 상태 Value</td><td>같음</td><td><span class="v" data-c="방문예정">방문예정</span></td></tr>
+            <tr><td>2</td><td>⚡ 확정방문일</td><td>크거나 같음</td><td>fx <div class="code">formatDateTime(addDays(convertFromUtc(utcNow(), 'Korea Standard Time'), 1), 'yyyy-MM-dd')</div></td></tr>
+            <tr><td>3</td><td>⚡ 확정방문일</td><td>보다 작음</td><td>fx <div class="code">formatDateTime(addDays(convertFromUtc(utcNow(), 'Korea Standard Time'), 3), 'yyyy-MM-dd')</div></td></tr>
+          </tbody></table></div>
+          <small>= "확정방문일이 내일 ~ 모레". convertFromUtc는 한국 시간 기준 날짜로 바꿔 줍니다.</small></li>
+        <li data-k="s15-4"><b>True</b> → <b>채팅 또는 채널에서 메시지 게시</b>: 흐름 봇 / 흐름 봇과 채팅 / 받는 사람 ⚡ <b>협생참석자 Email</b> (참석자마다 보내도록 <b>각각에 적용</b>이 하나 더 생깁니다).
+          <ul><li>메시지: <span class="v" data-c="[방문 알림] ">[방문 알림] </span> ⚡ 상호명 · ⚡ 확정방문일 ⚡ 방문시간 <span class="v" data-c=" (출발 "> (출발 </span> ⚡ 출발예정시간 <span class="v" data-c=") · ">) · </span> ⚡ 소재지</li></ul></li>
+        <li data-k="s15-5">같은 True 칸에 메시지 게시를 하나 더: 받는 사람 ⚡ <b>품보참석자 Email</b>, 메시지 같게. 저장 → 테스트(수동 → 흐름 실행).</li>
+      </ol>
+    </section>
+
+    <!-- ===================================================== 16 -->
+    <section class="part" id="s16" data-no="16" data-title="흐름 ④ CAPA D+3 알림">
+      <h2><span class="no">16</span>흐름 ④ CAPA 요청 D+3 → 협/생 담당자 알림</h2>
+      <div class="goal">이 단계가 끝나면: CAPA요청을 누른 지 <b>3일째 되는 날</b> 아침 8시에 협/생 담당자에게 Teams 메시지가 갑니다.</div>
+      <ol class="steps">
+        <li data-k="s16-1"><span class="path">+ 만들기 → 예약된 클라우드 흐름</span>. 이름 <span class="v" data-c="CAPA D+3 알림">CAPA D+3 알림</span>, 매일 오전 8:00, 서울 시간대. <b>항목 가져오기</b>(방문처, 상위 개수 1000).</li>
+        <li data-k="s16-2"><b>조건</b> 3줄 (And):
+          <div class="tw"><table><thead><tr><th>줄</th><th>왼쪽</th><th>가운데</th><th>오른쪽</th></tr></thead><tbody>
+            <tr><td>1</td><td>⚡ 상태 Value</td><td>같음</td><td><span class="v" data-c="CAPA요청">CAPA요청</span></td></tr>
+            <tr><td>2</td><td>⚡ CAPA요청일</td><td>크거나 같음</td><td>fx <div class="code">formatDateTime(addDays(convertFromUtc(utcNow(), 'Korea Standard Time'), -3), 'yyyy-MM-dd')</div></td></tr>
+            <tr><td>3</td><td>⚡ CAPA요청일</td><td>보다 작음</td><td>fx <div class="code">formatDateTime(addDays(convertFromUtc(utcNow(), 'Korea Standard Time'), -2), 'yyyy-MM-dd')</div></td></tr>
+          </tbody></table></div><small>= "CAPA요청일이 정확히 3일 전" → 한 번만 알립니다.</small></li>
+        <li data-k="s16-3"><b>True</b> → 메시지 게시: 흐름 봇과 채팅 / 받는 사람 ⚡ <b>협생담당자 Email</b> / 메시지 <span class="v" data-c="[CAPA 회신 확인 D+3] ">[CAPA 회신 확인 D+3] </span> ⚡ 상호명 <span class="v" data-c=" — CAPA 요청 후 3일이 지났습니다. 회신을 확인해 주세요."> — CAPA 요청 후 3일이 지났습니다. 회신을 확인해 주세요.</span></li>
+        <li data-k="s16-4">저장 → 테스트.</li>
+      </ol>
+    </section>
+
+    <!-- ===================================================== 17 -->
+    <section class="part" id="s17" data-no="17" data-title="흐름 ⑤ 방문 리포트 PDF">
+      <h2><span class="no">17</span>흐름 ⑤ 방문완료 → 리포트 PDF 자동 저장 (표준 방식)</h2>
+      <div class="goal">이 단계가 끝나면: ④ 탭에서 <b>방문완료</b>(또는 리포트 다시 만들기)를 누르면 몇 분 뒤 <b>방문 리포트</b> 라이브러리에 PDF가 생기고 채널에 알림이 갑니다.</div>
+      <div class="tip"><b>쉬운 이유</b> 리포트 내용(HTML)은 앱이 이미 만들어 <b>리포트HTML</b> 칸에 넣어 둡니다. 흐름은 그 글자를 파일로 만들고 → PDF로 바꾸고 → 저장만 합니다. 프리미엄 라이선스가 필요 없습니다.</div>
+      <ol class="steps">
+        <li data-k="s17-1"><b>준비</b>: <b>OneDrive</b>에 폴더 <span class="v" data-c="리포트임시">리포트임시</span>를 만듭니다(임시 파일용).</li>
+        <li data-k="s17-2"><span class="path">+ 만들기 → 자동화된 클라우드 흐름</span>. 이름 <span class="v" data-c="방문 리포트 만들기">방문 리포트 만들기</span>, 트리거 <b>항목을 만들거나 수정한 경우</b>, 목록 <b>방문처</b>.</li>
+        <li data-k="s17-3"><b>조건</b>: 1줄 fx <span class="v" data-c="empty(">empty(</span> → ⚡ <b>리포트HTML</b> → <span class="v" data-c=")">)</span> / 같음 / fx <span class="v" data-c="false">false</span>. 2줄 ⚡ <b>리포트발송</b> / 같음 / fx <span class="v" data-c="false">false</span>.</li>
+        <li data-k="s17-4"><b>True</b> → <b>파일 만들기</b> (OneDrive for Business): 폴더 <b>리포트임시</b>, 파일 이름 <span class="v" data-c="리포트_">리포트_</span> ⚡ ID <span class="v" data-c=".html">.html</span>, 파일 콘텐츠 ⚡ <b>리포트HTML</b>.</li>
+        <li data-k="s17-5"><b>파일 변환</b> (OneDrive for Business): 파일 ⚡ (파일 만들기의) <b>ID</b>, 대상 유형 <b>PDF</b>.</li>
+        <li data-k="s17-6"><b>파일 만들기</b> (SharePoint): 사이트 방문업무, 폴더 <b>방문 리포트</b>, 파일 이름 ⚡ 상호명 <span class="v" data-c="_">_</span> fx 아래 식 <span class="v" data-c=".pdf">.pdf</span>, 파일 콘텐츠 ⚡ (파일 변환의) <b>파일 콘텐츠</b>.
+          <div class="code">formatDateTime(convertFromUtc(utcNow(), 'Korea Standard Time'), 'yyMMdd-HHmm')</div>
+          <small>만든 시각을 이름에 붙여, 다시 만들어도 이전 파일과 겹치지 않습니다.</small></li>
+        <li data-k="s17-7"><b>파일 삭제</b> (OneDrive): 파일 ⚡ (파일 만들기의) ID.</li>
+        <li data-k="s17-8"><b>항목 업데이트</b> (방문처): ID ⚡ ID, 상호명 ⚡ 상호명, <b>리포트발송 = 예</b>.</li>
+        <li data-k="s17-9"><b>메시지 게시</b>: 채널 일반, <span class="v" data-c="[방문 리포트] ">[방문 리포트] </span> ⚡ 상호명 <span class="v" data-c=" — 리포트 PDF가 '방문 리포트'에 저장되었습니다."> — 리포트 PDF가 '방문 리포트'에 저장되었습니다.</span></li>
+        <li data-k="s17-10">저장 → 테스트 → 앱에서 시험 업체를 방문완료. PDF를 열어 한글과 CAPA 표가 잘 보이는지 확인합니다.</li>
+      </ol>
+    </section>
+
+    <!-- ===================================================== 18 -->
+    <section class="part" id="s18" data-no="18" data-title="파트원 사용법">
+      <h2><span class="no">18</span>파트원에게 이렇게 알려 주세요</h2>
+      <div class="tw"><table>
+        <thead><tr><th>누가</th><th>언제</th><th>어느 탭에서 무엇을</th></tr></thead>
+        <tbody>
+          <tr><td>협/생 담당</td><td>새 업체 수배</td><td><b>① 신규추가</b>에서 정보 입력. 아직 날짜가 없으면 <b>임시저장</b>, 방문요청일을 받았으면 <b>일정조율 시작</b>.</td></tr>
+          <tr><td>협/생 · 품질보증</td><td>일정 응답</td><td><b>② 일정조율</b>에서 업체를 고르고 <b>자기 팀 달력</b>에 가능일 · 가능시간 · 참석자 → 저장.</td></tr>
+          <tr><td>협/생 담당</td><td>빨간 줄 · Teams "재조율 필요"</td><td>업체에 새 날짜를 받아 <b>다음 회차 만들기</b> → ① 요청일 달력에 고르고 요청일 저장.</td></tr>
+          <tr><td>협/생 담당</td><td>공통일이 생기면</td><td>④ 최종 확정에서 날짜 · 방문시간 → <b>방문 확정</b>. 일정표 · 채널 알림은 자동.</td></tr>
+          <tr><td>방문자</td><td>방문 전 (D-2 · D-1 알림)</td><td><b>③ 방문예정</b>에서 출발시간 · 업체 정보 확인. 자동 계산이 안 된 업체는 출발시간 직접 입력.</td></tr>
+          <tr><td>방문자</td><td>방문 뒤</td><td><b>④ 방문결과</b>에서 실제 방문일 · 점수 · 특이사항 · 자료 링크 · CAPA 표 → <b>방문완료</b>(리포트 PDF 자동).</td></tr>
+          <tr><td>협/생 담당</td><td>자료가 더 필요하면</td><td><b>CAPA요청</b>. D+3에 Teams 알림.</td></tr>
+          <tr><td>협/생 담당</td><td>판정</td><td><b>등록완료</b> 또는 사유를 적고 <b>등록취소</b>.</td></tr>
+          <tr><td>누구나</td><td>찾아보기 · 월말</td><td><b>전체업체</b>에서 업체별 진행 내용, <b>통계</b>에서 월별 숫자 · CAPA 조회.</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <!-- ===================================================== 19 -->
+    <section class="part" id="s19" data-no="19" data-title="막혔을 때">
+      <h2><span class="no">19</span>막혔을 때 (자주 생기는 문제)</h2>
+      <div class="tw"><table>
+        <thead><tr><th>증상</th><th>이유와 해결</th></tr></thead>
+        <tbody>
+          <tr><td>수식에 <b>빨간 물결 밑줄</b></td><td>① 이름 오타(트리 뷰 이름 · 열 이름 확인) ② 아직 안 만든 컨트롤을 가리킴 → 그 컨트롤을 만들면 사라짐 ③ 목록에 열을 나중에 추가 → 데이터 창 <b>⋯ → 새로 고침</b>.</td></tr>
+          <tr><td><b>상호명</b>이 없다고 나옴</td><td>제목 열 이름을 바꾸면 앱에서 <b>Title</b>로 보일 때가 있습니다. 수식의 상호명을 Title로 바꿔 보세요.</td></tr>
+          <tr><td>Split ... <b>Value</b> 오류</td><td>오래된 앱 버전에서는 Split 결과 열 이름이 <b>Result</b>입니다. 그 수식의 <code>Value</code>를 <code>Result</code>로 바꾸세요(설정 → 일반에서 최신 Power Fx로 올리는 방법도 있음).</td></tr>
+          <tr><td>공통일 수식의 <b>As</b> 오류</td><td>아래 수식으로 바꿔 넣으세요(같은 뜻). <div class="code">Concat(Sort(Filter(colCo, !IsBlank(LookUp(colQa, d = colCo[@d])) &amp;&amp; !IsBlank(LookUp(colReq, d = colCo[@d]))), d), Text(d, "yyyy-mm-dd"), ";")</div></td></tr>
+          <tr><td>달력 칸을 눌러도 안 바뀜</td><td>지난 날짜는 일부러 막았습니다. 편집 중에는 <b>Alt를 누른 채</b> 클릭하거나 F5 미리 보기에서 누르세요.</td></tr>
+          <tr><td>구역(컨테이너) 높이가 안 바뀜</td><td>구역 속성 창의 <b>유연한 높이</b>를 끄세요(FillPortions = 0).</td></tr>
+          <tr><td>콤보 상자에 사람이 안 나옴</td><td>Items가 <code>Choices(방문처.협생참석자)</code>인지, 이름을 2글자 이상 쳤는지 확인. 목록의 사용자 열이 맞는지도 봅니다.</td></tr>
+          <tr><td>공통일이 계산되지 않음</td><td>두 팀이 모두 <b>저장</b>했는지, 요청일을 <b>요청일 저장</b>했는지 확인. 세 곳 모두에 있는 날만 공통입니다.</td></tr>
+          <tr><td><b>파란 물결 밑줄</b></td><td>위임 경고. 데이터 2,000건 이하면 무시해도 됩니다(4-3).</td></tr>
+          <tr><td>파트원 화면에 고친 내용이 안 보임</td><td><b>게시</b>를 했는지 확인(12-1). 파트원은 앱을 닫았다 다시 엽니다.</td></tr>
+          <tr><td>알림이 하루 어긋남</td><td>날짜 열이 <b>시간 포함 꺼짐</b>인지, 흐름 식에 <b>convertFromUtc</b>가 들어갔는지 확인합니다.</td></tr>
+          <tr><td>같은 방문에 일정이 두 번</td><td>흐름①의 조건(일정발송 = false)과 마지막 <b>일정발송 = 예</b> 업데이트를 확인합니다.</td></tr>
+          <tr><td>리포트 흐름 실패</td><td>상호명에 <b>/ \ : * ? " &lt; &gt; |</b>가 있으면 파일 이름이 안 됩니다. 상호명을 고친 뒤 <b>리포트 다시 만들기</b>.</td></tr>
+          <tr><td>PDF 한글이 네모(□)</td><td>리포트 수식 맨 앞의 <code>meta charset='utf-8'</code>이 지워졌는지 확인합니다.</td></tr>
+          <tr><td>실수로 지움</td><td>SharePoint 사이트 ⚙ → <b>사이트 콘텐츠</b> → <b>휴지통</b>에서 복원(방문처 · 일정조율이력 · 설비 목록 각각).</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <p style="font-size:12px;color:var(--ink3);margin-top:8px">이 안내서는 Power Apps 캔버스 앱(태블릿 형식 1366 × 768, 클래식 컨트롤), SharePoint 목록, Power Automate 표준 커넥터 기준입니다. Microsoft 화면 이름은 업데이트로 바뀔 수 있습니다.</p>
+  </main>
+</div>
+
+<script>
+/* ================= 데이터: 목록 열 ================= */
+const STATES=["임시저장","일정조율","방문예정","방문완료","CAPA요청","등록완료","등록취소"];
+const chip=s=>`<span class="v" data-c="${s}">${s}</span>`;
+const LIST_VISIT=[
+  ["상호명","(제목 열 이름 바꾸기)","2-1의 4번처럼 <b>제목</b> → 이름 바꾸기"],
+  ["상태","선택","선택 항목: "+STATES.map(chip).join(" ")+"<br>기본값: <b>임시저장</b>"],
+  ["수배주체","한 줄 텍스트","직접 입력 (정해진 값 없음)"],
+  ["의뢰예상제품","한 줄 텍스트","—"],
+  ["소재지","한 줄 텍스트","시·군 이름이 꼭 들어가게 (출발 시각 계산용)"],
+  ["업체담당자","한 줄 텍스트","업체 쪽 담당자 성함"],
+  ["연락처","한 줄 텍스트","—"],
+  ["이메일","한 줄 텍스트","—"],
+  ["수배사유","여러 줄 텍스트","<b>서식 있는 텍스트 끄기</b>"],
+  ["확정방문일","날짜 및 시간","<b>시간 포함 끄기</b>"],
+  ["방문시간","한 줄 텍스트","13:30 처럼 (앱이 채움)"],
+  ["실제방문일","날짜 및 시간","<b>시간 포함 끄기</b> · 통계용"],
+  ["판정일","날짜 및 시간","<b>시간 포함 끄기</b> · 등록완료/등록취소 날 (앱이 채움)"],
+  ["특이사항","여러 줄 텍스트","<b>서식 있는 텍스트 끄기</b>"],
+  ["방문요청일","여러 줄 텍스트","<b>서식 있는 텍스트 끄기</b> · 앱이 <code>2026-11-05;2026-11-06</code> 모양으로 채움"],
+  ["출발예정시간","한 줄 텍스트","11:00 처럼 (자동 계산, 고칠 수 있음)"],
+  ["협생담당자","사용자","한 명 · 재조율 · CAPA 알림을 받는 사람"],
+  ["협생참석자","사용자","<b>여러 항목 선택 허용 켜기</b>"],
+  ["품보참석자","사용자","<b>여러 항목 선택 허용 켜기</b>"],
+  ["협생점수","숫자","소수 자릿수 0"],
+  ["품보점수","숫자","소수 자릿수 0"],
+  ["자료링크","여러 줄 텍스트","<b>서식 있는 텍스트 끄기</b> (긴 주소도 들어가게)"],
+  ["CAPA요청일","날짜 및 시간","<b>시간 포함 끄기</b>"],
+  ["등록취소사유","한 줄 텍스트","—"],
+  ["리포트HTML","여러 줄 텍스트","<b>서식 있는 텍스트 끄기</b> · 앱이 리포트 내용을 채움"],
+  ["일정발송","예/아니요","기본값 <b>아니요</b> (흐름①용)"],
+  ["리포트발송","예/아니요","기본값 <b>아니요</b> (흐름⑤용)"]
+];
+const LIST_ROUND=[
+  ["상호명","(제목 열 이름 바꾸기)","—"],
+  ["방문처ID","숫자","소수 자릿수 <b>0</b>"],
+  ["회차","숫자","소수 자릿수 0"],
+  ["요청일","여러 줄 텍스트","<b>서식 끄기</b> · 앱이 채움"],
+  ["협생가능일","여러 줄 텍스트","<b>서식 끄기</b>"],
+  ["품보가능일","여러 줄 텍스트","<b>서식 끄기</b>"],
+  ["공통일","여러 줄 텍스트","<b>서식 끄기</b>"],
+  ["협생응답자","한 줄 텍스트","저장한 사람 이름 (자동)"],
+  ["품보응답자","한 줄 텍스트","저장한 사람 이름 (자동)"],
+  ["협생가능시간","한 줄 텍스트","예: 오후 1시 이후"],
+  ["품보가능시간","한 줄 텍스트","—"],
+  ["시간대","한 줄 텍스트","방문 확정 때 시간이 들어감"],
+  ["재조율알림","예/아니요","기본값 <b>아니요</b> (흐름②용)"]
+];
+const LIST_MAKE=[["상호명","(제목 열 이름 바꾸기)","—"],["방문처ID","숫자","소수 자릿수 0"],["종류","한 줄 텍스트","예: 피막제조탱크"],["용량","한 줄 텍스트","예: 600kg"],["보유대수","숫자","소수 자릿수 0"],["보조가마","한 줄 텍스트","—"],["비고","한 줄 텍스트","—"]];
+const LIST_PROD=[["상호명","(제목 열 이름 바꾸기)","—"],["방문처ID","숫자","소수 자릿수 0"],["설비명","한 줄 텍스트","예: 연질캡슐성형기"],["설비CAPA","숫자","소수 자릿수 0 (1대 하루 생산량)"],["보유대수","숫자","소수 자릿수 0"],["일CAPA","숫자","소수 자릿수 0 (앱이 계산)"],["월CAPA","숫자","소수 자릿수 0 (앱이 계산, 20일 기준)"],["콜마배정","숫자","소수 자릿수 0"],["비고","한 줄 텍스트","—"]];
+const LIST_TRIP=[["지역","(제목 열 이름 바꾸기)","—"],["거리km","숫자","소수 자릿수 0"],["소요분","숫자","소수 자릿수 0"]];
+const TRIP=[["안산",145,105],["부천",130,100],["수원",105,80],["화성",110,85],["평택",75,62],["남원",190,135],
+ ["김포",165,120],["인천",150,110],["청주",30,32],["음성",55,48],["천안",30,32],["아산",35,35],["대전",45,40],
+ ["구미",145,112],["김해",260,185],["파주",180,135],["시흥",140,103],["군포",125,93],["용인",100,78],
+ ["성남",115,88],["오산",85,68],["안성",60,52],["이천",110,85],["진천",45,40],["증평",45,42],["제천",110,90],
+ ["원주",130,100],["대구",180,135],["부산",280,195],["양산",265,188],["전주",110,85],["익산",95,78],
+ ["논산",45,42],["공주",25,28],["세종",12,18],["당진",70,60],["홍성",70,62],["예산",55,50],["서산",85,70],
+ ["보령",90,75],["광주",180,135],["서울",130,100],["고양",165,120],["의정부",165,122],["춘천",160,120],
+ ["경기",120,90],["충북",50,45],["충남",45,42],["경북",160,120],["경남",250,180],["전북",110,85],["전남",200,150],["강원",150,115],["울산",270,190]];
+const STATE_MAP=[["일정협의중 · 일정협의 · 요청접수","일정조율"],["방문예정 · 확정 · 재방문예정","방문예정"],["방문완료","방문완료"],
+ ["Capa회신대기중","CAPA요청"],["등록완료","등록완료"],["등록불가 · 방문취소","등록취소"],["기타 · 보류","임시저장"]];
+
+/* ================= 공통 수식 조각 ================= */
+const BLUE="RGBA(15, 108, 189, 1)", GRAY="RGBA(97, 97, 97, 1)", WHITE="Color.White", LINE="RGBA(224, 224, 224, 1)",
+      RED="RGBA(196, 43, 28, 1)", GREEN="RGBA(14, 122, 58, 1)", AMBER="RGBA(188, 75, 9, 1)", LBLUE="RGBA(235, 243, 252, 1)";
+const MON=v=>`DateAdd(${v}, -(Weekday(${v}, StartOfWeek.Monday) - 1), TimeUnit.Days)`;
+const LOAD=s=>`ForAll(Filter(Split(Coalesce(${s}, ""), ";"), !IsBlank(Value)), {d: DateValue(Value)})`;
+const STR=c=>`Concat(Sort(${c}, d), Text(d, "yyyy-mm-dd"), ";")`;
+const DL=s=>`Concat(Filter(Split(Coalesce(${s}, ""), ";"), !IsBlank(Value)), Text(DateValue(Value), "m/d"), ", ")`;
+const COMMON=`Concat(Sort(Filter(colCo As c, !IsBlank(LookUp(colQa, d = c.d)) && !IsBlank(LookUp(colReq, d = c.d))), d), Text(d, "yyyy-mm-dd"), ";")`;
+const DD=it=>`With({n: DateDiff(Today(), ${it}.확정방문일)}, If(n = 0, "D-day", n > 0, "D-" & n, "D+" & -n))`;
+const TRIPR=(addr,time)=>`LookUp(지역이동시간, 지역 in ${addr})`;
+const pos=(x,y,w,h)=>[["X",String(x)],["Y",String(y)],["Width",String(w)],["Height",String(h)]];
+const BASIC=`!IsBlank(Trim(txtNSrc.Text)) && !IsBlank(Trim(txtNName.Text)) && !IsBlank(Trim(txtNProd.Text)) && !IsBlank(Trim(txtNAddr.Text)) && !IsBlank(Trim(txtNMgr.Text)) && !IsBlank(Trim(txtNTel.Text)) && !IsBlank(Trim(txtNMail.Text)) && !IsBlank(Trim(txtNReason.Text))`;
+const NREC=`{상호명: Trim(txtNName.Text), 수배주체: Trim(txtNSrc.Text), 의뢰예상제품: Trim(txtNProd.Text), 소재지: Trim(txtNAddr.Text), 업체담당자: Trim(txtNMgr.Text), 연락처: Trim(txtNTel.Text), 이메일: Trim(txtNMail.Text), 수배사유: txtNReason.Text, 방문요청일: ${STR("colNReq")}, 협생담당자: cmbNOwner.Selected}`;
+const NRESET=`Reset(txtNSrc); Reset(txtNName); Reset(txtNProd); Reset(txtNAddr); Reset(txtNMgr); Reset(txtNTel); Reset(txtNMail); Reset(txtNReason); Reset(cmbNOwner)`;
+const ME=`{Claims: "i:0#.f|membership|" & Lower(User().Email), DisplayName: User().FullName, Email: User().Email, Department: "", JobTitle: "", Picture: ""}`;
+const RF=`{실제방문일: dpActual.SelectedDate, 협생점수: Value(txtScoreCo.Text), 품보점수: Value(txtScoreQa.Text), 특이사항: txtNote.Text, 자료링크: txtLink.Text}`;
+const RES_TODO=`(상태.Value = "방문예정" && 확정방문일 <= Today()) || 상태.Value = "방문완료" || 상태.Value = "CAPA요청"`;
+const MONTHLY=`ClearCollect(colMonthly, ForAll(Sequence(12, 0), With({m: DateAdd(Date(Year(Today()), Month(Today()), 1), -(11 - Value), TimeUnit.Months)}, {월: Text(m, "yy.mm"), 방문완료: CountRows(Filter(방문처, 실제방문일 >= m, 실제방문일 < DateAdd(m, 1, TimeUnit.Months))), 등록완료: CountRows(Filter(방문처, 상태.Value = "등록완료", 판정일 >= m, 판정일 < DateAdd(m, 1, TimeUnit.Months)))})))`;
+
+/* 달력 칸(단추) — 한 번 만들고 복사해서 쓰는 부품 */
+function dayCell(n,parent,col,rs,tgl,mark){
+  const onP=`!IsBlank(LookUp(${col}, d = ThisItem.Value))`;
+  return {n,t:"button",in:parent,d:"달력 날짜 칸 (누르면 고르기/빼기)",p:[
+    ["Text",`If(Day(ThisItem.Value) = 1, Text(ThisItem.Value, "m/d"), Text(Day(ThisItem.Value)))`],
+    ["X","0"],["Y","0"],["Width","Parent.TemplateWidth"],["Height","Parent.TemplateHeight"],["Size","12"],
+    ["Fill",`If(${onP}, ${BLUE}, ThisItem.Value = ${rs}, RGBA(207, 228, 250, 1), ThisItem.Value = Today(), RGBA(255, 244, 206, 1), Weekday(ThisItem.Value, StartOfWeek.Monday) > 5, RGBA(243, 243, 243, 1), Color.White)`],
+    ["Color",`If(${onP}, Color.White, ThisItem.Value < Today(), RGBA(190, 190, 190, 1), RGBA(36, 36, 36, 1))`],
+    ["BorderColor",mark?`If(!IsBlank(LookUp(colReq, d = ThisItem.Value)), ${GREEN}, ${LINE})`:LINE],
+    ["BorderThickness",mark?`If(!IsBlank(LookUp(colReq, d = ThisItem.Value)), 2, 1)`:"1"],
+    ["HoverFill","ColorFade(Self.Fill, -8%)"],["HoverColor","Self.Color"],["PressedFill","ColorFade(Self.Fill, -15%)"],
+    ["OnSelect",`If(ThisItem.Value >= Today(), If(${tgl}.Value, If(IsBlank(${rs}), Set(${rs}, ThisItem.Value), With({a: If(${rs} < ThisItem.Value, ${rs}, ThisItem.Value), n: Abs(DateDiff(${rs}, ThisItem.Value)) + 1}, ForAll(Sequence(n, 0), With({x: DateAdd(a, Value, TimeUnit.Days)}, If(Weekday(x, StartOfWeek.Monday) <= 5 && IsBlank(LookUp(${col}, d = x)), Collect(${col}, {d: x}))))); Set(${rs}, Blank())), If(${onP}, Remove(${col}, LookUp(${col}, d = ThisItem.Value)), Collect(${col}, {d: ThisItem.Value}))))`]],
+    note:mark?`고른 날 = 파란색, 업체 요청일 = <b>초록 테두리</b>, 오늘 = 연노랑, 주말 = 회색. 구간 선택이 켜져 있으면 시작일(연파랑) → 끝일을 눌러 그 사이 평일을 한꺼번에 고릅니다. 지난 날짜는 눌러도 바뀌지 않습니다.`
+         :`고른 날 = 파란색, 오늘 = 연노랑, 주말 = 회색. 구간 선택이 켜져 있으면 시작일(연파랑) → 끝일을 눌러 그 사이 평일을 한꺼번에 고릅니다. 지난 날짜는 눌러도 바뀌지 않습니다.`};
+}
+const wkGal=(n,x,y,w,size)=>({n,t:"galBH",d:"요일 머리글 (월~일)",wf:[x,y,w,20],p:[["Items",`["월", "화", "수", "목", "금", "토", "일"]`]].concat(pos(x,y,w,20),[["TemplateSize",String(size)],["TemplatePadding","2"],["ShowScrollbar","false"]])});
+const wkLbl=(n,parent)=>({n,t:"label",in:parent,d:"요일 글자",p:[["Text","ThisItem.Value"],["X","0"],["Y","0"],["Width","Parent.TemplateWidth"],["Height","20"],["Align","Align.Center"],["Size","10"],["Color",GRAY]]});
+const calGal=(n,x,y,w,h,size,start)=>({n,t:"galBV",d:"5주 달력 (35칸, 한 줄에 7칸)",wf:[x,y,w,h],p:[["Items",`ForAll(Sequence(35, 0), DateAdd(${start}, Value, TimeUnit.Days))`]].concat(pos(x,y,w,h),[["WrapCount","7"],["TemplateSize",String(size)],["TemplatePadding","2"],["ShowScrollbar","false"]]),
+  note:"<b>WrapCount 7</b> = 한 줄에 7칸(월~일). Items는 시작 월요일부터 35일(5주)을 만듭니다."});
+const lbl=(n,d,wf,text,extra,o)=>Object.assign({n,t:"label",d,wf,p:[["Text",text]].concat(pos(...wf),extra||[])},o||{});
+const TITLE=[["Size","14"],["FontWeight","FontWeight.Semibold"]];
+const SMALL=[["Size","11"],["Color",GRAY]];
+const btn=(n,d,wf,text,onsel,extra,o)=>Object.assign({n,t:"button",d,wf,p:[["Text",`"${text}"`]].concat(pos(...wf),[["OnSelect",onsel]],extra||[])},o||{});
+const inp=(n,d,wf,def,hint,extra,o)=>Object.assign({n,t:"text",d,wf,p:[["Default",def],["HintText",`"${hint}"`]].concat(pos(...wf),extra||[])},o||{});
+const sub=(n,parent,d,x,y,w,h,text,extra,t)=>({n,t:t||"label",in:parent,d,p:[["Text",text]].concat(pos(x,y,w,h),extra||[])});
+const subInp=(n,parent,d,x,w,def,onchange,extra)=>({n,t:"text",in:parent,d,p:[["Default",def]].concat(pos(x,4,w,32),[["OnChange",onchange]],extra||[])});
+const fill=c=>[["Fill",c],["Color","Color.White"],["HoverFill",`ColorFade(${c}, -15%)`]];
+
+/* 탭 단추 */
+const tab=(n,txt,x,scr,cnt)=>{
+  const T=cnt?`"${txt} (" & ${cnt} & ")"`:`"${txt}"`, on=`App.ActiveScreen = ${scr}`, first=n==="btnTabNew";
+  const dyn=[["Fill",`If(${on}, ${LBLUE}, Color.White)`],["Color",`If(${on}, ${BLUE}, RGBA(66, 66, 66, 1))`],
+    ["FontWeight",`If(${on}, FontWeight.Semibold, FontWeight.Normal)`],["OnSelect",`Navigate(${scr}, ScreenTransition.None)`]];
+  return {n,t:"button",d:`탭 단추 · ${txt}`,wf:[x,52,150,44],copy:first?null:"btnTabNew",
+    p:(first?[["Text",T]].concat(pos(x,52,150,44),[["Size","12"],["BorderThickness","0"],["RadiusTopLeft","0"],["RadiusTopRight","0"],["RadiusBottomLeft","0"],["RadiusBottomRight","0"],["HoverFill","RGBA(245, 245, 245, 1)"],["HoverColor","RGBA(36, 36, 36, 1)"]])
+            :[["Text",T],["X",String(x)]]).concat(dyn),
+    note:first?`Fill · Color · FontWeight 수식은 "지금 보고 있는 탭이면 파랗고 굵게"라는 뜻입니다. Radius 4개를 0으로 하면 모서리가 각진 탭 모양이 됩니다.`:null};
+};
+
+/* ================= 화면별 컨트롤 =================
+   t: 종류 · wf: 배치도 [x,y,w,h] (1366×768 기준) · in: 부모(갤러리/컨테이너) · p: [속성, 값] */
+const SCREENS={
+ hdr:[
+  {n:"recHeader",t:"rect",d:"파란 머리글 띠",wf:[0,0,1366,52],cls:"hdr",p:[["X","0"],["Y","0"],["Width","Parent.Width"],["Height","52"],["Fill",BLUE]]},
+  lbl("lblAppTitle","앱 제목",[20,8,400,36],`"방문예정처"`,[["Size","18"],["FontWeight","FontWeight.Semibold"],["Color",WHITE]]),
+  {n:"lblUser",t:"label",d:"로그인한 사람 이름",wf:[946,8,400,36],p:[["Text","User().FullName"],["X","Parent.Width - 420"],["Y","8"],["Width","400"],["Height","36"],["Align","Align.Right"],["Color",WHITE]]},
+  {n:"recTabs",t:"rect",d:"탭 줄 배경",wf:[0,52,1366,44],ghost:[["탭마다 바뀌는 내용 영역 (X 16 ~ 1350, Y 108 ~ 756) — 6~11단계에서 만듭니다",16,108,1334,648]],p:[["X","0"],["Y","52"],["Width","Parent.Width"],["Height","44"],["Fill",WHITE],["BorderColor",LINE],["BorderThickness","1"]]},
+  tab("btnTabNew","① 신규추가",16,"NewScreen",null),
+  tab("btnTabCoord","② 일정조율",170,"CoordScreen",`CountRows(Filter(방문처, 상태.Value = "일정조율"))`),
+  tab("btnTabPlan","③ 방문예정",324,"PlanScreen",`CountRows(Filter(방문처, 상태.Value = "방문예정"))`),
+  tab("btnTabResult","④ 방문결과",478,"ResultScreen",`CountRows(Filter(방문처, ${RES_TODO}))`),
+  tab("btnTabList","전체업체",652,"ListScreen",null),
+  tab("btnTabStats","통계",806,"StatsScreen",null),
+  {n:"recTabLine",t:"rect",d:"지금 탭 아래 파란 밑줄",wf:[16,92,150,4],cls:"hdr",p:[["X","Switch(App.ActiveScreen, NewScreen, 16, CoordScreen, 170, PlanScreen, 324, ResultScreen, 478, ListScreen, 652, 806)"],["Y","92"],["Width","150"],["Height","4"],["Fill",BLUE]],
+    note:"탭 단추를 모두 만든 뒤 <b>마지막에</b> 넣어야 단추 위에 보입니다. ④ 탭 숫자는 '방문일이 지났거나 판정이 남은 업체' 수입니다."}
+ ],
+
+ /* ---------------- ① 신규추가 ---------------- */
+ new:[
+  {n:"NewScreen",t:"screen",d:"화면이 열릴 때 달력 시작일 정하기",p:[["OnVisible",`If(IsBlank(varNCal), Set(varNCal, ${MON("Today()")}))`]],note:"앱을 열면 처음 보이는 화면이라, 여기서 달력의 첫 월요일(이번 주)을 정합니다."},
+  lbl("lblNTitle","제목",[16,108,660,30],`If(IsBlank(varNew), "새 업체 등록", "임시저장 이어 쓰기 · " & varNew.상호명)`,TITLE),
+  {n:"입력칸 이름표 9개",t:"labels",d:"입력칸 위의 작은 글자",common:"Height <b>20</b>, Size <b>11</b>, Color <span class=\"v\" data-c=\""+GRAY+"\">"+GRAY+"</span>",
+    rows:[["수배주체 *",16,144,320],["상호명 *",356,144,320],["의뢰예상제품 *",16,204,320],["소재지 *",356,204,320],["담당자 성함 *",16,264,320],["연락처 *",356,264,320],["E-MAIL *",16,324,320],["협/생 담당자 (알림 받는 사람)",356,324,320],["수배사유 *",16,384,660]]},
+  inp("txtNSrc","수배주체",[16,166,320,34],"varNew.수배주체","예: 내부 / 영업팀 요청"),
+  inp("txtNName","상호명",[356,166,320,34],"varNew.상호명","업체 상호명"),
+  inp("txtNProd","의뢰예상제품",[16,226,320,34],"varNew.의뢰예상제품","예: 연질캡슐"),
+  inp("txtNAddr","소재지",[356,226,320,34],"varNew.소재지","예: 경기 화성시 향남읍 (시·군 포함)"),
+  inp("txtNMgr","업체 담당자 성함",[16,286,320,34],"varNew.업체담당자","예: 김지예 부장"),
+  inp("txtNTel","연락처",[356,286,320,34],"varNew.연락처","010-0000-0000"),
+  inp("txtNMail","E-MAIL",[16,346,320,34],"varNew.이메일","name@company.co.kr"),
+  {n:"cmbNOwner",t:"combo",d:"협/생 담당자 (사람 고르기)",wf:[356,346,320,34],p:[["Items","Choices(방문처.협생담당자)"],["DefaultSelectedItems",`If(IsBlank(varNew), Table(${ME}), Table(varNew.협생담당자))`]].concat(pos(356,346,320,34),[["SelectMultiple","false"],["IsSearchable","true"],["DisplayFields",`["DisplayName"]`],["SearchFields",`["DisplayName"]`]]),
+    note:"처음에는 <b>나</b>로 채워집니다. 재조율 · CAPA D+3 알림이 이 사람에게 Teams로 갑니다."},
+  inp("txtNReason","수배사유",[16,406,660,84],"varNew.수배사유","왜 이 업체를 찾았는지",[["Mode","TextMode.MultiLine"]]),
+  lbl("lblNDup","같은 상호명 경고",[16,494,660,22],`If(!IsBlank(Trim(txtNName.Text)) && !IsBlank(LookUp(방문처, 상호명 = Trim(txtNName.Text) && ID <> Coalesce(varNew.ID, 0))), "⚠ 같은 상호명이 이미 등록되어 있습니다 (전체업체에서 확인하세요)", "")`,[["Size","11"],["Color",RED]]),
+  lbl("lblNTempTitle","제목",[16,524,660,24],`"임시저장 목록 — 누르면 이어 쓰기"`,[["Size","12"],["FontWeight","FontWeight.Semibold"]]),
+  {n:"galNTemp",t:"galV",d:"임시저장한 업체 목록",wf:[16,550,660,206],p:[["Items",`Sort(Filter(방문처, 상태.Value = "임시저장"), ID, SortOrder.Descending)`]].concat(pos(16,550,660,206),[["TemplateSize","52"],["Fill",WHITE],
+    ["OnSelect",`Set(varNew, ThisItem); ClearCollect(colNReq, ${LOAD("ThisItem.방문요청일")})`]])},
+  {n:"제목 글자",t:"galTitle",in:"galNTemp",d:"큰 글자",p:[["Text","ThisItem.상호명"]]},
+  {n:"부제목 글자",t:"galSub",in:"galNTemp",d:"작은 글자",p:[["Text",`ThisItem.수배주체 & " · " & ThisItem.소재지 & " · 요청일 " & CountRows(Filter(Split(Coalesce(ThisItem.방문요청일, ""), ";"), !IsBlank(Value))) & "일"`]]},
+  lbl("lblNReqTitle","달력 제목",[696,108,654,30],`"방문요청일 * — 업체가 가능하다고 한 날을 모두 누르세요"`,TITLE),
+  btn("btnNPrev","달력 4주 앞으로",[696,144,84,30],"◀ 이전",`Set(varNCal, DateAdd(varNCal, -28, TimeUnit.Days))`),
+  lbl("lblNRange","달력 기간",[786,144,200,30],`Text(varNCal, "yyyy.m.d") & " ~ " & Text(DateAdd(varNCal, 34, TimeUnit.Days), "m.d")`,[["Align","Align.Center"]]),
+  btn("btnNNext","달력 4주 뒤로",[992,144,84,30],"다음 ▶",`Set(varNCal, DateAdd(varNCal, 28, TimeUnit.Days))`),
+  {n:"tglNRange",t:"toggle",d:"구간 선택 켜기/끄기",wf:[1100,144,60,30],p:[["Default","false"]].concat(pos(1100,144,60,30),[["OnChange","Set(varRSN, Blank())"]])},
+  lbl("lblNRangeHint","구간 선택 설명",[1166,144,184,30],`If(tglNRange.Value, If(IsBlank(varRSN), "구간: 시작일을 누르세요", "구간: 끝일을 누르세요"), "구간 선택 (꺼짐)")`,SMALL),
+  wkGal("galNWeek",696,180,654,91),
+  wkLbl("lblNWk","galNWeek"),
+  calGal("galNCal",696,204,654,240,46,"varNCal"),
+  dayCell("btnNDay","galNCal","colNReq","varRSN","tglNRange",false),
+  lbl("lblNPicked","고른 날 목록",[696,452,654,56],`"고른 날 (" & CountRows(colNReq) & "일): " & Concat(Sort(colNReq, d), Text(d, "[$-ko-KR]m/d(ddd)"), ", ")`,[["Size","12"],["VerticalAlign","VerticalAlign.Top"]]),
+  btn("btnNClearDates","고른 날 모두 지우기",[696,512,150,30],"날짜 모두 지우기",`Clear(colNReq); Set(varRSN, Blank())`),
+  lbl("lblNNeed","버튼 안내",[696,600,654,44],`If(${BASIC}, If(IsEmpty(colNReq), "✓ 임시저장할 수 있습니다 · 방문요청일을 고르면 일정조율도 켜집니다", "✓ 임시저장 · 일정조율 시작 모두 가능합니다"), "* 표시 칸(수배주체 ~ 수배사유)을 모두 채우면 임시저장이 켜집니다")`,[["Size","12"],["Color",`If(${BASIC}, ${GREEN}, ${GRAY})`]]),
+  btn("btnNReset","입력 지우고 새로 쓰기",[696,700,140,44],"새로 쓰기",`Set(varNew, Blank()); Clear(colNReq); Set(varRSN, Blank()); ${NRESET}`),
+  btn("btnNSave","임시저장",[850,700,200,44],"임시저장",`Set(varNew, Patch(방문처, If(IsBlank(varNew), Defaults(방문처), varNew), ${NREC}, {상태: {Value: "임시저장"}})); Notify("임시저장했습니다. 아래 임시저장 목록이나 전체업체에서 다시 열 수 있어요", NotificationType.Success)`,
+    [["DisplayMode",`If(${BASIC}, DisplayMode.Edit, DisplayMode.Disabled)`]],{note:"수배사유까지 채우면 켜집니다. 상태가 <b>임시저장</b>으로 저장됩니다."}),
+  btn("btnNCoord","일정조율 시작",[1066,700,284,44],"일정조율 시작 →",`With({r: Patch(방문처, If(IsBlank(varNew), Defaults(방문처), varNew), ${NREC}, {상태: {Value: "일정조율"}})}, If(IsBlank(LookUp(일정조율이력, 방문처ID = r.ID)), Patch(일정조율이력, Defaults(일정조율이력), {상호명: r.상호명, 방문처ID: r.ID, 회차: 1, 요청일: r.방문요청일})); Set(varSel, r)); Set(varNew, Blank()); Clear(colNReq); ${NRESET}; Navigate(CoordScreen, ScreenTransition.None)`,
+    [["DisplayMode",`If(${BASIC} && !IsEmpty(colNReq), DisplayMode.Edit, DisplayMode.Disabled)`]].concat(fill(BLUE)),{note:"방문요청일까지 고르면 켜집니다. 상태를 <b>일정조율</b>로 저장하고, 일정조율 <b>1회차</b> 줄을 만든 뒤 ② 탭으로 이동합니다."})
+ ],
+
+ /* ---------------- ② 일정조율 ---------------- */
+ coord:[
+  {n:"CoordScreen",t:"screen",d:"화면이 열릴 때 고른 업체 불러오기",p:[["OnVisible","If(!IsBlank(varSel), Select(btnLoad))"]],note:"① 탭에서 '일정조율 시작'으로 넘어오면 그 업체가 바로 열립니다."},
+  inp("txtCoSearch","업체 검색",[16,108,300,34],`""`,"업체명 · 지역 검색"),
+  {n:"galCoList",t:"galV",d:"일정조율 중인 업체 목록",wf:[16,148,300,608],p:[["Items",`Sort(Filter(방문처, 상태.Value = "일정조율", IsBlank(txtCoSearch.Text) || txtCoSearch.Text in 상호명 || txtCoSearch.Text in 소재지), 상호명, SortOrder.Ascending)`]].concat(pos(16,148,300,608),[["TemplateSize","60"],["Fill",WHITE],
+    ["TemplateFill",`If(ThisItem.ID = varSel.ID, ${LBLUE}, Color.White)`],["OnSelect","Set(varSel, ThisItem); Select(btnLoad)"]])},
+  {n:"제목 글자",t:"galTitle",in:"galCoList",d:"큰 글자",p:[["Text","ThisItem.상호명"]]},
+  {n:"부제목 글자",t:"galSub",in:"galCoList",d:"마지막 회차 상태",p:[["Text",`With({r: First(Sort(Filter(일정조율이력, 방문처ID = ThisItem.ID), 회차, SortOrder.Descending))}, If(IsBlank(r), "회차 없음", r.회차 & "회차 · " & If(IsBlank(r.협생가능일) || IsBlank(r.품보가능일), "응답 대기", IsBlank(r.공통일), "일정 재조율 필요", "시간 확인 필요")))`]]},
+  btn("btnLoad","(숨김) 고른 업체의 최근 회차 불러오기",[16,108,10,10],"불러오기",
+    `Set(varRound, First(Sort(Filter(일정조율이력, 방문처ID = varSel.ID), 회차, SortOrder.Descending))); If(IsBlank(varRound), Set(varRound, Patch(일정조율이력, Defaults(일정조율이력), {상호명: varSel.상호명, 방문처ID: varSel.ID, 회차: 1, 요청일: Coalesce(varSel.방문요청일, "")}))); ClearCollect(colReq, ${LOAD("varRound.요청일")}); ClearCollect(colCo, ${LOAD("varRound.협생가능일")}); ClearCollect(colQa, ${LOAD("varRound.품보가능일")}); Set(varCalStart, With({f: If(IsEmpty(colReq), Today(), First(Sort(colReq, d)).d)}, ${MON("f")})); Set(varRSReq, Blank()); Set(varRSCo, Blank()); Set(varRSQa, Blank())`,
+    [["Visible","false"]],{wf:null,note:"화면에 보이지 않는 도우미 단추입니다(Visible = false). 목록에서 업체를 누를 때마다 <b>Select(btnLoad)</b>로 이 수식을 실행해, 가장 최근 회차의 날짜들을 세 달력에 불러옵니다. 회차가 없으면(예전 데이터) 1회차를 만듭니다."}),
+  lbl("lblCoEmpty","업체를 고르지 않았을 때 안내",[332,108,1018,30],`"← 왼쪽에서 업체를 고르세요"`,[["Color",GRAY],["Visible","IsBlank(varSel)"]],{wf:null}),
+  lbl("lblCoName","고른 업체 정보",[332,108,1018,30],`varSel.상호명 & "    " & varSel.소재지 & " · 수배주체 " & varSel.수배주체 & " · 협/생 담당 " & varSel.협생담당자.DisplayName`,TITLE),
+  {n:"lblRHead1~7",t:"heads",d:"회차 표 머리글 7개",hy:142,h:20,cols:[["회차",332,46],["방문요청일",384,190],["협/생 (담당 · 가능시간)",580,200],["품질보증 (담당 · 가능시간)",786,200],["공통",992,110],["비고",1108,100],["시간대",1214,62]]},
+  {n:"galRounds",t:"galBV",d:"일정조율 회차 기록 (예시1·2·3처럼 쌓임)",wf:[332,164,944,132],p:[["Items","Sort(Filter(일정조율이력, 방문처ID = varSel.ID), 회차, SortOrder.Ascending)"]].concat(pos(332,164,944,132),[["TemplateSize","44"],
+    ["TemplateFill",`If(!IsBlank(ThisItem.협생가능일) && !IsBlank(ThisItem.품보가능일) && IsBlank(ThisItem.공통일), RGBA(253, 236, 234, 1), Color.White)`]]),
+    note:"두 팀이 모두 저장했는데 겹치는 날이 없으면 그 줄 전체가 <b>빨간색</b>이 됩니다(예시1). 나중에 전체업체 화면에서도 이 갤러리를 복사해 씁니다."},
+  sub("lblRNo","galRounds","회차",0,2,46,40,`ThisItem.회차 & "회"`,[["Size","11"]]),
+  sub("lblRReq","galRounds","방문요청일",52,2,190,40,DL("ThisItem.요청일"),[["Size","11"]]),
+  sub("lblRCo","galRounds","협/생 가능일",248,2,200,40,`If(IsBlank(ThisItem.협생가능일), "입력 대기", ${DL("ThisItem.협생가능일")} & Char(10) & ThisItem.협생응답자 & If(IsBlank(ThisItem.협생가능시간), "", " · " & ThisItem.협생가능시간))`,[["Size","11"]]),
+  sub("lblRQa","galRounds","품질보증 가능일",454,2,200,40,`If(IsBlank(ThisItem.품보가능일), "입력 대기", ${DL("ThisItem.품보가능일")} & Char(10) & ThisItem.품보응답자 & If(IsBlank(ThisItem.품보가능시간), "", " · " & ThisItem.품보가능시간))`,[["Size","11"]]),
+  sub("lblRCom","galRounds","공통",660,2,110,40,`If(IsBlank(ThisItem.협생가능일) || IsBlank(ThisItem.품보가능일), "—", IsBlank(ThisItem.공통일), "X", ${DL("ThisItem.공통일")})`,[["Size","11"],["FontWeight","FontWeight.Semibold"]]),
+  sub("lblRNote","galRounds","비고",776,2,100,40,`If(!IsBlank(ThisItem.시간대), "방문 확정", IsBlank(ThisItem.협생가능일) || IsBlank(ThisItem.품보가능일), "응답 대기", IsBlank(ThisItem.공통일), "일정 재조율 필요", "시간 확인 필요")`,[["Size","11"],["Color",`If(!IsBlank(ThisItem.협생가능일) && !IsBlank(ThisItem.품보가능일) && IsBlank(ThisItem.공통일), ${RED}, ${GRAY})`]]),
+  sub("lblRTime","galRounds","시간대",882,2,62,40,"ThisItem.시간대",[["Size","11"]]),
+  btn("btnCalPrev","세 달력 4주 앞으로",[332,304,80,28],"◀ 이전",`Set(varCalStart, DateAdd(varCalStart, -28, TimeUnit.Days))`),
+  lbl("lblCalRange","달력 기간",[418,304,180,28],`Text(varCalStart, "yyyy.m.d") & " ~ " & Text(DateAdd(varCalStart, 34, TimeUnit.Days), "m.d")`,[["Align","Align.Center"],["Size","12"]]),
+  btn("btnCalNext","세 달력 4주 뒤로",[604,304,80,28],"다음 ▶",`Set(varCalStart, DateAdd(varCalStart, 28, TimeUnit.Days))`),
+  {n:"tglRange",t:"toggle",d:"구간 선택 (세 달력 공통)",wf:[720,304,56,28],p:[["Default","false"]].concat(pos(720,304,56,28),[["OnChange","Set(varRSReq, Blank()); Set(varRSCo, Blank()); Set(varRSQa, Blank())"]])},
+  lbl("lblRangeHint","구간 선택 설명",[782,304,568,28],`"구간 선택을 켜면 시작일 → 끝일만 눌러 사이 평일을 모두 고릅니다 · 초록 테두리 = 업체 요청일"`,SMALL),
+  lbl("lblReqHead","① 요청일 제목",[332,338,334,24],`"① 업체 방문요청일 (" & varRound.회차 & "회차)"`,[["Size","12"],["FontWeight","FontWeight.Semibold"]]),
+  lbl("lblCoHead","② 협/생 제목",[674,338,334,24],`"② 협/생 가능일" & If(IsBlank(varRound.협생응답자), "", " · " & varRound.협생응답자)`,[["Size","12"],["FontWeight","FontWeight.Semibold"]]),
+  lbl("lblQaHead","③ 품보 제목",[1016,338,334,24],`"③ 품질보증 가능일" & If(IsBlank(varRound.품보응답자), "", " · " & varRound.품보응답자)`,[["Size","12"],["FontWeight","FontWeight.Semibold"]]),
+  wkGal("galWkReq",332,364,334,45), wkLbl("lblWkReq","galWkReq"),
+  wkGal("galWkCo",674,364,334,45), wkLbl("lblWkCo","galWkCo"),
+  wkGal("galWkQa",1016,364,334,45), wkLbl("lblWkQa","galWkQa"),
+  calGal("galReq",332,386,334,190,36,"varCalStart"), dayCell("btnReqDay","galReq","colReq","varRSReq","tglRange",false),
+  calGal("galCo",674,386,334,190,36,"varCalStart"), dayCell("btnCoDay","galCo","colCo","varRSCo","tglRange",true),
+  calGal("galQa",1016,386,334,190,36,"varCalStart"), dayCell("btnQaDay","galQa","colQa","varRSQa","tglRange",true),
+  btn("btnReqSave","요청일 저장",[332,582,160,32],"요청일 저장",`Set(varRound, LookUp(일정조율이력, ID = varRound.ID)); ClearCollect(colCo, ${LOAD("varRound.협생가능일")}); ClearCollect(colQa, ${LOAD("varRound.품보가능일")}); Set(varRound, Patch(일정조율이력, varRound, {요청일: ${STR("colReq")}, 공통일: If(IsBlank(varRound.협생가능일) || IsBlank(varRound.품보가능일), "", ${COMMON})})); Notify("방문요청일을 저장했습니다", NotificationType.Success)`,
+    [["DisplayMode","If(IsEmpty(colReq), DisplayMode.Disabled, DisplayMode.Edit)"]],{note:"2회차부터는 업체에게 새로 받은 날짜를 고르고 이 단추를 누릅니다."}),
+  lbl("lblReqTip","요청일 안내",[500,582,166,32],`"고른 날 " & CountRows(colReq) & "일"`,SMALL),
+  inp("txtCoTime","협/생 가능시간",[674,582,200,32],"varRound.협생가능시간","가능시간 (예: 오후 1시 이후)"),
+  btn("btnCoSave","협/생 저장",[882,582,126,32],"협/생 저장",`Set(varRound, LookUp(일정조율이력, ID = varRound.ID)); ClearCollect(colReq, ${LOAD("varRound.요청일")}); ClearCollect(colQa, ${LOAD("varRound.품보가능일")}); Set(varRound, Patch(일정조율이력, varRound, {협생가능일: ${STR("colCo")}, 협생응답자: User().FullName, 협생가능시간: txtCoTime.Text, 공통일: If(IsBlank(varRound.품보가능일), "", ${COMMON}), 재조율알림: false})); Patch(방문처, varSel, {협생참석자: cmbCoAtt.SelectedItems}); Set(varSel, LookUp(방문처, ID = varSel.ID)); Notify("협/생 가능일을 저장했습니다", NotificationType.Success)`,
+    [["DisplayMode","If(IsEmpty(colCo), DisplayMode.Disabled, DisplayMode.Edit)"]],{note:"저장하기 직전에 다른 사람이 저장한 품질보증 날짜를 다시 읽어 와서 공통일을 계산합니다. 저장한 사람 이름이 자동으로 남습니다."}),
+  inp("txtQaTime","품질보증 가능시간",[1016,582,200,32],"varRound.품보가능시간","가능시간 (예: 오전)"),
+  btn("btnQaSave","품질보증 저장",[1224,582,126,32],"품보 저장",`Set(varRound, LookUp(일정조율이력, ID = varRound.ID)); ClearCollect(colReq, ${LOAD("varRound.요청일")}); ClearCollect(colCo, ${LOAD("varRound.협생가능일")}); Set(varRound, Patch(일정조율이력, varRound, {품보가능일: ${STR("colQa")}, 품보응답자: User().FullName, 품보가능시간: txtQaTime.Text, 공통일: If(IsBlank(varRound.협생가능일), "", ${COMMON}), 재조율알림: false})); Patch(방문처, varSel, {품보참석자: cmbQaAtt.SelectedItems}); Set(varSel, LookUp(방문처, ID = varSel.ID)); Notify("품질보증 가능일을 저장했습니다", NotificationType.Success)`,
+    [["DisplayMode","If(IsEmpty(colQa), DisplayMode.Disabled, DisplayMode.Edit)"]]),
+  lbl("lblReqTip2","요청일 칸 설명",[332,620,334,32],`"업체와 통화해서 받은 날짜를 고르세요"`,SMALL),
+  {n:"cmbCoAtt",t:"combo",d:"협/생 참석자 (여러 명)",wf:[674,620,334,32],p:[["Items","Choices(방문처.협생참석자)"],["DefaultSelectedItems","varSel.협생참석자"]].concat(pos(674,620,334,32),[["SelectMultiple","true"],["IsSearchable","true"],["DisplayFields",`["DisplayName"]`],["SearchFields",`["DisplayName"]`],["InputTextPlaceholder",`"협/생 참석자 선택"`]]),
+    note:"이름 몇 글자를 치면 회사 사람이 검색됩니다. 여기 고른 사람에게 Outlook 일정과 D-2 · D-1 알림이 갑니다."},
+  {n:"cmbQaAtt",t:"combo",d:"품질보증 참석자 (여러 명)",wf:[1016,620,334,32],copy:"cmbCoAtt",p:[["Items","Choices(방문처.품보참석자)"],["DefaultSelectedItems","varSel.품보참석자"],["X","1016"],["InputTextPlaceholder",`"품질보증 참석자 선택"`]]},
+  lbl("lblFinalHead","④ 최종 확정 안내",[332,662,1018,24],`If(IsBlank(varRound.협생가능일) || IsBlank(varRound.품보가능일), "④ 최종 확정 — 두 팀이 모두 저장하면 공통일을 계산합니다", IsBlank(varRound.공통일), "④ 공통일 없음 → '다음 회차 만들기'로 업체에 날짜를 다시 받으세요 (협/생 담당자에게 Teams 알림이 갑니다)", "④ 공통일 " & ${DL("varRound.공통일")} & " — 날짜 · 방문시간을 넣고 방문 확정")`,
+    [["Size","12"],["FontWeight","FontWeight.Semibold"],["Color",`If(!IsBlank(varRound.협생가능일) && !IsBlank(varRound.품보가능일) && IsBlank(varRound.공통일), ${RED}, ${GREEN})`]]),
+  {n:"ddFinalDate",t:"dd",d:"최종 방문일 (공통일 중에서)",wf:[332,690,170,36],p:[["Items",`ForAll(Filter(Split(Coalesce(varRound.공통일, ""), ";"), !IsBlank(Value)), {날짜: Text(DateValue(Value), "[$-ko-KR]m/d (ddd)"), d: DateValue(Value)})`],["Value",`"날짜"`]].concat(pos(332,690,170,36),[["DisplayMode","If(IsBlank(varRound.공통일), DisplayMode.Disabled, DisplayMode.Edit)"]]),
+    note:"<b>Value</b> 속성은 수식 입력줄 대신 속성 창의 <b>값</b> 칸에서 <b>날짜</b>를 고르면 됩니다."},
+  inp("txtFinalTime","방문시간",[510,690,100,36],`""`,"13:30",[["DisplayMode","If(IsBlank(varRound.공통일), DisplayMode.Disabled, DisplayMode.Edit)"]]),
+  inp("txtDepart","출발 예정시간 (자동, 고칠 수 있음)",[618,690,90,36],`IfError(With({r: LookUp(지역이동시간, 지역 in varSel.소재지), t: TimeValue(txtFinalTime.Text)}, If(IsBlank(r) || IsBlank(txtFinalTime.Text), "", Text(DateAdd(t, -(r.소요분 + 20), TimeUnit.Minutes), "hh:mm"))), "")`,"출발"),
+  lbl("lblDepartInfo","출발시간 계산 근거",[714,690,270,36],`With({r: LookUp(지역이동시간, 지역 in varSel.소재지)}, If(IsBlank(r), "이동시간 정보 없음 → 출발시간 직접 입력", "자동: 약 " & r.거리km & "km · " & r.소요분 & "분 + 여유 20분"))`,SMALL),
+  btn("btnConfirm","방문 확정",[992,690,170,36],"방문 확정",`With({d: ddFinalDate.Selected.d, tm: Text(TimeValue(txtFinalTime.Text), "hh:mm")}, Patch(방문처, varSel, {상태: {Value: "방문예정"}, 확정방문일: d, 방문시간: tm, 출발예정시간: txtDepart.Text, 일정발송: false}); Patch(일정조율이력, varRound, {시간대: tm}); Notify(varSel.상호명 & " · " & Text(d, "m/d") & " " & tm & " 방문 확정 → ③ 방문예정으로 넘어갔습니다", NotificationType.Success)); Set(varPlan, LookUp(방문처, ID = varSel.ID)); Set(varSel, Blank())`,
+    [["DisplayMode",`If(!IsBlank(ddFinalDate.Selected) && IsMatch(txtFinalTime.Text, "^\\d{1,2}:\\d{2}$"), DisplayMode.Edit, DisplayMode.Disabled)`]].concat(fill(BLUE)),{note:"공통일 하나와 방문시간(09:30처럼)을 넣으면 켜집니다. 누르면 상태가 <b>방문예정</b>이 되고 업체가 왼쪽 목록에서 빠집니다."}),
+  btn("btnNextRound","다음 회차 만들기",[1170,690,180,36],"다음 회차 만들기",`Set(varRound, Patch(일정조율이력, Defaults(일정조율이력), {상호명: varSel.상호명, 방문처ID: varSel.ID, 회차: varRound.회차 + 1, 요청일: ""})); Clear(colReq); Clear(colCo); Clear(colQa); Notify("새 회차를 만들었습니다. 업체에게 받은 새 날짜를 ① 달력에서 고르고 '요청일 저장'을 누르세요", NotificationType.Information)`,
+    [["Visible","!IsBlank(varRound.협생가능일) && !IsBlank(varRound.품보가능일) && IsBlank(varRound.공통일)"]].concat(fill(AMBER)),{note:"겹치는 날이 없을 때만 보입니다(예시1 → 예시2)."})
+ ],
+
+ /* ---------------- ③ 방문예정 ---------------- */
+ plan:[
+  {n:"PlanScreen",t:"screen",d:"달력 시작 주 정하기",p:[["OnVisible",`If(IsBlank(varPWeek), Set(varPWeek, ${MON("Today()")}))`]]},
+  lbl("lblPCalTitle","달력 제목",[16,108,600,26],`"방문 확정 일정 (2주) · 오늘은 노란 칸"`,TITLE),
+  btn("btnPPrev","1주 앞으로",[1110,106,70,30],"◀",`Set(varPWeek, DateAdd(varPWeek, -7, TimeUnit.Days))`),
+  btn("btnPThis","이번 주로",[1186,106,90,30],"이번 주",`Set(varPWeek, ${MON("Today()")})`),
+  btn("btnPNext","1주 뒤로",[1282,106,68,30],"▶",`Set(varPWeek, DateAdd(varPWeek, 7, TimeUnit.Days))`),
+  {n:"galPCal",t:"galBH",d:"2주 달력 (14칸)",wf:[16,138,1334,120],p:[["Items","ForAll(Sequence(14, 0), DateAdd(varPWeek, Value, TimeUnit.Days))"]].concat(pos(16,138,1334,120),[["TemplateSize","93"],["TemplatePadding","2"],
+    ["TemplateFill",`If(ThisItem.Value = Today(), RGBA(255, 244, 206, 1), Weekday(ThisItem.Value, StartOfWeek.Monday) > 5, RGBA(246, 246, 246, 1), Color.White)`]]),note:"오늘 칸은 <b>연노랑 음영</b>, 주말은 회색입니다."},
+  sub("lblPDay","galPCal","요일·날짜",4,4,85,20,`Text(ThisItem.Value, "[$-ko-KR]m/d ddd")`,[["Size","11"],["FontWeight","FontWeight.Semibold"]]),
+  sub("lblPNames","galPCal","그날 방문 업체",4,26,85,90,`Concat(Filter(방문처, 확정방문일 = ThisItem.Value, 상태.Value <> "등록취소"), 상호명 & " " & 방문시간, Char(10))`,[["Size","10"],["VerticalAlign","VerticalAlign.Top"],["Color",BLUE]]),
+  lbl("lblPListTitle","목록 제목",[16,270,420,26],`"방문예정 업체 (가까운 순)"`,TITLE),
+  {n:"galPlan",t:"galV",d:"방문예정 업체 목록",wf:[16,300,420,456],p:[["Items",`Sort(Filter(방문처, 상태.Value = "방문예정"), 확정방문일, SortOrder.Ascending)`]].concat(pos(16,300,420,456),[["TemplateSize","64"],["Fill",WHITE],["Default","varPlan"],["OnSelect","Set(varPlan, ThisItem)"],
+    ["TemplateFill",`If(ThisItem.ID = galPlan.Selected.ID, ${LBLUE}, DateDiff(Today(), ThisItem.확정방문일) <= 2, RGBA(255, 249, 235, 1), Color.White)`]]),note:"방문 2일 전부터는 연한 주황색으로 눈에 띕니다(이때 Teams 알림도 갑니다)."},
+  {n:"제목 글자",t:"galTitle",in:"galPlan",d:"상호명 + D-day",p:[["Text",`ThisItem.상호명 & "   " & ${DD("ThisItem")}`]]},
+  {n:"부제목 글자",t:"galSub",in:"galPlan",d:"날짜 · 시간 · 출발 · 지역",p:[["Text",`Text(ThisItem.확정방문일, "[$-ko-KR]m/d (ddd)") & " " & ThisItem.방문시간 & If(IsBlank(ThisItem.출발예정시간), "", " · " & ThisItem.출발예정시간 & " 출발") & " · " & ThisItem.소재지`]]},
+  lbl("lblPEmpty","방문예정이 없을 때",[28,312,400,30],`"방문예정 업체가 없습니다"`,[["Color",GRAY],["Visible","IsEmpty(galPlan.AllItems)"]],{wf:null}),
+  {n:"frmPlan",t:"formD",d:"신규추가에서 넣은 업체 정보 (읽기 전용)",wf:[452,270,898,250],p:[["DataSource","방문처"],["Item","galPlan.Selected"]].concat(pos(452,270,898,250)),note:"보일 칸은 아래 8-1에서 고릅니다."},
+  {n:"방문 정보 칸 5개",t:"boxes",d:"일정조율에서 정한 내용 (머리글 + 값)",ghost:[["방문요청일",452,528,172,96],["협/생 참석",632,528,172,96],["품질보증 참석",812,528,172,96],["방문(예정)일",992,528,172,96],["시간 (출발)",1172,528,178,96]],
+    head:[["Y","528"],["Height","26"],["Fill","RGBA(255, 242, 204, 1)"],["Align","Align.Center"],["Size","11"],["FontWeight","FontWeight.Semibold"]],
+    val:[["Y","554"],["Height","70"],["BorderColor",LINE],["BorderThickness","1"],["Align","Align.Center"],["Size","12"],["Fill","Color.White"]],
+    rows:[["lblPH1","lblPV1",452,172,`"방문요청일"`,DL("galPlan.Selected.방문요청일")],
+          ["lblPH2","lblPV2",632,172,`"협/생 참석"`,`Concat(galPlan.Selected.협생참석자, DisplayName, ", ")`],
+          ["lblPH3","lblPV3",812,172,`"품질보증 참석"`,`Concat(galPlan.Selected.품보참석자, DisplayName, ", ")`],
+          ["lblPH4","lblPV4",992,172,`"방문(예정)일"`,`Text(galPlan.Selected.확정방문일, "[$-ko-KR]m월 d일 (ddd)")`],
+          ["lblPH5","lblPV5",1172,178,`"시간 (출발)"`,`galPlan.Selected.방문시간 & Char(10) & If(IsBlank(galPlan.Selected.출발예정시간), "(출발 미정)", "(" & galPlan.Selected.출발예정시간 & " 출발)")`]]},
+  lbl("lblPDepTitle","출발시간 직접 입력 안내",[452,634,200,32],`"출발시간 직접 입력"`,[["Size","12"]]),
+  inp("txtPDepart","출발 예정시간",[656,634,100,32],"galPlan.Selected.출발예정시간","11:00"),
+  btn("btnPDepSave","출발시간 저장",[764,634,90,32],"저장",`Patch(방문처, galPlan.Selected, {출발예정시간: txtPDepart.Text}); Notify("출발시간을 저장했습니다", NotificationType.Success)`),
+  lbl("lblPDepHint","설명",[862,634,488,32],`"자동 계산이 안 된 업체(지역 정보 없음)는 협/생에서 여기에 적어 주세요"`,SMALL),
+  btn("btnPToResult","방문결과 입력으로",[452,684,200,40],"④ 방문결과 입력 →",`Set(varRes, galPlan.Selected); Navigate(ResultScreen, ScreenTransition.None)`,fill(BLUE)),
+  btn("btnPBack","일정 다시 조율",[664,684,220,40],"일정 다시 조율 (② 탭으로)",`With({p: galPlan.Selected}, Patch(방문처, p, {상태: {Value: "일정조율"}, 일정발송: false}); Patch(일정조율이력, Defaults(일정조율이력), {상호명: p.상호명, 방문처ID: p.ID, 회차: CountRows(Filter(일정조율이력, 방문처ID = p.ID)) + 1, 요청일: ""}); Set(varSel, LookUp(방문처, ID = p.ID))); Navigate(CoordScreen, ScreenTransition.None)`,
+    [["DisplayMode","If(IsBlank(galPlan.Selected), DisplayMode.Disabled, DisplayMode.Edit)"]],{note:"업체 사정으로 방문을 미룰 때 씁니다. 새 회차를 만들고 ② 탭으로 갑니다. 이미 보낸 Outlook 일정은 각자 지워 주세요."}),
+  btn("btnPDetail","전체업체에서 보기",[896,684,180,40],"전체업체에서 보기",`Set(varAll, galPlan.Selected); Navigate(ListScreen, ScreenTransition.None)`)
+ ],
+
+ /* ---------------- ④ 방문결과 ---------------- */
+ result:[
+  lbl("lblRListTitle","목록 제목",[16,108,320,26],`"방문결과 입력 · 판정 대상"`,TITLE),
+  {n:"galRes",t:"galV",d:"방문예정 · 방문완료 · CAPA요청 업체",wf:[16,138,320,618],p:[["Items",`Sort(Filter(방문처, 상태.Value = "방문예정" || 상태.Value = "방문완료" || 상태.Value = "CAPA요청"), 확정방문일, SortOrder.Ascending)`]].concat(pos(16,138,320,618),[["TemplateSize","64"],["Fill",WHITE],["Default","varRes"],
+    ["TemplateFill",`If(ThisItem.ID = varRes.ID, ${LBLUE}, Color.White)`],
+    ["OnSelect","Set(varRes, ThisItem); Reset(txtScoreCo); Reset(txtScoreQa); Reset(txtNote); Reset(txtLink); Reset(dpActual); Reset(txtCancelReason)"]])},
+  {n:"제목 글자",t:"galTitle",in:"galRes",d:"큰 글자",p:[["Text","ThisItem.상호명"]]},
+  {n:"부제목 글자",t:"galSub",in:"galRes",d:"상태별 안내",p:[["Text",`Switch(ThisItem.상태.Value, "방문예정", "방문 " & Text(ThisItem.확정방문일, "[$-ko-KR]m/d (ddd)") & " · " & ${DD("ThisItem")}, "방문완료", "방문완료 · 등록 판단 대기", "CAPA요청", "CAPA 요청 D+" & DateDiff(ThisItem.CAPA요청일, Today()) & If(DateDiff(ThisItem.CAPA요청일, Today()) >= 3, " ⚠ 회신 확인", ""))`]]},
+  lbl("lblREmpty","업체를 고르지 않았을 때",[352,108,600,30],`"← 왼쪽에서 업체를 고르세요"`,[["Color",GRAY],["Visible","IsBlank(varRes)"]],{wf:null}),
+  {n:"conRes",t:"conV",d:"오른쪽 스크롤 영역 (구역 5개가 위에서 아래로 쌓임)",wf:[352,108,998,648],
+    ghost:[["secRInfo · 업체 · 실제 방문일 (H 92)",360,134,966,80],["secRScore · 점수 · 특이사항 · 링크 (H 216)",360,224,966,200],["secRMake · 제조 CAPA (H 250)",360,434,966,228],["↓ 스크롤 — secRProd · 생산 CAPA (H 290) · secRBtns · 버튼 (H 150)",360,672,966,76]],
+    p:pos(352,108,998,648).concat([["LayoutOverflowY","LayoutOverflow.Scroll"],["LayoutGap","12"],["Visible","!IsBlank(varRes)"]]),
+    note:"<b>세로 컨테이너</b>는 안에 넣은 구역을 위에서 아래로 자동으로 쌓고, 넘치면 스크롤 막대가 생깁니다. LayoutOverflowY는 속성 창의 <b>세로 오버플로</b> <span class=\"en\">(Vertical overflow)</span>에서 <b>스크롤</b>을 골라도 됩니다."},
+  {n:"secRInfo",t:"con",in:"conRes",d:"구역 1 · 업체 · 실제 방문일",p:[["Height","92"],["FillPortions","0"],["Fill",WHITE],["BorderColor",LINE],["BorderThickness","1"]]},
+  sub("lblRName","secRInfo","상호명 · 상태",16,10,640,30,`varRes.상호명 & "   · " & varRes.상태.Value`,[["Size","17"],["FontWeight","FontWeight.Semibold"]]),
+  sub("lblRSub","secRInfo","예정 · 참석자",16,44,640,40,`"예정 " & Text(varRes.확정방문일, "[$-ko-KR]m/d (ddd)") & " " & varRes.방문시간 & " · " & varRes.소재지 & Char(10) & "참석: 협/생 " & Concat(varRes.협생참석자, DisplayName, ", ") & " / 품질보증 " & Concat(varRes.품보참석자, DisplayName, ", ")`,[["Size","11"],["Color",GRAY]]),
+  sub("lblActualTitle","secRInfo","제목",700,10,260,20,`"실제 방문일 *"`,[["Size","11"],["Color",GRAY]]),
+  {n:"dpActual",t:"date",in:"secRInfo",d:"실제 방문일",p:[["DefaultDate","Coalesce(varRes.실제방문일, varRes.확정방문일)"]].concat(pos(700,34,260,36))},
+  {n:"secRScore",t:"con",in:"conRes",d:"구역 2 · 방문 점수 · 특이사항 · 자료 링크",p:[["Height","216"],["FillPortions","0"],["Fill",WHITE],["BorderColor",LINE],["BorderThickness","1"]]},
+  sub("lblScoreTitle","secRScore","제목",16,10,400,26,`"방문 점수 및 특이사항"`,TITLE),
+  {n:"점수 표 글자 6개",t:"labels",in:"secRScore",d:"점수 표 머리글과 줄 이름",common:"Height <b>34</b>, Size <b>12</b>",rows:[["본점수",140,42,120],["환산 (50%)",270,42,120],["협/생 *",16,66,120],["품질보증",16,106,120],["총점",16,146,120]]},
+  subInp("txtScoreCo","secRScore","협/생 본점수",140,120,"varRes.협생점수","",[["Format","TextFormat.Number"],["Y","66"],["Height","34"],["HintText",`"0~100"`]]),
+  sub("lblCoConv","secRScore","협/생 환산",270,66,120,34,`If(IsBlank(txtScoreCo.Text), "—", Text(Value(txtScoreCo.Text) * 0.5, "0.#"))`,[["Size","13"]]),
+  subInp("txtScoreQa","secRScore","품질보증 본점수",140,120,"varRes.품보점수","",[["Format","TextFormat.Number"],["Y","106"],["Height","34"],["HintText",`"0~100"`]]),
+  sub("lblQaConv","secRScore","품질보증 환산",270,106,120,34,`If(IsBlank(txtScoreQa.Text), "—", Text(Value(txtScoreQa.Text) * 0.5, "0.#"))`,[["Size","13"]]),
+  sub("lblTot","secRScore","총점",270,146,140,34,`Text(Value(txtScoreCo.Text) * 0.5 + Value(txtScoreQa.Text) * 0.5, "0.#") & " / 100"`,[["Size","15"],["FontWeight","FontWeight.Bold"],["Color",BLUE]]),
+  sub("lblNoteTitle","secRScore","제목",420,42,250,22,`"특이사항"`,[["Size","11"],["Color",GRAY]]),
+  {n:"txtNote",t:"text",in:"secRScore",d:"특이사항 (여러 줄)",p:[["Default","varRes.특이사항"],["Mode","TextMode.MultiLine"]].concat(pos(420,66,540,74))},
+  sub("lblLinkTitle","secRScore","제목",420,146,250,22,`"방문자료 링크 (자료가 있는 SharePoint · OneDrive 주소)"`,[["Size","11"],["Color",GRAY]]),
+  {n:"txtLink",t:"text",in:"secRScore",d:"방문자료 링크",p:[["Default","varRes.자료링크"],["HintText",`"https://회사-my.sharepoint.com/..."`]].concat(pos(420,170,440,34))},
+  {n:"btnOpenLink",t:"button",in:"secRScore",d:"링크 열기",p:[["Text",`"열기"`]].concat(pos(868,170,92,34),[["OnSelect","Launch(txtLink.Text)"],["DisplayMode",`If(StartsWith(txtLink.Text, "http"), DisplayMode.Edit, DisplayMode.Disabled)`]])},
+  {n:"secRMake",t:"con",in:"conRes",d:"구역 3 · 제조 CAPA 현황 (설비 규격)",p:[["Height","250"],["FillPortions","0"],["Fill",WHITE],["BorderColor",LINE],["BorderThickness","1"]]},
+  sub("lblMakeTitle","secRMake","제목",16,10,600,26,`"제조 CAPA 현황 (설비 규격)"`,TITLE),
+  {n:"btnAddMake",t:"button",in:"secRMake",d:"줄 추가",p:[["Text",`"+ 줄 추가"`]].concat(pos(840,8,120,30),[["OnSelect","Patch(제조설비, Defaults(제조설비), {상호명: varRes.상호명, 방문처ID: varRes.ID, 보유대수: 1})"]])},
+  {n:"lblMHead1~5",t:"heads",in:"secRMake",d:"제조 표 머리글 5개",hy:44,h:22,cols:[["종류",16,220],["용량",244,140],["보유대수",392,100],["보조가마",500,140],["비고",648,280]]},
+  {n:"galMake",t:"galBV",in:"secRMake",d:"제조 설비 줄 (칸을 고치면 바로 저장)",p:[["Items","Filter(제조설비, 방문처ID = varRes.ID)"]].concat(pos(16,68,944,170),[["TemplateSize","40"]])},
+  subInp("txtMKind","galMake","종류",0,220,"ThisItem.종류","Patch(제조설비, ThisItem, {종류: Self.Text})"),
+  subInp("txtMSize","galMake","용량",228,140,"ThisItem.용량","Patch(제조설비, ThisItem, {용량: Self.Text})"),
+  subInp("txtMQty","galMake","보유대수",376,100,"ThisItem.보유대수","Patch(제조설비, ThisItem, {보유대수: Value(Self.Text)})",[["Format","TextFormat.Number"]]),
+  subInp("txtMSub","galMake","보조가마",484,140,"ThisItem.보조가마","Patch(제조설비, ThisItem, {보조가마: Self.Text})"),
+  subInp("txtMNote","galMake","비고",632,272,"ThisItem.비고","Patch(제조설비, ThisItem, {비고: Self.Text})"),
+  {n:"icoMDel",t:"icon",in:"galMake",d:"줄 삭제 (휴지통)",p:[["Icon","Icon.Trash"]].concat(pos(912,6,28,28),[["Color",RED],["OnSelect","Remove(제조설비, ThisItem)"]])},
+  {n:"secRProd",t:"con",in:"conRes",d:"구역 4 · 생산 CAPA 현황",p:[["Height","290"],["FillPortions","0"],["Fill",WHITE],["BorderColor",LINE],["BorderThickness","1"]]},
+  sub("lblProdTitle","secRProd","제목",16,10,600,26,`"생산 CAPA 현황 (일CAPA = 설비CAPA × 보유대수, 월CAPA = 일CAPA × 20)"`,TITLE),
+  {n:"btnAddProd",t:"button",in:"secRProd",d:"줄 추가",p:[["Text",`"+ 줄 추가"`]].concat(pos(840,8,120,30),[["OnSelect","Patch(생산설비, Defaults(생산설비), {상호명: varRes.상호명, 방문처ID: varRes.ID, 보유대수: 1, 설비CAPA: 0, 일CAPA: 0, 월CAPA: 0, 콜마배정: 0})"]])},
+  {n:"lblPHead1~7",t:"heads",in:"secRProd",d:"생산 표 머리글 7개",hy:44,h:22,cols:[["설비명",16,180],["설비CAPA",204,110],["보유대수",322,80],["일CAPA",410,110],["월CAPA(20일)",528,120],["콜마배정",656,100],["비고",764,150]]},
+  {n:"galProd",t:"galBV",in:"secRProd",d:"생산 설비 줄",p:[["Items","Filter(생산설비, 방문처ID = varRes.ID)"]].concat(pos(16,68,944,170),[["TemplateSize","40"]])},
+  subInp("txtPName","galProd","설비명",0,180,"ThisItem.설비명","Patch(생산설비, ThisItem, {설비명: Self.Text})"),
+  subInp("txtPCapa","galProd","설비CAPA (바꾸면 일·월 자동 계산)",188,110,"ThisItem.설비CAPA","Patch(생산설비, ThisItem, {설비CAPA: Value(Self.Text), 일CAPA: Value(Self.Text) * ThisItem.보유대수, 월CAPA: Value(Self.Text) * ThisItem.보유대수 * 20})",[["Format","TextFormat.Number"]]),
+  subInp("txtPQty","galProd","보유대수 (바꾸면 일·월 자동 계산)",306,80,"ThisItem.보유대수","Patch(생산설비, ThisItem, {보유대수: Value(Self.Text), 일CAPA: ThisItem.설비CAPA * Value(Self.Text), 월CAPA: ThisItem.설비CAPA * Value(Self.Text) * 20})",[["Format","TextFormat.Number"]]),
+  subInp("txtPDay","galProd","일CAPA (직접 고치면 월만 다시 계산)",394,110,"ThisItem.일CAPA","Patch(생산설비, ThisItem, {일CAPA: Value(Self.Text), 월CAPA: Value(Self.Text) * 20})",[["Format","TextFormat.Number"]]),
+  subInp("txtPMonth","galProd","월CAPA (직접 고칠 수 있음)",512,120,"ThisItem.월CAPA","Patch(생산설비, ThisItem, {월CAPA: Value(Self.Text)})",[["Format","TextFormat.Number"]]),
+  subInp("txtPKolmar","galProd","콜마배정",640,100,"ThisItem.콜마배정","Patch(생산설비, ThisItem, {콜마배정: Value(Self.Text)})",[["Format","TextFormat.Number"]]),
+  subInp("txtPNote","galProd","비고",748,156,"ThisItem.비고","Patch(생산설비, ThisItem, {비고: Self.Text})"),
+  {n:"icoPDel",t:"icon",in:"galProd",d:"줄 삭제 (휴지통)",copy:"icoMDel",p:[["OnSelect","Remove(생산설비, ThisItem)"]]},
+  {n:"합계 줄 글자 5개",t:"labels",in:"secRProd",d:"표 아래 합계 (회색 바탕)",common:"Y <b>244</b>, Height <b>30</b>, Size <b>12</b>, FontWeight <b>Semibold</b>, Fill <span class=\"v\" data-c=\"RGBA(243, 243, 243, 1)\">RGBA(243, 243, 243, 1)</span>. 이름과 Text는 아래 표대로",
+    rows:[["lblPTotLbl",16,244,180,`"합계"`],["lblPTotQty",322,244,80,`CountRows(galProd.AllItems) & "종"`],["lblPTotDay",410,244,110,`Text(Sum(galProd.AllItems, 일CAPA), "#,##0")`],["lblPTotMonth",528,244,120,`Text(Sum(galProd.AllItems, 월CAPA), "#,##0")`],["lblPTotKolmar",656,244,100,`Text(Sum(galProd.AllItems, 콜마배정), "#,##0")`]]},
+  {n:"secRBtns",t:"con",in:"conRes",d:"구역 5 · 등록취소 사유 · 버튼",p:[["Height","150"],["FillPortions","0"],["Fill",WHITE],["BorderColor",LINE],["BorderThickness","1"]]},
+  sub("lblBtnGuide","secRBtns","버튼 안내",16,8,944,24,`"방문완료: 협/생 점수를 넣으면 켜짐 · CAPA요청 · 등록취소: 언제든 · 등록완료: 방문완료나 CAPA요청 뒤"`,SMALL),
+  sub("lblCancelTitle","secRBtns","제목",16,40,300,20,`"등록취소 사유 (업체 결격 등 · 등록취소 때만)"`,[["Size","11"],["Color",GRAY]]),
+  {n:"txtCancelReason",t:"text",in:"secRBtns",d:"등록취소 사유",p:[["Default","varRes.등록취소사유"],["HintText",`"예: GMP 미보유"`]].concat(pos(16,62,440,34))},
+  {n:"btnRReset",t:"button",in:"secRBtns",d:"취소 (고친 내용 되돌리기)",p:[["Text",`"취소"`]].concat(pos(16,104,100,38),[["OnSelect","Reset(txtScoreCo); Reset(txtScoreQa); Reset(txtNote); Reset(txtLink); Reset(dpActual); Reset(txtCancelReason)"]])},
+  {n:"btnRSave",t:"button",in:"secRBtns",d:"저장 (상태는 그대로)",p:[["Text",`"저장"`]].concat(pos(124,104,110,38),[["OnSelect",`Set(varRes, Patch(방문처, varRes, ${RF})); Notify("저장했습니다 (상태는 그대로)", NotificationType.Success)`]])},
+  {n:"btnRCancelReg",t:"button",in:"secRBtns",d:"등록취소 (업체 결격)",p:[["Text",`"등록취소"`]].concat(pos(242,104,130,38),fill(RED),[["DisplayMode","If(IsBlank(Trim(txtCancelReason.Text)), DisplayMode.Disabled, DisplayMode.Edit)"],
+    ["OnSelect",`Patch(방문처, varRes, {상태: {Value: "등록취소"}, 판정일: Today(), 등록취소사유: Trim(txtCancelReason.Text), 특이사항: txtNote.Text}); Notify(varRes.상호명 & " 등록취소", NotificationType.Warning); Set(varRes, Blank())`]]),note:"사유를 적어야 켜집니다(나중에 왜 취소했는지 남기기 위한 제안)."},
+  {n:"btnRCapa",t:"button",in:"secRBtns",d:"CAPA요청 (경과일 세기 시작)",p:[["Text",`"CAPA요청"`]].concat(pos(380,104,130,38),fill(AMBER),[["DisplayMode",`If(varRes.상태.Value = "방문예정" || varRes.상태.Value = "방문완료", DisplayMode.Edit, DisplayMode.Disabled)`],
+    ["OnSelect",`Set(varRes, Patch(방문처, varRes, ${RF}, {상태: {Value: "CAPA요청"}, CAPA요청일: Today()})); Notify("CAPA 요청 — 오늘부터 경과일을 셉니다. D+3에 협/생 담당자에게 Teams 알림", NotificationType.Warning)`]]),note:"누른 날이 CAPA요청일이 되고, 왼쪽 목록에 D+1, D+2… 가 표시됩니다."},
+  {n:"btnRDone",t:"button",in:"secRBtns",d:"방문완료 (리포트 자동 생성)",p:[["Text",`"방문완료"`]].concat(pos(518,104,150,38),fill(BLUE),[["DisplayMode",`If(varRes.상태.Value = "방문예정" && !IsBlank(txtScoreCo.Text) && !IsBlank(dpActual.SelectedDate), DisplayMode.Edit, DisplayMode.Disabled)`],
+    ["OnSelect",`Set(varRes, Patch(방문처, varRes, ${RF}, {상태: {Value: "방문완료"}, 리포트HTML: lblReportHtml.Text, 리포트발송: false})); Notify(varRes.상호명 & " 방문완료 — 몇 분 뒤 리포트 PDF가 '방문 리포트'에 저장됩니다", NotificationType.Success)`]]),note:"협/생 점수를 넣어야 켜집니다. 리포트 내용(lblReportHtml)도 함께 저장해서 흐름⑤가 PDF를 만듭니다. CAPA 표를 먼저 채운 뒤 누르세요."},
+  {n:"btnRReg",t:"button",in:"secRBtns",d:"등록완료",p:[["Text",`"등록완료"`]].concat(pos(676,104,140,38),fill(GREEN),[["DisplayMode",`If(varRes.상태.Value = "방문완료" || varRes.상태.Value = "CAPA요청", DisplayMode.Edit, DisplayMode.Disabled)`],
+    ["OnSelect",`Patch(방문처, varRes, ${RF}, {상태: {Value: "등록완료"}, 판정일: Today()}); Notify(varRes.상호명 & " 등록완료", NotificationType.Success); Set(varRes, Blank())`]])},
+  {n:"btnRReport",t:"button",in:"secRBtns",d:"리포트 다시 만들기",p:[["Text",`"리포트 다시 만들기"`]].concat(pos(824,104,136,38),[["Size","11"],["DisplayMode",`If(varRes.상태.Value = "방문완료" || varRes.상태.Value = "CAPA요청", DisplayMode.Edit, DisplayMode.Disabled)`],
+    ["OnSelect",`Set(varRes, Patch(방문처, varRes, ${RF}, {리포트HTML: lblReportHtml.Text, 리포트발송: false})); Notify("리포트를 다시 만듭니다 (몇 분 뒤 새 PDF)", NotificationType.Information)`]]),note:"방문완료 뒤에 CAPA 표나 점수를 고쳤을 때 누르면 새 PDF가 만들어집니다."},
+  {n:"lblReportHtml",t:"label",d:"(숨김) 리포트 내용을 만드는 글자",wf:null,p:[["Text","REPORT"],["Visible","false"]],note:"화면 아무 곳에나(컨테이너 밖) 레이블을 하나 넣고 Visible을 false로 합니다. Text 수식이 업체 정보 · 점수 · 특이사항 · CAPA 표 두 개를 리포트 HTML로 만듭니다. 흐름⑤는 이 내용을 PDF로 바꾸기만 합니다."}
+ ],
+
+ /* ---------------- 전체업체 ---------------- */
+ list:[
+  inp("txtLSearch","검색칸",[16,108,320,34],`""`,"업체명 · 지역 검색"),
+  {n:"ddLStatus",t:"dd",d:"상태 고르기",wf:[16,148,200,34],p:[["Items",`["전체", "임시저장", "일정조율", "방문예정", "방문완료", "CAPA요청", "등록완료", "등록취소"]`],["Default",`"전체"`]].concat(pos(16,148,200,34))},
+  btn("btnLNew","새 업체",[224,148,112,34],"+ 신규",`Set(varNew, Blank()); Clear(colNReq); Navigate(NewScreen, ScreenTransition.None)`),
+  {n:"galAll",t:"galV",d:"전체 업체 목록",wf:[16,188,320,568],p:[["Items",`Sort(Filter(방문처, ddLStatus.Selected.Value = "전체" || 상태.Value = ddLStatus.Selected.Value, IsBlank(txtLSearch.Text) || txtLSearch.Text in 상호명 || txtLSearch.Text in 소재지), ID, SortOrder.Descending)`]].concat(pos(16,188,320,568),[["TemplateSize","60"],["Fill",WHITE],["Default","varAll"],
+    ["TemplateFill",`If(ThisItem.ID = varAll.ID, ${LBLUE}, Color.White)`],["OnSelect","Set(varAll, ThisItem)"]])},
+  {n:"제목 글자",t:"galTitle",in:"galAll",d:"큰 글자",p:[["Text","ThisItem.상호명"]]},
+  {n:"부제목 글자",t:"galSub",in:"galAll",d:"상태 · 날짜",p:[["Text",`ThisItem.상태.Value & " · " & If(IsBlank(ThisItem.확정방문일), ThisItem.소재지, Text(ThisItem.확정방문일, "[$-ko-KR]m/d (ddd)"))`]]},
+  lbl("lblLEmpty","업체를 고르지 않았을 때",[352,108,600,30],`"← 왼쪽에서 업체를 고르세요"`,[["Color",GRAY],["Visible","IsBlank(varAll)"]],{wf:null}),
+  {n:"conAll",t:"conV",d:"오른쪽 스크롤 영역 (진행된 구역만 보임)",wf:[352,108,998,648],
+    ghost:[["secA · 기본 정보 (항상)",360,134,966,182],["secB · 일정 조율 기록 (회차가 있으면)",360,326,966,120],["secC · 방문 일정 (확정되면)",360,456,966,70],["secD · 방문 결과 · CAPA (방문 뒤) ↓",360,536,966,150],["secE · 판정 (CAPA요청 · 등록완료 · 등록취소)",360,696,966,52]],
+    p:pos(352,108,998,648).concat([["LayoutOverflowY","LayoutOverflow.Scroll"],["LayoutGap","12"],["Visible","!IsBlank(varAll)"]]),
+    note:"구역의 Visible이 false면 그 자리가 접혀서 <b>진행된 내용까지만</b> 보입니다."},
+  {n:"secA",t:"con",in:"conAll",d:"구역 A · 기본 정보 (신규추가 내용)",p:[["Height","340"],["FillPortions","0"],["Fill",WHITE],["BorderColor",LINE],["BorderThickness","1"]]},
+  sub("lblAName","secA","상호명 · 상태",16,10,520,30,`varAll.상호명 & "   · " & varAll.상태.Value`,[["Size","17"],["FontWeight","FontWeight.Semibold"]]),
+  {n:"btnAGo",t:"button",in:"secA",d:"지금 단계 탭으로 가기",p:[["Text",`Switch(varAll.상태.Value, "임시저장", "이어 쓰기 →", "일정조율", "일정조율 열기 →", "방문예정", "방문예정 열기 →", "방문완료", "방문결과 열기 →", "CAPA요청", "방문결과 열기 →", "진행 끝")`]].concat(pos(556,8,170,32),[["DisplayMode",`If(varAll.상태.Value = "등록완료" || varAll.상태.Value = "등록취소", DisplayMode.Disabled, DisplayMode.Edit)`],
+    ["OnSelect",`Switch(varAll.상태.Value, "임시저장", Set(varNew, varAll); ClearCollect(colNReq, ${LOAD("varAll.방문요청일")}); Navigate(NewScreen, ScreenTransition.None), "일정조율", Set(varSel, varAll); Navigate(CoordScreen, ScreenTransition.None), "방문예정", Set(varPlan, varAll); Navigate(PlanScreen, ScreenTransition.None), Set(varRes, varAll); Navigate(ResultScreen, ScreenTransition.None))`]]),
+    note:"임시저장 업체는 <b>이어 쓰기</b>로 ① 신규추가 화면에 불러와 나머지를 채웁니다."},
+  {n:"btnAEdit",t:"button",in:"secA",d:"편집",p:[["Text",`"편집"`]].concat(pos(734,8,70,32),[["OnSelect","EditForm(frmAll)"],["Visible","frmAll.Mode = FormMode.View"]])},
+  {n:"btnASave",t:"button",in:"secA",d:"저장",p:[["Text",`"저장"`]].concat(pos(734,8,70,32),[["OnSelect","SubmitForm(frmAll)"],["Visible","frmAll.Mode <> FormMode.View"]])},
+  {n:"btnACancel",t:"button",in:"secA",d:"취소",p:[["Text",`"취소"`]].concat(pos(812,8,70,32),[["OnSelect","ResetForm(frmAll); ViewForm(frmAll)"],["Visible","frmAll.Mode <> FormMode.View"]])},
+  {n:"btnADelete",t:"button",in:"secA",d:"삭제 (관련 기록도 함께)",p:[["Text",`"삭제"`]].concat(pos(890,8,70,32),fill(RED),[["Visible","frmAll.Mode = FormMode.View"],
+    ["OnSelect",`RemoveIf(일정조율이력, 방문처ID = varAll.ID); RemoveIf(제조설비, 방문처ID = varAll.ID); RemoveIf(생산설비, 방문처ID = varAll.ID); Remove(방문처, varAll); Notify("삭제했습니다. SharePoint 휴지통에서 되살릴 수 있어요", NotificationType.Warning); Set(varAll, Blank())`]]),
+    note:"그 업체의 일정조율 회차 · 제조설비 · 생산설비 줄도 같이 지웁니다(제안)."},
+  {n:"frmAll",t:"form",in:"secA",d:"기본 정보 양식 (보기 ↔ 편집)",p:[["DataSource","방문처"],["Item","varAll"],["DefaultMode","FormMode.View"]].concat(pos(16,48,944,280),[["OnSuccess",`Set(varAll, frmAll.LastSubmit); Notify("저장했습니다", NotificationType.Success); ViewForm(frmAll)`]]),note:"보일 칸은 아래 10-1에서 고릅니다."},
+  {n:"secB",t:"con",in:"conAll",d:"구역 B · 일정 조율 기록",p:[["Height","210"],["FillPortions","0"],["Fill",WHITE],["BorderColor",LINE],["BorderThickness","1"],["Visible","!IsBlank(LookUp(일정조율이력, 방문처ID = varAll.ID))"]]},
+  sub("lblBTitle","secB","제목",16,10,600,26,`"일정 조율 기록"`,TITLE),
+  {n:"머리글 · 회차 갤러리 복사",t:"copynote",in:"secB",d:"② 일정조율 화면에서 복사",
+    how:"② <b>CoordScreen</b>에서 머리글 7개(lblRHead1~7)와 <b>galRounds</b>를 Ctrl+클릭으로 함께 선택 → Ctrl+C → <b>secB</b>를 클릭하고 Ctrl+V. 붙은 컨트롤을 아래처럼 옮기고, 갤러리 이름을 galARounds로 바꿉니다.",
+    p:[["머리글 7개의 Y","40"],["머리글 7개의 X","원래 X − 316 (예: 회차 332 → 16, 방문요청일 384 → 68)"],["galARounds의 X","16"],["galARounds의 Y","62"],["galARounds의 Items","Sort(Filter(일정조율이력, 방문처ID = varAll.ID), 회차, SortOrder.Ascending)"]]},
+  {n:"secC",t:"con",in:"conAll",d:"구역 C · 방문 일정",p:[["Height","100"],["FillPortions","0"],["Fill",WHITE],["BorderColor",LINE],["BorderThickness","1"],["Visible","!IsBlank(varAll.확정방문일)"]]},
+  sub("lblCTitle","secC","제목",16,10,600,26,`"방문 일정"`,TITLE),
+  sub("lblCBody","secC","방문일 · 시간 · 출발 · 참석자",16,40,944,52,`"방문일 " & Text(varAll.확정방문일, "[$-ko-KR]yyyy.m.d (ddd)") & " " & varAll.방문시간 & " · 출발 " & varAll.출발예정시간 & Char(10) & "참석: 협/생 " & Concat(varAll.협생참석자, DisplayName, ", ") & " / 품질보증 " & Concat(varAll.품보참석자, DisplayName, ", ")`,[["Size","12"]]),
+  {n:"secD",t:"con",in:"conAll",d:"구역 D · 방문 결과 · CAPA",p:[["Height","520"],["FillPortions","0"],["Fill",WHITE],["BorderColor",LINE],["BorderThickness","1"],["Visible","!IsBlank(varAll.실제방문일)"]]},
+  sub("lblDTitle","secD","제목",16,10,600,26,`"방문 결과"`,TITLE),
+  sub("lblDScore","secD","방문일 · 점수",16,40,944,26,`"실제 방문일 " & Text(varAll.실제방문일, "yyyy.m.d") & " · 협/생 " & varAll.협생점수 & "점 + 품질보증 " & varAll.품보점수 & "점 → 총점 " & Text(varAll.협생점수 * 0.5 + varAll.품보점수 * 0.5, "0.#")`,[["Size","12"],["FontWeight","FontWeight.Semibold"]]),
+  sub("lblDNote","secD","특이사항",16,70,944,80,`"특이사항: " & varAll.특이사항`,[["Size","12"],["VerticalAlign","VerticalAlign.Top"]]),
+  sub("lblDLink","secD","자료 링크 (누르면 열림)",16,154,944,24,`"방문자료 링크: " & varAll.자료링크`,[["Size","12"],["Color",BLUE],["OnSelect","Launch(varAll.자료링크)"]]),
+  {n:"CAPA 표 2개 복사",t:"copynote",in:"secD",d:"④ 방문결과 화면에서 복사 (읽기 전용으로)",
+    how:"④ <b>ResultScreen</b>의 secRMake 안에서 머리글 5개와 <b>galMake</b>를 함께 복사 → <b>secD</b>에 붙여 넣기. secRProd의 머리글 7개와 <b>galProd</b>도 같은 방법으로 붙여 넣습니다. 그다음 아래 값을 바꿉니다.",
+    p:[["제조 머리글 5개의 Y","188"],["galMake 복사본 이름 · Y · Height","galAMake · 212 · 120"],["galAMake의 Items","Filter(제조설비, 방문처ID = varAll.ID)"],["생산 머리글 7개의 Y","340"],["galProd 복사본 이름 · Y · Height","galAProd · 364 · 140"],["galAProd의 Items","Filter(생산설비, 방문처ID = varAll.ID)"],["두 갤러리의 DisplayMode","DisplayMode.View"],["두 갤러리 안 휴지통의 Visible","false"]]},
+  {n:"secE",t:"con",in:"conAll",d:"구역 E · 판정",p:[["Height","90"],["FillPortions","0"],["Fill",WHITE],["BorderColor",LINE],["BorderThickness","1"],["Visible",`varAll.상태.Value = "CAPA요청" || varAll.상태.Value = "등록완료" || varAll.상태.Value = "등록취소"`]]},
+  sub("lblETitle","secE","제목",16,10,600,26,`"판정"`,TITLE),
+  sub("lblEBody","secE","판정 내용",16,40,944,40,`Switch(varAll.상태.Value, "CAPA요청", "CAPA 요청일 " & Text(varAll.CAPA요청일, "yyyy.m.d") & " (D+" & DateDiff(varAll.CAPA요청일, Today()) & ")", "등록완료", "등록완료 · 판정일 " & Text(varAll.판정일, "yyyy.m.d"), "등록취소 · 판정일 " & Text(varAll.판정일, "yyyy.m.d") & " · 사유: " & varAll.등록취소사유) & "    · 리포트 PDF: SharePoint '방문 리포트'"`,[["Size","12"]])
+ ],
+
+ /* ---------------- 통계 ---------------- */
+ stats:[
+  {n:"StatsScreen",t:"screen",d:"탭을 열 때 월별 숫자 계산",p:[["OnVisible",`If(IsBlank(varStat), Set(varStat, "현황")); ${MONTHLY}`]],note:"최근 12개월 동안 달마다 <b>방문완료</b>(실제방문일)와 <b>등록완료</b>(판정일) 수를 세어 colMonthly에 담습니다. 편집 중에 값을 보려면 화면 이름 옆 <b>⋯ → OnVisible 실행</b>."},
+  btn("btnStView1","현황 보기",[16,108,120,32],"현황",`Set(varStat, "현황")`,[["Fill",`If(varStat = "현황", ${BLUE}, Color.White)`],["Color",`If(varStat = "현황", Color.White, ${BLUE})`]]),
+  btn("btnStView2","CAPA 조회 보기",[142,108,140,32],"CAPA 조회",`Set(varStat, "CAPA")`,[["Fill",`If(varStat = "CAPA", ${BLUE}, Color.White)`],["Color",`If(varStat = "CAPA", Color.White, ${BLUE})`]]),
+  {n:"conStat1",t:"con",d:"현황 묶음 (지금까지의 통계)",wf:[16,148,1334,608],ghost:[["숫자 4칸",16,168,1334,70],["월별 막대 차트",16,250,880,270],["단계별 업체 수",912,250,438,270],["최근 방문 내용 20건",16,532,1334,224]],p:pos(16,148,1334,608).concat([["Visible",`varStat = "현황"`]]),note:"안에 넣는 컨트롤의 X · Y는 이 묶음의 왼쪽 위(0, 0) 기준입니다."},
+  {n:"recSt1",t:"rect",in:"conStat1",d:"숫자 칸 1 배경",p:pos(0,0,326,90).concat([["Fill",WHITE],["BorderColor",LINE],["BorderThickness","1"]])},
+  sub("lblSt1Title","conStat1","숫자 칸 1 제목",14,8,300,20,`"이번 달 방문완료"`,[["Size","11"],["Color",GRAY]]),
+  sub("lblSt1Num","conStat1","숫자 칸 1 숫자",14,28,300,38,`Last(colMonthly).방문완료 & " 건"`,[["Size","24"],["FontWeight","FontWeight.Bold"]]),
+  sub("lblSt1Sub","conStat1","숫자 칸 1 비교",14,66,300,18,`"지난달 " & Index(colMonthly, 11).방문완료 & "건"`,[["Size","10"],["Color",GRAY]]),
+  {n:"숫자 칸 2·3·4",t:"group",in:"conStat1",d:"숫자 칸 1을 복사해서 만들기",
+    how:"conStat1 안의 <b>recSt1, lblSt1Title, lblSt1Num, lblSt1Sub</b>를 Ctrl+클릭으로 함께 선택 → Ctrl+C → Ctrl+V. 붙은 4개를 아래 값으로 바꿉니다. 3번 반복합니다.",
+    groups:[["숫자 칸 2",[["사각형의 X","336"],["글자 3개의 X","350"],["제목 Text",`"이번 달 등록완료"`],["숫자 Text",`Last(colMonthly).등록완료 & " 건"`],["비교 Text",`"지난달 " & Index(colMonthly, 11).등록완료 & "건"`]]],
+            ["숫자 칸 3",[["사각형의 X","672"],["글자 3개의 X","686"],["제목 Text",`"최근 12개월 등록 전환율"`],["숫자 Text",`Text(Sum(colMonthly, 등록완료) / Max(1, Sum(colMonthly, 방문완료)), "0%")`],["비교 Text",`"방문 " & Sum(colMonthly, 방문완료) & "건 → 등록 " & Sum(colMonthly, 등록완료) & "건"`]]],
+            ["숫자 칸 4",[["사각형의 X","1008"],["글자 3개의 X","1022"],["제목 Text",`"CAPA 요청 중"`],["숫자 Text",`CountRows(Filter(방문처, 상태.Value = "CAPA요청")) & " 건"`],["비교 Text",`"D+3 지난 건 " & CountRows(Filter(방문처, 상태.Value = "CAPA요청", DateDiff(CAPA요청일, Today()) >= 3)) & "건"`]]]]},
+  {n:"chtMonthly",t:"chart",in:"conStat1",d:"월별 방문완료 · 등록완료 막대 차트",p:[["Items","colMonthly"],["NumberOfSeries","2"],["ItemColorSet","[RGBA(42, 120, 214, 1), RGBA(235, 104, 52, 1)]"],["Markers","true"]],
+    note:"묶음 위치는 conStat1 기준 X 0, Y 102, 크기 약 880 × 270입니다. colMonthly의 첫 칸(월)이 막대 아래 이름, 다음 두 칸이 파랑(방문완료) · 주황(등록완료) 막대가 됩니다."},
+  {n:"차트 제목",t:"chartPart",in:"chtMonthly",d:"묶음 안의 제목 글자",p:[["Text",`"월별 방문완료 · 등록완료 (최근 12개월)"`]]},
+  sub("lblStageTitle","conStat1","제목",896,102,438,26,`"단계별 업체 수 (지금)"`,TITLE),
+  {n:"galStage",t:"galBV",in:"conStat1",d:"단계별 막대",p:[["Items",`Table({단계: "임시저장"}, {단계: "일정조율"}, {단계: "방문예정"}, {단계: "방문완료"}, {단계: "CAPA요청"}, {단계: "등록완료"}, {단계: "등록취소"})`]].concat(pos(896,130,438,242),[["TemplateSize","34"]])},
+  sub("lblStageName","galStage","단계 이름",0,4,110,26,"ThisItem.단계",[["Size","12"]]),
+  {n:"recStageBar",t:"rect",in:"galStage",d:"막대",p:[["X","116"],["Y","10"],["Width",`Max(2, 250 * CountRows(Filter(방문처, 상태.Value = ThisItem.단계)) / Max(1, CountRows(방문처)))`],["Height","14"],["Fill",BLUE]],note:"전체 업체 중 그 단계가 차지하는 만큼 길어집니다."},
+  sub("lblStageNum","galStage","업체 수",376,4,56,26,`CountRows(Filter(방문처, 상태.Value = ThisItem.단계))`,[["Align","Align.Right"],["FontWeight","FontWeight.Semibold"]]),
+  sub("lblRecentTitle","conStat1","제목",0,384,800,26,`"최근 방문 내용 (최근 20건 · 누르면 전체업체에서 상세)"`,TITLE),
+  {n:"lblRvHead1~5",t:"heads",in:"conStat1",d:"최근 방문 표 머리글 5개",hy:412,h:22,cols:[["방문일",0,110],["상호명",116,220],["상태",342,110],["총점",458,70],["특이사항",534,800]]},
+  {n:"galRecent",t:"galBV",in:"conStat1",d:"최근 방문 20건",p:[["Items",`FirstN(Sort(Filter(방문처, !IsBlank(실제방문일)), 실제방문일, SortOrder.Descending), 20)`]].concat(pos(0,436,1334,172),[["TemplateSize","34"],
+    ["OnSelect",`Set(varAll, ThisItem); Navigate(ListScreen, ScreenTransition.None)`]])},
+  sub("lblRvDate","galRecent","방문일",0,3,110,28,`Text(ThisItem.실제방문일, "[$-ko-KR]yy.m.d (ddd)")`,[["Size","12"]]),
+  sub("lblRvCo","galRecent","상호명",116,3,220,28,"ThisItem.상호명",[["FontWeight","FontWeight.Semibold"]]),
+  sub("lblRvSt","galRecent","상태",342,3,110,28,"ThisItem.상태.Value",[["Size","12"],["Color",`Switch(ThisItem.상태.Value, "등록완료", ${GREEN}, "등록취소", ${RED}, "CAPA요청", ${AMBER}, RGBA(66, 66, 66, 1))`]]),
+  sub("lblRvScore","galRecent","총점",458,3,70,28,`If(IsBlank(ThisItem.협생점수), "—", Text(ThisItem.협생점수 * 0.5 + ThisItem.품보점수 * 0.5, "0.#"))`,[["Align","Align.Right"]]),
+  sub("lblRvNote","galRecent","특이사항 한 줄",534,3,790,28,`Substitute(ThisItem.특이사항, Char(10), " / ")`,[["Size","12"],["Color",GRAY],["Wrap","false"]]),
+  {n:"conStat2",t:"con",d:"CAPA 조회 묶음 (현황 묶음과 같은 자리)",p:pos(16,148,1334,608).concat([["Visible",`varStat = "CAPA"`]]),note:"현황 묶음과 같은 자리에 겹쳐 놓고, 위의 두 단추로 번갈아 보입니다. 배치도에는 따로 그리지 않았습니다. 위치 · 크기는 conStat1과 똑같습니다."},
+  {n:"rdCapaType",t:"radio",in:"conStat2",d:"생산 / 제조 고르기",p:[["Items",`["생산 CAPA", "제조 설비"]`],["Default",`"생산 CAPA"`],["Layout","Layout.Horizontal"]].concat(pos(0,0,320,34))},
+  {n:"txtEquip",t:"text",in:"conStat2",d:"설비 검색",p:[["Default",`""`],["HintText",`"설비명 · 종류 검색 (비우면 전체)"`]].concat(pos(336,0,260,34))},
+  {n:"txtCapaCo",t:"text",in:"conStat2",d:"업체 검색",p:[["Default",`""`],["HintText",`"업체명 검색"`]].concat(pos(604,0,220,34))},
+  {n:"chkRegOnly",t:"check",in:"conStat2",d:"등록완료 업체만",p:[["Text",`"등록완료 업체만"`],["Default","false"]].concat(pos(836,0,220,34))},
+  sub("lblCapaSum","conStat2","검색 결과 합계",0,44,1334,26,`If(rdCapaType.Selected.Value = "생산 CAPA", "검색 결과 " & CountRows(galCapaP.AllItems) & "줄 · 업체 " & CountRows(Distinct(galCapaP.AllItems, 방문처ID)) & "곳 · 월CAPA 합계 " & Text(Sum(galCapaP.AllItems, 월CAPA), "#,##0") & " · 콜마배정 " & Text(Sum(galCapaP.AllItems, 콜마배정), "#,##0") & " · 여유 " & Text(Sum(galCapaP.AllItems, 월CAPA) - Sum(galCapaP.AllItems, 콜마배정), "#,##0"), "검색 결과 " & CountRows(galCapaM.AllItems) & "줄 · 업체 " & CountRows(Distinct(galCapaM.AllItems, 방문처ID)) & "곳 · 보유대수 합계 " & Sum(galCapaM.AllItems, 보유대수))`,[["Size","12"],["FontWeight","FontWeight.Semibold"],["Color",BLUE]]),
+  {n:"lblCpHead1~9",t:"heads",in:"conStat2",d:"생산 CAPA 머리글 9개",hy:78,h:22,vis:`rdCapaType.Selected.Value = "생산 CAPA"`,cols:[["상호명",0,180],["상태",186,90],["설비명",282,180],["설비CAPA",468,110],["보유대수",584,80],["일CAPA",670,120],["월CAPA(20일)",796,140],["콜마배정",942,110],["여유(월−배정)",1058,140]]},
+  {n:"galCapaP",t:"galBV",in:"conStat2",d:"생산 CAPA 조회 결과",p:[["Items",`Sort(Filter(생산설비, IsBlank(txtEquip.Text) || txtEquip.Text in 설비명, IsBlank(txtCapaCo.Text) || txtCapaCo.Text in 상호명, !chkRegOnly.Value || LookUp(방문처, ID = 방문처ID).상태.Value = "등록완료"), 월CAPA, SortOrder.Descending)`]].concat(pos(0,102,1334,506),[["TemplateSize","34"],["Visible",`rdCapaType.Selected.Value = "생산 CAPA"`]])},
+  sub("lblCpCo","galCapaP","상호명",0,3,180,28,"ThisItem.상호명",[["FontWeight","FontWeight.Semibold"]]),
+  sub("lblCpSt","galCapaP","업체 상태",186,3,90,28,"LookUp(방문처, ID = ThisItem.방문처ID).상태.Value",[["Size","11"],["Color",GRAY]]),
+  sub("lblCpName","galCapaP","설비명",282,3,180,28,"ThisItem.설비명"),
+  sub("lblCpCapa","galCapaP","설비CAPA",468,3,110,28,`Text(ThisItem.설비CAPA, "#,##0")`,[["Align","Align.Right"]]),
+  sub("lblCpQty","galCapaP","보유대수",584,3,80,28,"ThisItem.보유대수",[["Align","Align.Right"]]),
+  sub("lblCpDay","galCapaP","일CAPA",670,3,120,28,`Text(ThisItem.일CAPA, "#,##0")`,[["Align","Align.Right"]]),
+  sub("lblCpMon","galCapaP","월CAPA",796,3,140,28,`Text(ThisItem.월CAPA, "#,##0")`,[["Align","Align.Right"],["FontWeight","FontWeight.Semibold"]]),
+  sub("lblCpKol","galCapaP","콜마배정",942,3,110,28,`Text(ThisItem.콜마배정, "#,##0")`,[["Align","Align.Right"]]),
+  sub("lblCpFree","galCapaP","여유",1058,3,140,28,`Text(ThisItem.월CAPA - ThisItem.콜마배정, "#,##0")`,[["Align","Align.Right"],["Color",`If(ThisItem.월CAPA - ThisItem.콜마배정 > 0, ${GREEN}, ${RED})`]]),
+  {n:"lblCmHead1~7",t:"heads",in:"conStat2",d:"제조 설비 머리글 7개",hy:78,h:22,vis:`rdCapaType.Selected.Value = "제조 설비"`,cols:[["상호명",0,180],["상태",186,90],["종류",282,220],["용량",508,140],["보유대수",654,90],["보조가마",750,160],["비고",916,418]]},
+  {n:"galCapaM",t:"galBV",in:"conStat2",d:"제조 설비 조회 결과",p:[["Items",`Sort(Filter(제조설비, IsBlank(txtEquip.Text) || txtEquip.Text in 종류, IsBlank(txtCapaCo.Text) || txtCapaCo.Text in 상호명, !chkRegOnly.Value || LookUp(방문처, ID = 방문처ID).상태.Value = "등록완료"), 종류, SortOrder.Ascending)`]].concat(pos(0,102,1334,506),[["TemplateSize","34"],["Visible",`rdCapaType.Selected.Value = "제조 설비"`]])},
+  sub("lblCmCo","galCapaM","상호명",0,3,180,28,"ThisItem.상호명",[["FontWeight","FontWeight.Semibold"]]),
+  sub("lblCmSt","galCapaM","업체 상태",186,3,90,28,"LookUp(방문처, ID = ThisItem.방문처ID).상태.Value",[["Size","11"],["Color",GRAY]]),
+  sub("lblCmKind","galCapaM","종류",282,3,220,28,"ThisItem.종류"),
+  sub("lblCmSize","galCapaM","용량",508,3,140,28,"ThisItem.용량"),
+  sub("lblCmQty","galCapaM","보유대수",654,3,90,28,"ThisItem.보유대수",[["Align","Align.Right"]]),
+  sub("lblCmSub","galCapaM","보조가마",750,3,160,28,"ThisItem.보조가마"),
+  sub("lblCmNote","galCapaM","비고",916,3,410,28,"ThisItem.비고",[["Size","12"],["Color",GRAY]])
+ ]
+};
+/* 리포트 HTML 수식 (방문결과 화면의 숨김 레이블) */
+const REPORT=[
+`"<html><head><meta charset='utf-8'><style>body{font-family:'Malgun Gothic',sans-serif;font-size:10.5pt;margin:26px;color:#222}h1{font-size:17pt;margin:0 0 4px}h2{font-size:12.5pt;margin:18px 0 6px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #999;padding:5px 7px;text-align:left;vertical-align:top}th{background:#eef2f7;white-space:nowrap}.n{text-align:right}.box{white-space:pre-wrap;border:1px solid #999;padding:8px;min-height:50px}</style></head><body>"`,
+`"<h1>업체 방문 결과 리포트</h1><p>" & varRes.상호명 & " · 실제 방문일 " & Text(dpActual.SelectedDate, "yyyy-mm-dd") & " · 총점 " & lblTot.Text & "</p>"`,
+`"<h2>업체 기본 정보</h2><table><tr><th>수배주체</th><td>" & varRes.수배주체 & "</td><th>의뢰예상제품</th><td>" & varRes.의뢰예상제품 & "</td></tr><tr><th>소재지</th><td colspan='3'>" & varRes.소재지 & "</td></tr><tr><th>업체 담당자</th><td>" & varRes.업체담당자 & " · " & varRes.연락처 & "</td><th>E-MAIL</th><td>" & varRes.이메일 & "</td></tr><tr><th>수배사유</th><td colspan='3'>" & Substitute(varRes.수배사유, "<", "&lt;") & "</td></tr><tr><th>방문 일정</th><td>" & Text(varRes.확정방문일, "yyyy-mm-dd") & " " & varRes.방문시간 & "</td><th>참석자</th><td>" & Concat(varRes.협생참석자, DisplayName, ", ") & " / " & Concat(varRes.품보참석자, DisplayName, ", ") & "</td></tr></table>"`,
+`"<h2>방문 점수</h2><table><tr><th>구분</th><th class='n'>본점수</th><th class='n'>환산 (50%)</th></tr><tr><td>협/생</td><td class='n'>" & txtScoreCo.Text & "</td><td class='n'>" & lblCoConv.Text & "</td></tr><tr><td>품질보증</td><td class='n'>" & txtScoreQa.Text & "</td><td class='n'>" & lblQaConv.Text & "</td></tr><tr><th>총점</th><td></td><th class='n'>" & lblTot.Text & "</th></tr></table>"`,
+`"<h2>특이사항</h2><div class='box'>" & Substitute(txtNote.Text, "<", "&lt;") & "</div><p>방문자료 링크: " & txtLink.Text & "</p>"`,
+`"<h2>제조 CAPA 현황 (설비 규격)</h2><table><tr><th>종류</th><th>용량</th><th class='n'>보유대수</th><th>보조가마</th><th>비고</th></tr>" & Concat(galMake.AllItems, "<tr><td>" & 종류 & "</td><td>" & 용량 & "</td><td class='n'>" & 보유대수 & "</td><td>" & 보조가마 & "</td><td>" & 비고 & "</td></tr>") & "</table>"`,
+`"<h2>생산 CAPA 현황</h2><table><tr><th>설비명</th><th class='n'>설비CAPA</th><th class='n'>보유대수</th><th class='n'>일CAPA</th><th class='n'>월CAPA(20일)</th><th class='n'>콜마배정</th><th>비고</th></tr>" & Concat(galProd.AllItems, "<tr><td>" & 설비명 & "</td><td class='n'>" & Text(설비CAPA, "#,##0") & "</td><td class='n'>" & 보유대수 & "</td><td class='n'>" & Text(일CAPA, "#,##0") & "</td><td class='n'>" & Text(월CAPA, "#,##0") & "</td><td class='n'>" & Text(콜마배정, "#,##0") & "</td><td>" & 비고 & "</td></tr>") & "<tr><th>합계</th><td></td><th class='n'>" & lblPTotQty.Text & "</th><th class='n'>" & lblPTotDay.Text & "</th><th class='n'>" & lblPTotMonth.Text & "</th><th class='n'>" & lblPTotKolmar.Text & "</th><td></td></tr></table>"`,
+`"<p style='color:#777;font-size:9pt'>작성: " & User().FullName & " · " & Text(Now(), "yyyy-mm-dd hh:mm") & "</p></body></html>"`
+].join(" &\n");
+SCREENS.result.find(c=>c.n==="lblReportHtml").p[0][1]=REPORT;
+
+const INS={
+  rect:'<b>삽입(+)</b> 검색칸에 <span class="v" data-c="사각형">사각형</span> → <b>사각형</b> <span class="en">(Rectangle)</span>',
+  label:'<b>삽입(+)</b> 검색칸에 <span class="v" data-c="레이블">레이블</span> → <b>텍스트 레이블</b> <span class="en">(Text label, 클래식)</span>',
+  button:'<b>삽입(+)</b> 검색칸에 <span class="v" data-c="단추">단추</span> → <b>단추</b> <span class="en">(Button, 클래식)</span>',
+  text:'<b>삽입(+)</b> 검색칸에 <span class="v" data-c="텍스트 입력">텍스트 입력</span> → <b>텍스트 입력</b> <span class="en">(Text input, 클래식)</span>',
+  dd:'<b>삽입(+)</b> 검색칸에 <span class="v" data-c="드롭다운">드롭다운</span> → <b>드롭다운</b> <span class="en">(Drop down, 클래식)</span>',
+  date:'<b>삽입(+)</b> 검색칸에 <span class="v" data-c="날짜 선택">날짜 선택</span> → <b>날짜 선택</b> <span class="en">(Date picker, 클래식)</span>',
+  combo:'<b>삽입(+)</b> 검색칸에 <span class="v" data-c="콤보 상자">콤보 상자</span> → <b>콤보 상자</b> <span class="en">(Combo box, 클래식)</span>. 데이터 원본 창이 뜨면 <b>방문처</b>',
+  toggle:'<b>삽입(+)</b> 검색칸에 <span class="v" data-c="토글">토글</span> → <b>토글</b> <span class="en">(Toggle, 클래식)</span>',
+  radio:'<b>삽입(+)</b> 검색칸에 <span class="v" data-c="라디오">라디오</span> → <b>라디오</b> <span class="en">(Radio, 클래식)</span>',
+  check:'<b>삽입(+)</b> 검색칸에 <span class="v" data-c="확인란">확인란</span> → <b>확인란</b> <span class="en">(Check box, 클래식)</span>',
+  icon:'<b>삽입(+)</b> 검색칸에 <span class="v" data-c="휴지통">휴지통</span> → 아이콘 <b>휴지통</b> <span class="en">(Trash)</span>',
+  galV:'<b>삽입(+)</b> 검색칸에 <span class="v" data-c="세로 갤러리">세로 갤러리</span> → <b>세로 갤러리</b> <span class="en">(Vertical gallery)</span>. 데이터 원본 창이 뜨면 <b>방문처</b>. 속성 창 <b>레이아웃</b>을 <b>제목 및 부제목</b> <span class="en">(Title and subtitle)</span>으로',
+  galBV:'<b>삽입(+)</b> 검색칸에 <span class="v" data-c="빈 세로 갤러리">빈 세로 갤러리</span> → <b>빈 세로 갤러리</b> <span class="en">(Blank vertical gallery)</span>. 데이터 원본 창은 닫아도 됩니다(Items로 정합니다)',
+  galBH:'<b>삽입(+)</b> 검색칸에 <span class="v" data-c="빈 가로 갤러리">빈 가로 갤러리</span> → <b>빈 가로 갤러리</b> <span class="en">(Blank horizontal gallery)</span>. 데이터 원본 창은 닫아도 됩니다',
+  form:'<b>삽입(+)</b> 검색칸에 <span class="v" data-c="편집 양식">편집 양식</span> → <b>편집 양식</b> <span class="en">(Edit form)</span>. 데이터 원본 <b>방문처</b>',
+  formD:'<b>삽입(+)</b> 검색칸에 <span class="v" data-c="표시 양식">표시 양식</span> → <b>표시 양식</b> <span class="en">(Display form)</span>. 데이터 원본 <b>방문처</b>',
+  conV:'<b>삽입(+)</b> → 위쪽 분류 <b>레이아웃</b> <span class="en">(Layout)</span> → <b>세로 컨테이너</b> <span class="en">(Vertical container)</span>',
+  con:'<b>삽입(+)</b> → <b>레이아웃</b> → <b>컨테이너</b> <span class="en">(Container)</span>',
+  chart:'<b>삽입(+)</b> 검색칸에 <span class="v" data-c="세로 막대형">세로 막대형</span> → <b>세로 막대형 차트</b> <span class="en">(Column chart)</span>. 차트 · 제목 · 범례가 <b>한 묶음</b>으로 들어옵니다. 묶음을 끌어 자리에 놓고 모서리로 크기를 맞춘 뒤, 트리 뷰에서 묶음을 펼쳐 <b>안쪽 차트</b>(ColumnChart1)를 클릭합니다',
+  chartPart:'차트 묶음 안의 <b>제목 글자</b>(Title)를 클릭합니다 (새로 넣지 않아요)',
+  screen:'트리 뷰에서 <b>화면 이름 자체</b>를 클릭합니다 (컨트롤을 넣지 않아요)',
+  galTitle:'갤러리 <b>첫 줄의 큰 글자(제목)</b>를 클릭합니다 (새로 넣지 않아요)',
+  galSub:'갤러리 <b>첫 줄의 작은 글자(부제목)</b>를 클릭합니다 (새로 넣지 않아요)'
+};
+const CLS={rect:"rect",label:"lbl",button:"btn",text:"inp",dd:"inp",date:"inp",combo:"inp",toggle:"inp",galV:"gal",galBV:"gal",galBH:"gal",form:"form",formD:"form",conV:"gal",con:"gal"};
+
+/* ================= 렌더 ================= */
+const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function colRows(list){return list.map((r,i)=>`<tr><td class="num">${i+1}</td><td><span class="v" data-c="${esc(r[0])}">${esc(r[0])}</span></td><td><b>${r[1]}</b></td><td>${r[2]}</td></tr>`).join("");}
+$("#tblVisit").innerHTML=colRows(LIST_VISIT);
+$("#tblRound").innerHTML=colRows(LIST_ROUND);
+$("#tblMake").innerHTML=colRows(LIST_MAKE);
+$("#tblProd").innerHTML=colRows(LIST_PROD);
+$("#tblTrip").innerHTML=colRows(LIST_TRIP);
+$("#tblTripData").innerHTML=TRIP.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join("");
+$("#tblState").innerHTML=STATE_MAP.map(r=>`<tr><td>${r[0]}</td><td><span class="v" data-c="${r[1]}">${r[1]}</span></td></tr>`).join("");
+
+const cv=v=>`<span class="code" style="display:block;margin:0;padding:6px 8px">${esc(v)}</span>`;
+function propTable(p){return `<table><tbody>${p.map(r=>`<tr><td>${esc(r[0])}</td><td>${cv(r[1])}</td><td><button class="cp" type="button" data-c="${esc(r[1])}">복사</button></td></tr>`).join("")}</tbody></table>`;}
+const vchip=v=>`<span class="v" data-c="${esc(v)}">${esc(v)}</span>`;
+function renderScreen(key){
+  const list=SCREENS[key]; let no=0; const num={};
+  const byName=n=>list.find(c=>c.n===n);
+  list.forEach(c=>{if(!c.in&&c.wf)num[c.n]=++no;});
+  const pct=(x,y,w,h)=>`left:${x/13.66}%;top:${y/7.68}%;width:${w/13.66}%;height:${h/7.68}%`;
+  const wire=$(`[data-wire="${key}"]`);
+  if(wire){
+    let boxes=list.filter(c=>c.wf&&!c.in).map(c=>`<div class="w ${CLS[c.t]||""} ${c.cls||""}" style="${pct(...c.wf)}"><b>${num[c.n]}</b>${esc(c.n)}</div>`).join("");
+    list.forEach(c=>{
+      if(c.t==="heads"&&!c.in)boxes+=c.cols.map(h=>`<div class="w lbl" style="${pct(h[1],c.hy,h[2],c.h||24)}">${esc(h[0])}</div>`).join("");
+      if(c.ghost)boxes+=c.ghost.map(g=>`<div class="w rect ghost" style="${pct(g[1],g[2],g[3],g[4])}">${esc(g[0])}</div>`).join("");
+    });
+    if(key!=="hdr")boxes=`<div class="w rect hdr" style="${pct(0,0,1366,52)}">머리글 (5단계에서 복사됨)</div><div class="w rect" style="${pct(0,52,1366,44)}">탭 6개 (복사됨)</div>`+boxes;
+    wire.outerHTML=`<div class="wire" aria-label="화면 배치도">${boxes}</div><p class="wire-cap">화면 배치도 (가로 1366 × 세로 768) — 빨간 번호는 아래 카드 번호와 같습니다. 점선 상자는 묶음 안에 들어가는 내용입니다.</p>`;
+  }
+  const box=$(`[data-ctls="${key}"]`); if(!box)return;
+  box.outerHTML=list.map(c=>{
+    const id=`${key}-${c.n}-${c.in||""}`, sub=!!c.in;
+    const inPrefix=c.in?`<b>${esc(c.in)}</b>를 클릭해 선택한 상태에서 → `:"";
+    if(c.t==="group"){
+      const body=c.groups.map(g=>`<p style="margin:10px 0 4px"><b>${esc(g[0])}</b></p>`+propTable(g[1])).join("");
+      return card(id,"+",c.n,c.d,c.how,body,c.note,sub);
+    }
+    if(c.t==="copynote") return card(id,"+",c.n,c.d,c.how,propTable(c.p),c.note,sub);
+    if(c.t==="heads"){
+      const how=inPrefix+`<b>텍스트 레이블</b>을 ${c.cols.length}개 넣고(하나 넣고 Ctrl+C, Ctrl+V 반복) 아래처럼 바꿉니다. 모두 Y ${vchip(c.hy)}, Height <b>${c.h||24}</b>, Size <b>11</b>, Color ${vchip(GRAY)}`+(c.vis?`, Visible ${vchip(c.vis)}`:"")+".";
+      const body=`<table><thead><tr><th>Text</th><th>X</th><th>Width</th></tr></thead><tbody>${c.cols.map(h=>`<tr><td>${vchip('"'+h[0]+'"')}</td><td>${vchip(h[1])}</td><td>${vchip(h[2])}</td></tr>`).join("")}</tbody></table>`;
+      return card(id,"+",c.n,c.d,how,body,null,sub);
+    }
+    if(c.t==="labels"){
+      const named=c.rows[0].length===5;
+      const how=inPrefix+`<b>텍스트 레이블</b>을 ${c.rows.length}개 넣습니다. 공통: ${c.common}.`;
+      const body=named
+        ?`<div class="tw"><table><thead><tr><th>이름</th><th>X</th><th>Width</th><th>Text</th></tr></thead><tbody>${c.rows.map(r=>`<tr><td>${vchip(r[0])}</td><td>${vchip(r[1])}</td><td>${vchip(r[3])}</td><td>${cv(r[4])}</td><td><button class="cp" type="button" data-c="${esc(r[4])}">복사</button></td></tr>`).join("")}</tbody></table></div>`
+        :`<table><thead><tr><th>Text</th><th>X</th><th>Y</th><th>Width</th></tr></thead><tbody>${c.rows.map(r=>`<tr><td>${vchip('"'+r[0]+'"')}</td><td>${vchip(r[1])}</td><td>${vchip(r[2])}</td><td>${vchip(r[3])}</td></tr>`).join("")}</tbody></table>`;
+      return card(id,"+",c.n,c.d,how,body,c.note,sub);
+    }
+    if(c.t==="boxes"){
+      const how=`<b>텍스트 레이블</b> 두 개(위: 머리글, 아래: 값)를 한 쌍으로 만들어 5쌍을 놓습니다. 먼저 한 쌍을 공통 값으로 꾸민 뒤 복사하면 빠릅니다.`;
+      const body=`<p style="margin:6px 0 4px"><b>머리글 레이블 공통</b></p>${propTable(c.head)}<p style="margin:10px 0 4px"><b>값 레이블 공통</b></p>${propTable(c.val)}
+        <p style="margin:10px 0 4px"><b>쌍마다 다른 값</b> (두 레이블 모두 X · Width 같게)</p><div class="tw"><table><thead><tr><th>머리글 이름</th><th>값 이름</th><th>X</th><th>Width</th><th>머리글 Text</th><th>값 Text</th><th></th></tr></thead><tbody>${c.rows.map(r=>`<tr><td>${vchip(r[0])}</td><td>${vchip(r[1])}</td><td>${vchip(r[2])}</td><td>${vchip(r[3])}</td><td>${vchip(r[4])}</td><td>${cv(r[5])}</td><td><button class="cp" type="button" data-c="${esc(r[5])}">복사</button></td></tr>`).join("")}</tbody></table></div>`;
+      return card(id,"+",c.n,c.d,how,body,c.note,false);
+    }
+    const noNew=["galTitle","galSub","chartPart","screen"].includes(c.t);
+    const par=c.in?byName(c.in):null, parCon=par&&(par.t==="con"||par.t==="conV");
+    let how;
+    if(c.in&&noNew) how=`<b>${esc(c.in)}</b> 안에서: `+INS[c.t];
+    else if(parCon) how=inPrefix+(c.copy?`이미 만든 <b>${esc(c.copy)}</b>를 복사해 붙여 넣고 아래 값만 바꿉니다`:INS[c.t]);
+    else if(c.in) how=`<b>${esc(c.in)}</b>를 클릭 → 첫 칸 왼쪽 위 <b>연필(✏)</b> 클릭 → `+(c.copy?`이미 만든 <b>${esc(c.copy)}</b>를 클릭해 Ctrl+C → 연필(✏) 상태에서 Ctrl+V`:INS[c.t]);
+    else if(c.copy) how=`<b>${esc(c.copy)}</b>를 클릭 → Ctrl+C → Ctrl+V. 아래 값만 바꿉니다.`;
+    else how=INS[c.t];
+    const rename=noNew?"":` → 트리 뷰에서 이름을 ${vchip(c.n)}로 바꾸기`;
+    return card(id,c.in?"└":(num[c.n]||"·"),c.n,c.d,how+rename,propTable(c.p),c.note,sub);
+  }).join("");
+}
+function card(id,nb,nm,ds,how,body,note,sub){
+  return `<div class="ctl${sub?" sub-ctl":""}" data-ctl="${esc(id)}"><div class="ctl-h"><input type="checkbox" class="ck" data-k="${esc(id)}" aria-label="${esc(nm)} 완료"><span class="nb">${nb}</span><span class="nm">${esc(nm)}</span><span class="ds">${esc(ds)}</span></div>
+    <div class="ctl-b"><div class="how">${how}</div>${body}${note?`<div class="note">💡 ${note}</div>`:""}</div></div>`;
+}
+["hdr","new","coord","plan","result","list","stats"].forEach(renderScreen);
+
+/* ================= 복사 ================= */
+async function copyText(t,el){
+  try{await navigator.clipboard.writeText(t);}catch(e){
+    const ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");}catch(_){}ta.remove();}
+  if(el){el.classList.add("ok");const o=el.textContent;if(el.classList.contains("cp"))el.textContent="복사됨";setTimeout(()=>{el.classList.remove("ok");if(el.classList.contains("cp"))el.textContent=o;},1100);}
+}
+$$("div.code").forEach(d=>{if(d.querySelector(".cp"))return;const b=document.createElement("button");b.type="button";b.className="cp";b.textContent="복사";
+  b.dataset.c=d.dataset.copy!=null?d.dataset.copy:d.textContent;d.appendChild(b);});
+document.addEventListener("click",e=>{const t=e.target.closest("[data-c]"); if(!t||t.matches("input"))return; copyText(t.dataset.c,t);});
+$("#cpTrip").addEventListener("click",e=>{e.stopPropagation();copyText(TRIP.map(r=>r.join("\t")).join("\n"),e.target);});
+
+/* ================= 체크 · 진행률 · 목차 ================= */
+const KEY="pa_desktop_checks_v1"; let SAVED={};
+try{SAVED=JSON.parse(localStorage.getItem(KEY)||"{}")||{};}catch(e){SAVED={};}
+$$("ol.steps>li[data-k]").forEach(li=>{const c=document.createElement("input");c.type="checkbox";c.className="ck";c.dataset.k=li.dataset.k;c.setAttribute("aria-label","완료");li.prepend(c);});
+const boxes=()=>$$("input.ck[data-k]");
+function paint(){
+  boxes().forEach(c=>{c.checked=!!SAVED[c.dataset.k];const host=c.closest("li,.ctl");if(host)host.classList.toggle("done",c.checked);});
+  const all=boxes(), done=all.filter(c=>c.checked).length;
+  $("#pt").textContent=`${done} / ${all.length}`; $("#pb").style.width=(all.length?done/all.length*100:0)+"%";
+  $$("section.part").forEach(s=>{const b=$$(`#${s.id} input.ck[data-k]`), d=b.filter(c=>c.checked).length, el=$(`#toc a[href="#${s.id}"] .c`);
+    if(el){el.textContent=b.length?`${d}/${b.length}`:"";el.classList.toggle("done",b.length>0&&d===b.length);}});
+}
+document.addEventListener("change",e=>{const c=e.target;if(!c.matches("input.ck[data-k]"))return;
+  if(c.checked)SAVED[c.dataset.k]=1;else delete SAVED[c.dataset.k];
+  try{localStorage.setItem(KEY,JSON.stringify(SAVED));}catch(_){} paint();});
+$("#reset").onclick=()=>{if(!confirm("체크 표시를 모두 지울까요?"))return;SAVED={};try{localStorage.removeItem(KEY);}catch(_){} paint();};
+$("#toc").innerHTML=$$("section.part").map(s=>`<a href="#${s.id}"><span class="n">${esc(s.dataset.no||"")}</span>${esc(s.dataset.title)}<span class="c"></span></a>`).join("");
+const io=new IntersectionObserver(es=>{es.forEach(en=>{if(en.isIntersecting){$$("#toc a").forEach(a=>a.classList.toggle("on",a.getAttribute("href")==="#"+en.target.id));}});},{rootMargin:"-30% 0px -60% 0px"});
+$$("section.part").forEach(s=>io.observe(s));
+paint();
+
+</script>
+</body>
+</html>
